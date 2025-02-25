@@ -8,6 +8,15 @@ namespace SolarflowSource.Server.Controllers;
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
+    // Mock user for validation
+    private User mockUser = new User(
+        "JohnDoe",
+        "johndoe@example.com",
+        "12345", 
+        false,
+        "https://api.solarflow.com"
+    );
+
     private readonly ILogger<UserController> _logger;
 
     public UserController(ILogger<UserController> logger)
@@ -18,20 +27,9 @@ public class UserController : ControllerBase
     [HttpPost("authenticate")]
     public IActionResult PostUserAuthentication([FromBody] UserAuthRequest request)
     {
-        // Print request data to console
         System.Diagnostics.Debug.WriteLine($"Received authentication request: Username = {request.Username}, Password = {request.Password}");
 
-        // Log request data using ILogger (recommended for production)
         _logger.LogInformation("Authentication attempt: Username = {Username}, Password = {Password}", request.Username, request.Password);
-
-        // Mock user for validation
-        User mockUser = new User(
-            "JohnDoe",
-            "johndoe@example.com",
-            "12345", // TODO: Use hashed password instead of plain text.
-            false,
-            "https://api.solarflow.com"
-        );
 
         if (mockUser.Username == request.Username && mockUser.Password == request.Password)
         {
@@ -41,7 +39,26 @@ public class UserController : ControllerBase
         else
         {
             _logger.LogWarning("Failed authentication attempt for user: {Username}", request.Username);
-            return Unauthorized("Invalid credentials.");
+            return Unauthorized(new { message = "Invalid credentials." });
+        }
+    }
+
+    [HttpPost("recover-account")]
+    public IActionResult RecoverAccount([FromBody] AccountRecoveryRequest request)
+    {
+        System.Diagnostics.Debug.WriteLine($"Received account recovery request: Username = {request.Username}");
+
+        _logger.LogInformation("Account recovery attempt: Username = {Username}", request.Username);
+
+        if (request.Username == mockUser.Username)
+        {
+            _logger.LogInformation("Account recovery successful for user: {Username}", request.Username);
+            return Ok(new { message = "Account recovery email sent." });
+        }
+        else
+        {
+            _logger.LogWarning("Failed account recovery attempt for user: {Username}", request.Username);
+            return BadRequest(new { message = "User not found." });
         }
     }
 
@@ -49,5 +66,10 @@ public class UserController : ControllerBase
     {
         public string Username { get; set; }
         public string Password { get; set; } 
+    }
+
+    public class AccountRecoveryRequest
+    {
+        public string Username { get; set; }
     }
 }

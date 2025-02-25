@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { AuthenticationService } from '../services/authentication.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -13,10 +13,10 @@ export class LoginComponent {
   username: string = "";
   password: string = "";
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authenticationService: AuthenticationService, private router: Router) { }
 
   login() {
-    this.authService.authenticate(this.username, this.password).subscribe(
+    this.authenticationService.authenticate(this.username, this.password).subscribe(
       (response) => {
         console.log('Authentication OK', response);
         this.router.navigate(['/dashboard']);

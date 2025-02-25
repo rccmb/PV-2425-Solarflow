@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
   selector: "app-recover-account",
@@ -11,13 +12,20 @@ import { FormsModule } from '@angular/forms';
 export class RecoverAccountComponent {
   username: string = "";
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private authenticationService: AuthenticationService) { }
 
   goBackToLogin(): void {
     this.router.navigate(['/']);
   }
 
   recoverAccount(): void {
-    
+    this.authenticationService.recoverAccount(this.username).subscribe(
+      (response) => {
+        alert('Account recovery email sent.');  // Display success message
+      },
+      (error) => {
+        alert('Failed to recover account: ' + error.error);  // Display error message
+      }
+    );
   }
 }
