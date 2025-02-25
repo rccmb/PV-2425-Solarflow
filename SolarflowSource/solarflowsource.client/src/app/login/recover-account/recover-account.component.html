@@ -1,0 +1,9 @@
+<h1>Solarflow</h1>
+<h2>Energy Management Dashboard</h2>
+<h1>Account Recovery</h1>
+
+<form (submit)="recoverAccount()">
+  <input placeholder="Username" type="text" [(ngModel)]="username" name="username" required />
+  <button type="submit">Recover</button>
+  <button type="button" (click)="goBackToLogin()">Cancel</button>
+</form>
