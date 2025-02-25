@@ -1,12 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
-
-interface WeatherForecast {
-  date: string;
-  temperatureC: number;
-  temperatureF: number;
-  summary: string;
-}
+import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -14,25 +9,20 @@ interface WeatherForecast {
   standalone: false,
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
-  public forecasts: WeatherForecast[] = [];
+export class AppComponent {
+  username: string = "";
+  password: string = "";
 
-  constructor(private http: HttpClient) {}
+  constructor(private authService: AuthService) { }
 
-  ngOnInit() {
-    this.getForecasts();
-  }
-
-  getForecasts() {
-    this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
-      (result) => {
-        this.forecasts = result;
+  login() {
+    this.authService.authenticate(this.username, this.password).subscribe(
+      (response) => {
+        console.log('Authentication OK', response);
       },
       (error) => {
-        console.error(error);
+        console.error('Authentication FAILED', error);
       }
-    );
+    )
   }
-
-  title = 'solarflowsource.client';
 }
