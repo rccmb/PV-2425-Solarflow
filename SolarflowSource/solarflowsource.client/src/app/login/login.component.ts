@@ -18,11 +18,10 @@ export class LoginComponent {
   login() {
     this.authenticationService.authenticate(this.username, this.password).subscribe(
       (response) => {
-        console.log('Authentication OK', response);
         this.router.navigate(['/dashboard']);
       },
       (error) => {
-        console.error('Authentication FAILED', error);
+        alert('Failed to login!');  // Display error message
       }
     )
   }
