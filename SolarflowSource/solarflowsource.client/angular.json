@@ -38,7 +38,7 @@
               }
             ],
             "styles": [
-              "src/styles/reset.css",
+              "src/styles/reset.scss",
               "src/styles/authentication.css"
             ],
             "scripts": []

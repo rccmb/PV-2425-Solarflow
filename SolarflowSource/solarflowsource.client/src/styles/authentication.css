@@ -1,3 +1,17 @@
+/* Style for the body container of the login screen. */
+.authentication-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background-color: #393E41;
+  font-family: Roboto;
+}
+
 /* Style for the project logo. */
 .authentication-solarflow-logo {
   width: 150px;
@@ -21,19 +35,6 @@
   color: white;
   font-size: 20px;
   margin-bottom: 100px;
-}
-
-/* Style for the body container of the login screen. */
-.authentication-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  background-color: #393E41;
 }
 
 /* Style for the login form. */
