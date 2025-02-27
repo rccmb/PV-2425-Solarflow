@@ -1,0 +1,68 @@
+/* Style for the project logo. */
+.authentication-solarflow-logo {
+  width: 150px;
+  height: 150px;
+  border-radius: 100px;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+/* Style for the project name. */
+.authentication-solarflow-title {
+  margin-top: 10px;
+  color: white;
+  font-size: 40px;
+  font-weight: bolder;
+}
+
+/* Style for the project slogan. */
+.authentication-solarflow-slogan {
+  margin-top: 10px;
+  color: white;
+  font-size: 20px;
+  margin-bottom: 100px;
+}
+
+/* Style for the body container of the login screen. */
+.authentication-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background-color: #393E41;
+}
+
+/* Style for the login form. */
+.authentication-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Style for text inputs. */
+.authentication-form-text-input {
+  margin: 10px;
+  border: none;
+  border: solid 2px #ffffff;
+  border-radius: 10px;
+  padding-block: 10px;
+  padding-inline: 20px;
+  background-color: #393E41;
+  width: 400px;
+  color: white;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-sizing: 0;
+}
+
+/* Style for the login text. */
+.authentication-form-title {
+  color: white;
+  width: 445px;
+  text-align: start;
+  font-weight: bolder;
+  font-size: 32px;
+  margin-bottom: 10px;
+}

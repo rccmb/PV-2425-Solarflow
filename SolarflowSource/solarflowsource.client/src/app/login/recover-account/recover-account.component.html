@@ -1,9 +1,14 @@
-<h1>Solarflow</h1>
-<h2>Energy Management Dashboard</h2>
-<h1>Account Recovery</h1>
+<body class="authentication-body">
+  <img class="authentication-solarflow-logo" src="assets/images/logo_cropped.png" alt="image">
+  <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
+  <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
 
-<form (submit)="recoverAccount()">
-  <input placeholder="Username" type="text" [(ngModel)]="username" name="username" required />
-  <button type="submit">Recover</button>
-  <button type="button" (click)="goBackToLogin()">Cancel</button>
-</form>
+  <h1 class="authentication-form-title">Account Recovery</h1>
+  <form class="authentication-form" (submit)="recoverAccount()">
+    <input class="authentication-form-text-input" placeholder="Username" type="text" [(ngModel)]="username" name="username" required />
+    <div class="recover-account-button-container">
+      <button class="recover-account-button-cancel" type="button" (click)="goBackToLogin()">Cancel</button>
+      <button class="recover-account-button-recover" type="submit">Recover</button>
+    </div>
+  </form>
+</body>

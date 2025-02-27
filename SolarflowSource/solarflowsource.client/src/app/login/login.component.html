@@ -1,11 +1,15 @@
-<h1>Solarflow</h1>
-<h2>Energy Management Dashboard</h2>
-<h1>Login</h1>
+<body class="authentication-body">
+  <img class="authentication-solarflow-logo" src="assets/images/logo_cropped.png" alt="image">
+  <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
+  <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
+  <h1 class="authentication-form-title">Login</h1>
 
-<form (submit)="login()">
-  <input placeholder="Username" type="text" [(ngModel)]="username" name="username" required />
-  <input placeholder="Password" type="password" [(ngModel)]="password" name="password" required />
-  <button type="submit">Continue</button>
-</form>
+  <form class="authentication-form" (submit)="login()">
+    <input class="authentication-form-text-input" placeholder="Username" type="text" [(ngModel)]="username" name="username" required />
+    <input class="authentication-form-text-input" placeholder="Password" type="password" [(ngModel)]="password" name="password" required />
+    <button class="login-form-continue-button" type="submit">Continue</button>
+  </form>
 
-<button (click)="recoverAccount()">Forgot password?</button>
+  <p class="login-form-forgot-password" (click)="recoverAccount()">Forgot password?</p>
+</body>
+

@@ -31,13 +31,15 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
+              "src/assets",
               {
                 "glob": "**/*",
                 "input": "public"
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles/reset.css",
+              "src/styles/authentication.css"
             ],
             "scripts": []
           },
