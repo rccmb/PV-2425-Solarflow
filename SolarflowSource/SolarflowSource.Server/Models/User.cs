@@ -11,7 +11,7 @@
         public string Email { get; set; }
 
         // TODO: Remove mock password. SALT, HASHED.
-        public string Password { get; set; }
+        public string HashedPassword { get; set; }
 
         public bool ViewAccountStatus { get; set; }
 
@@ -20,7 +20,9 @@
 
         public DateTime CreatedAt { get; set; }
 
-        public User(int id, string username, string email, string password, bool viewAccountStatus, string batteryAPI)
+        public User() { }
+
+        public User(int id, string username, string email, string hashedPassword, bool viewAccountStatus, string batteryAPI)
         {
             Id = id;
 
@@ -30,7 +32,7 @@
 
             Email = email;
 
-            Password = password;
+            HashedPassword = hashedPassword;
 
             ViewAccountStatus = viewAccountStatus;
 

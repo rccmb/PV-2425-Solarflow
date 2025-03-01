@@ -3,6 +3,12 @@ using Microsoft.Extensions.Logging;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Dapper;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using SolarflowSource.Server.Models;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -10,12 +16,14 @@ public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
     private readonly string _connectionString;
+    private readonly IConfiguration _configuration;
 
     public UserController(ILogger<UserController> logger, IConfiguration configuration)
     {
         _logger = logger;
         _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new ArgumentNullException(nameof(configuration));
+        _configuration = configuration;
     }
 
     [HttpPost("authenticate")]
@@ -36,8 +44,9 @@ public class UserController : ControllerBase
 
             if (authResult == 1)
             {
+                var token = GenerateJWTToken(request.Email);
                 _logger.LogInformation("Authentication successful for user: {Username}", request.Email);
-                return Ok(new { message = "Authentication successful." });
+                return Ok(new { token });
             }
             else
             {
@@ -68,6 +77,67 @@ public class UserController : ControllerBase
             _logger.LogInformation("Account recovery successful for user: {Username}", request.Email);
             return Ok(new { message = "Account recovery email sent." });
         }
+    }
+
+    [Authorize]
+    [HttpGet("profile")]
+    public IActionResult GetUserProfile()
+    {
+        var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+        if (identity == null || !identity.IsAuthenticated)
+        {
+            return Unauthorized(new { message = "User is not authenticated." });
+        }
+
+        var email = identity.FindFirst(ClaimTypes.Email)?.Value;
+
+        Console.WriteLine($"Extracted email: {email}"); // Debugging
+
+        if (string.IsNullOrEmpty(email))
+        {
+            return Unauthorized(new { message = "Unauthorized access." });
+        }
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            var user = connection.QuerySingleOrDefault<User>(
+                "sp_GetUserProfile",
+                new { Email = email },
+                commandType: CommandType.StoredProcedure);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            return Ok(user);
+        }
+    }
+
+    private string GenerateJWTToken(string email)
+    {
+        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Role, "User")
+        };
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["ExpirationMinutes"])),
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256),
+            Issuer = jwtSettings["Issuer"],
+            Audience = jwtSettings["Audience"]
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 
     public class UserAuthRequest

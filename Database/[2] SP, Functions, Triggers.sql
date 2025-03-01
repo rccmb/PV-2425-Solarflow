@@ -283,3 +283,31 @@ BEGIN
     END CATCH
 END;
 GO
+
+DROP PROCEDURE IF EXISTS sp_GetUserProfile;
+GO
+
+CREATE PROCEDURE sp_GetUserProfile
+    @Email NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Select user details based on email
+        SELECT 
+            user_id AS Id,
+            name AS Username,
+            email AS Email,
+            hashed_password AS Password,
+            view_account_status AS ViewAccountStatus,
+            battery_api AS BatteryAPI,
+            created_at AS CreatedAt
+        FROM UserAccount
+        WHERE email = @Email;
+    END TRY
+    BEGIN CATCH
+        -- Handle any potential errors
+        RAISERROR ('An error occurred while executing [sp_GetUserProfile].', 18, 1);
+    END CATCH
+END;
+GO
