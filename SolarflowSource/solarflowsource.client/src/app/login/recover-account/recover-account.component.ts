@@ -10,7 +10,7 @@ import { AuthenticationService } from '../../services/authentication.service';
   imports: [FormsModule]
 })
 export class RecoverAccountComponent {
-  username: string = "";
+  email: string = "";
 
   constructor(private router: Router, private authenticationService: AuthenticationService) { }
 
@@ -19,7 +19,7 @@ export class RecoverAccountComponent {
   }
 
   recoverAccount(): void {
-    this.authenticationService.recoverAccount(this.username).subscribe(
+    this.authenticationService.recoverAccount(this.email).subscribe(
       (response) => {
         alert('Account recovery email sent.');  // Display success message
       },

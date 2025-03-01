@@ -1,75 +1,84 @@
 using Microsoft.AspNetCore.Mvc;
-using SolarflowSource.Server.Models;
-using System.Collections;
-
-namespace SolarflowSource.Server.Controllers;
+using Microsoft.Extensions.Logging;
+using System.Data;
+using Microsoft.Data.SqlClient;
+using Dapper;
 
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
-    // Mock user for validation
-    private User mockUser = new User(
-        "JohnDoe",
-        "johndoe@example.com",
-        "12345", 
-        false,
-        "https://api.solarflow.com"
-    );
-
     private readonly ILogger<UserController> _logger;
+    private readonly string _connectionString;
 
-    public UserController(ILogger<UserController> logger)
+    public UserController(ILogger<UserController> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new ArgumentNullException(nameof(configuration));
     }
 
     [HttpPost("authenticate")]
     public IActionResult PostUserAuthentication([FromBody] UserAuthRequest request)
     {
-        System.Diagnostics.Debug.WriteLine($"Received authentication request: Username = {request.Username}, Password = {request.Password}");
+        _logger.LogInformation("Authentication attempt: Username = {Username}", request.Email);
 
-        _logger.LogInformation("Authentication attempt: Username = {Username}, Password = {Password}", request.Username, request.Password);
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@Identifier", request.Email, DbType.String);
+            parameters.Add("@Password", request.Password, DbType.String);
+            parameters.Add("@AuthResult", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-        if (mockUser.Username == request.Username && mockUser.Password == request.Password)
-        {
-            _logger.LogInformation("Authentication successful for user: {Username}", request.Username);
-            return Ok(mockUser);
-        }
-        else
-        {
-            _logger.LogWarning("Failed authentication attempt for user: {Username}", request.Username);
-            return Unauthorized(new { message = "Invalid credentials." });
+            connection.Execute("sp_AuthenticateAccount", parameters, commandType: CommandType.StoredProcedure);
+
+            int authResult = parameters.Get<int>("@AuthResult");
+
+            if (authResult == 1)
+            {
+                _logger.LogInformation("Authentication successful for user: {Username}", request.Email);
+                return Ok(new { message = "Authentication successful." });
+            }
+            else
+            {
+                _logger.LogWarning("Failed authentication attempt for user: {Username}", request.Email);
+                return Unauthorized(new { message = "Invalid credentials." });
+            }
         }
     }
 
     [HttpPost("recover-account")]
     public IActionResult RecoverAccount([FromBody] AccountRecoveryRequest request)
     {
-        System.Diagnostics.Debug.WriteLine($"Received account recovery request: Username = {request.Username}");
+        _logger.LogInformation("Account recovery attempt: Username = {Username}", request.Email);
 
-        _logger.LogInformation("Account recovery attempt: Username = {Username}", request.Username);
-
-        if (request.Username == mockUser.Username)
+        using (var connection = new SqlConnection(_connectionString))
         {
-            _logger.LogInformation("Account recovery successful for user: {Username}", request.Username);
+            var userExists = connection.ExecuteScalar<int>(
+                "SELECT COUNT(1) FROM UserAccount WHERE email = @Email",
+                new { Email = request.Email });
+
+            if (userExists == 0)
+            {
+                _logger.LogWarning("Failed account recovery attempt for user: {Username}", request.Email);
+                return BadRequest(new { message = "User not found." });
+            }
+
+            // In real implementation, send a password reset email
+            _logger.LogInformation("Account recovery successful for user: {Username}", request.Email);
             return Ok(new { message = "Account recovery email sent." });
-        }
-        else
-        {
-            _logger.LogWarning("Failed account recovery attempt for user: {Username}", request.Username);
-            return BadRequest(new { message = "User not found." });
         }
     }
 
     public class UserAuthRequest
     {
-        public string Username { get; set; }
-        public string Password { get; set; } 
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 
     public class AccountRecoveryRequest
     {
-        public string Username { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 }
+

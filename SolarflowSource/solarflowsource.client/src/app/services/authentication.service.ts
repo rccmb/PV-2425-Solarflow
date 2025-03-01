@@ -10,11 +10,11 @@ export class AuthenticationService {
 
   constructor(private http: HttpClient) { }
 
-  authenticate(username: string, password: string): Observable<any> {
-    return this.http.post(this.apiUrl + "authenticate", { username, password });
+  authenticate(email: string, password: string): Observable<any> {
+    return this.http.post(this.apiUrl + "authenticate", { email, password });
   }
 
-  recoverAccount(username: string): Observable<any> {
-    return this.http.post(this.apiUrl + "recover-account", { username });
+  recoverAccount(email: string): Observable<any> {
+    return this.http.post(this.apiUrl + "recover-account", { email });
   }
 }

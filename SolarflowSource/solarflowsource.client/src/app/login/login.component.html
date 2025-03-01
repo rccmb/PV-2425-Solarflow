@@ -5,10 +5,10 @@
   <h1 class="authentication-form-title">Login</h1>
 
   <form class="authentication-form" (submit)="login()">
-    <input class="authentication-form-text-input" placeholder="Username" type="text" [(ngModel)]="username" name="username" required />
+    <input class="authentication-form-text-input" placeholder="Email" type="text" [(ngModel)]="email" name="email" required />
     <input class="authentication-form-text-input" placeholder="Password" type="password" [(ngModel)]="password" name="password" required />
-    <button class="login-form-continue-button" type="submit">Continue</button>
-  </form>
+     <button class="login-form-continue-button" type="submit">Continue</button>
+</form>
 
   <p class="login-form-forgot-password" (click)="recoverAccount()">Forgot password?</p>
 </body>

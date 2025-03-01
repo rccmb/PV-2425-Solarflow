@@ -2,32 +2,31 @@
 {
     public class User
     {
-        private static int ID_COUNTER;
-
         public int Id { get; set; }
 
         public string Username { get; set; }
 
-        // TODO Photo.
+        // TODO: Photo.
 
         public string Email { get; set; }
 
-        // TODO Remove mock password. SALT, HASHED.
+        // TODO: Remove mock password. SALT, HASHED.
         public string Password { get; set; }
 
         public bool ViewAccountStatus { get; set; }
 
-        // TODO Review.
+        // TODO: Review.
         public string BatteryAPI { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
-        public User(string username, string email, string password, bool viewAccountStatus, string batteryAPI)
-        {   
-            Id = ID_COUNTER;
-            ID_COUNTER++;
+        public User(int id, string username, string email, string password, bool viewAccountStatus, string batteryAPI)
+        {
+            Id = id;
 
             Username = username;
+
+            // TODO: Photo
 
             Email = email;
 
@@ -37,7 +36,7 @@
 
             BatteryAPI = batteryAPI;
 
-            CreatedAt = DateTime.UtcNow; 
+            CreatedAt = DateTime.UtcNow;
         }
     }
 }

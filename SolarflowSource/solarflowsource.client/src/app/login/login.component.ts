@@ -10,13 +10,13 @@ import { FormsModule } from '@angular/forms';
   imports: [FormsModule]
 })
 export class LoginComponent {
-  username: string = "";
+  email: string = "";
   password: string = "";
 
   constructor(private authenticationService: AuthenticationService, private router: Router) { }
 
   login() {
-    this.authenticationService.authenticate(this.username, this.password).subscribe(
+    this.authenticationService.authenticate(this.email, this.password).subscribe(
       (response) => {
         this.router.navigate(['/dashboard']);
       },
