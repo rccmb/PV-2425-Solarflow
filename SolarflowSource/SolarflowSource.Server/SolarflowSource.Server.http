@@ -1,0 +1,6 @@
+@SolarflowSource.Server_HostAddress = http://localhost:5192
+
+GET {{SolarflowSource.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

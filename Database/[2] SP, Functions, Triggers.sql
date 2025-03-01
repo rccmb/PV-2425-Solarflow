@@ -13,20 +13,21 @@ END;
 GO
 
 
-
 DROP PROCEDURE IF EXISTS sp_AddUserAccount;
 GO
 CREATE PROCEDURE sp_AddUserAccount
     @Name NVARCHAR(255),
     @Email NVARCHAR(255),
+    @Password NVARCHAR(128),
     @Photo NVARCHAR(255) = NULL,
-    @Battery_api NVARCHAR(255) = NULL
+    @BatteryAPI NVARCHAR(255) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
         DECLARE @UserID INT;
         DECLARE @Salt NVARCHAR(128) = NEWID();
+        DECLARE @HashedPassword NVARCHAR(64);
 
         -- Check if the email is already registered
         IF EXISTS (SELECT 1 FROM UserAccount WHERE email = @Email)
@@ -35,9 +36,12 @@ BEGIN
             RETURN;
         END
 
-        -- Insert the user into the UserAccount table
-        INSERT INTO UserAccount (Name, email, photo, Salt, HashedPassword, viewAccount_status, Battery_api, created_at)
-        VALUES (@Name, @Email, @Photo, @Salt, 123, 0, @Battery_api, GETDATE());
+        -- Hash the provided password with the generated salt
+        SET @HashedPassword = dbo.fn_HashPassword(@Password, @Salt);
+
+        -- Insert the user into the UserAccount table with the real hashed password
+        INSERT INTO UserAccount (name, email, photo, salt, hashed_password, view_account_status, battery_api, created_at)
+        VALUES (@Name, @Email, @Photo, @Salt, @HashedPassword, 0, @BatteryAPI, GETDATE());
 
         PRINT '[Account Creation] UserAccount successfully created.';
     END TRY
@@ -46,7 +50,6 @@ BEGIN
     END CATCH
 END;
 GO
-
 
 
 DROP PROCEDURE IF EXISTS sp_NewPassword;
@@ -65,8 +68,8 @@ BEGIN
         BEGIN
             -- Update the password and salt
             UPDATE UserAccount
-            SET HashedPassword = dbo.fn_HashPassword(@NewPassword, @Salt),
-                Salt = @Salt
+            SET hashed_password = dbo.fn_HashPassword(@NewPassword, @Salt),
+                salt = @Salt
             WHERE user_id = @UserID;
 
             PRINT '[Password Update] Password successfully changed.';
@@ -82,6 +85,7 @@ BEGIN
 END;
 GO
 
+
 DROP PROCEDURE IF EXISTS sp_UpdateUserAccount;
 GO
 CREATE PROCEDURE sp_UpdateUserAccount
@@ -89,7 +93,7 @@ CREATE PROCEDURE sp_UpdateUserAccount
     @NewName NVARCHAR(255) = NULL,
     @NewPhoto NVARCHAR(255) = NULL,
     @NewEmail NVARCHAR(255) = NULL,
-    @NewBatteryApi NVARCHAR(255) = NULL
+    @NewBatteryAPI NVARCHAR(255) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -110,10 +114,10 @@ BEGIN
 
         -- Update only fields that are provided (email check is already done)
         UPDATE UserAccount
-        SET Name = COALESCE(@NewName, Name),
+        SET name = COALESCE(@NewName, name),
             photo = COALESCE(@NewPhoto, photo),
             email = COALESCE(@NewEmail, email),
-            Battery_api = COALESCE(@NewBatteryApi, Battery_api)
+            battery_api = COALESCE(@NewBatteryAPI, battery_api)
         WHERE user_id = @UserID;
 
         PRINT '[User Update] UserAccount successfully updated.';
@@ -123,7 +127,6 @@ BEGIN
     END CATCH
 END;
 GO
-
 
 
 DROP PROCEDURE IF EXISTS sp_AddViewAccount;
@@ -136,7 +139,7 @@ BEGIN
     BEGIN TRY
         DECLARE @UserName NVARCHAR(255);
         DECLARE @RandomNumber NVARCHAR(6);
-        DECLARE @Login_Name NVARCHAR(255);
+        DECLARE @LoginName NVARCHAR(255);
         DECLARE @GeneratedPassword NVARCHAR(12);
         DECLARE @HashedPassword NVARCHAR(255);
         DECLARE @Salt NVARCHAR(128) = NEWID(); -- Generate a new salt
@@ -149,13 +152,13 @@ BEGIN
         END
 
         -- Get the user's name
-        SELECT @UserName = Name FROM UserAccount WHERE user_id = @UserID;
+        SELECT @UserName = name FROM UserAccount WHERE user_id = @UserID;
 
         -- Generate a random number (6 digits)
         SET @RandomNumber = RIGHT('000000' + CAST(ABS(CHECKSUM(NEWID())) % 1000000 AS NVARCHAR(6)), 6);
 
         -- Generate the Login_Name (UserName + 6 random digits)
-        SET @Login_Name = @UserName + @RandomNumber;
+        SET @LoginName = @UserName + @RandomNumber;
 
         -- Generate a random 12-character password
         SET @GeneratedPassword = 
@@ -167,11 +170,11 @@ BEGIN
         SET @HashedPassword = dbo.fn_HashPassword(@GeneratedPassword, @Salt);
 
         -- Insert into ViewAccount
-        INSERT INTO ViewAccount (user_id, Login_Name, HashedPassword)
-        VALUES (@UserID, @Login_Name, @HashedPassword);
+        INSERT INTO ViewAccount (user_id, login_name, hashed_password)
+        VALUES (@UserID, @LoginName, @HashedPassword);
 
         PRINT '[ViewAccount Creation] ViewAccount successfully created.';
-        PRINT '[ViewAccount Info] Login_Name: ' + @Login_Name;
+        PRINT '[ViewAccount Info] Login_Name: ' + @LoginName;
         PRINT '[ViewAccount Info] Generated Password: ' + @GeneratedPassword;
     END TRY
     BEGIN CATCH
@@ -194,7 +197,7 @@ BEGIN
     SELECT @UserID = inserted.user_id
     FROM inserted
     INNER JOIN deleted ON inserted.user_id = deleted.user_id
-    WHERE deleted.viewAccount_status = 0 AND inserted.viewAccount_status = 1;
+    WHERE deleted.view_account_status = 0 AND inserted.view_account_status = 1;
 
     -- If a user was found, execute sp_AddViewAccount
     IF @UserID IS NOT NULL
@@ -220,7 +223,7 @@ BEGIN
     SELECT @UserID = deleted.user_id
     FROM inserted
     INNER JOIN deleted ON inserted.user_id = deleted.user_id
-    WHERE deleted.viewAccount_status = 1 AND inserted.viewAccount_status = 0;
+    WHERE deleted.view_account_status = 1 AND inserted.view_account_status = 0;
 
     -- If found, delete the corresponding ViewAccount
     IF @UserID IS NOT NULL
@@ -236,7 +239,8 @@ DROP PROCEDURE IF EXISTS sp_AuthenticateAccount;
 GO
 CREATE PROCEDURE sp_AuthenticateAccount
     @Identifier NVARCHAR(255), 
-    @Password NVARCHAR(128)
+    @Password NVARCHAR(128),
+    @AuthResult INT OUTPUT  -- Add an output parameter
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -244,36 +248,66 @@ BEGIN
         DECLARE @UserID INT, @StoredHash NVARCHAR(64), @Salt NVARCHAR(128);
         DECLARE @AccountType NVARCHAR(20);
 
+        -- Check if the user exists in UserAccount or ViewAccount
         IF EXISTS (SELECT 1 FROM UserAccount WHERE email = @Identifier)
         BEGIN
             SET @AccountType = 'User';
-            SELECT @UserID = user_id, @StoredHash = HashedPassword, @Salt = Salt
+            SELECT @UserID = user_id, @StoredHash = hashed_password, @Salt = salt
             FROM UserAccount WHERE email = @Identifier;
         END
-        ELSE IF EXISTS (SELECT 1 FROM ViewAccount WHERE Login_Name = @Identifier)
+        ELSE IF EXISTS (SELECT 1 FROM ViewAccount WHERE login_name = @Identifier)
         BEGIN
             SET @AccountType = 'View';
-            SELECT @UserID = user_id, @StoredHash = HashedPassword
-            FROM ViewAccount WHERE Login_Name = @Identifier;
+            SELECT @UserID = user_id, @StoredHash = hashed_password
+            FROM ViewAccount WHERE login_name = @Identifier;
         END
         ELSE
         BEGIN
-            PRINT '[Login] Error. Account not found.';
+            SET @AuthResult = 0;  -- User not found
             RETURN;
         END
 
         -- Verify password
         IF dbo.fn_HashPassword(@Password, @Salt) = @StoredHash
         BEGIN
-            PRINT '[Login] Success. ' + @AccountType + ' authenticated.';
+            SET @AuthResult = 1;  -- Authentication successful
         END
         ELSE
         BEGIN
-            PRINT '[Login] Error. Incorrect password.';
+            SET @AuthResult = 0;  -- Incorrect password
         END
     END TRY
     BEGIN CATCH
         RAISERROR ('An error occurred while executing [sp_AuthenticateAccount].', 18, 1);
+        SET @AuthResult = 0;  -- Error case
+    END CATCH
+END;
+GO
+
+DROP PROCEDURE IF EXISTS sp_GetUserProfile;
+GO
+
+CREATE PROCEDURE sp_GetUserProfile
+    @Email NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Select user details based on email
+        SELECT 
+            user_id AS Id,
+            name AS Username,
+            email AS Email,
+            hashed_password AS Password,
+            view_account_status AS ViewAccountStatus,
+            battery_api AS BatteryAPI,
+            created_at AS CreatedAt
+        FROM UserAccount
+        WHERE email = @Email;
+    END TRY
+    BEGIN CATCH
+        -- Handle any potential errors
+        RAISERROR ('An error occurred while executing [sp_GetUserProfile].', 18, 1);
     END CATCH
 END;
 GO
