@@ -170,8 +170,8 @@ BEGIN
         SET @HashedPassword = dbo.fn_HashPassword(@GeneratedPassword, @Salt);
 
         -- Insert into ViewAccount
-        INSERT INTO ViewAccount (user_id, login_name, hashed_password)
-        VALUES (@UserID, @LoginName, @HashedPassword);
+        INSERT INTO ViewAccount (user_id, login_name, salt, hashed_password)
+        VALUES (@UserID, @LoginName, @Salt, @HashedPassword);
 
         PRINT '[ViewAccount Creation] ViewAccount successfully created.';
         PRINT '[ViewAccount Info] Login_Name: ' + @LoginName;

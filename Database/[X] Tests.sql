@@ -34,3 +34,41 @@ EXEC sp_AuthenticateAccount
 EXEC sp_AuthenticateAccount 
     @Identifier = 'johndoe@example.com', 
     @Password = 'WRONGPASSWORD!';
+
+
+-- Change password for an existing user
+EXEC sp_NewPassword 
+    @UserID = 1, 
+    @NewPassword = 'NewSecurePassword!';
+
+-- Try to change password for a non-existing user (should fail)
+EXEC sp_NewPassword 
+    @UserID = 999,  -- Non-existent user
+    @NewPassword = 'NewPassword123!';
+
+-- Update name and email for an existing user
+EXEC sp_UpdateUserAccount 
+    @UserID = 1, 
+    @NewName = 'John Updated',
+    @NewEmail = 'john123@cenas.com';
+
+-- First, add another user
+EXEC sp_AddUserAccount 
+    @Name = 'Maria Doe', 
+    @Email = 'maria@example.com',
+    @Password = 'password';
+
+-- Try to update John's email to Jane's email (should fail)
+EXEC sp_UpdateUserAccount 
+    @UserID = 1, 
+    @NewEmail = 'maria@example.com'; -- Duplicate email
+
+-- Enable ViewAccount for an existing user
+UPDATE UserAccount 
+SET view_account_status = 1 
+WHERE user_id = 1;
+
+-- Disable ViewAccount for an existing user
+UPDATE UserAccount 
+SET view_account_status = 0 
+WHERE user_id = 1;
