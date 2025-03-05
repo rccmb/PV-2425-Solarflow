@@ -115,6 +115,36 @@ public class UserController : ControllerBase
         }
     }
 
+    [HttpPost("register")]
+    public IActionResult PostUserRegistration([FromBody] AccountRegistrationRequest request)
+    {
+        _logger.LogInformation("User registration attempt: Email = {Email}", request.Email);
+
+        try
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Name", request.Name, DbType.String);
+                parameters.Add("@Email", request.Email, DbType.String);
+                parameters.Add("@Password", request.Password, DbType.String);
+                parameters.Add("@Photo", null, DbType.String);
+                parameters.Add("@BatteryAPI", null, DbType.String);
+
+                connection.Execute("sp_AddUserAccount", parameters, commandType: CommandType.StoredProcedure);
+
+                _logger.LogInformation("User successfully registered: {Email}", request.Email);
+                return Ok(new { message = "User registered successfully. Verification email sent!" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during user registration: {Email}", request.Email);
+            return StatusCode(500, new { message = "Failed to register the user. Try again later." });
+        }
+    }
+
+
     private string GenerateJWTToken(string email)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -149,6 +179,13 @@ public class UserController : ControllerBase
     public class AccountRecoveryRequest
     {
         public string Email { get; set; } = string.Empty;
+    }
+
+    public class AccountRegistrationRequest
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }
 

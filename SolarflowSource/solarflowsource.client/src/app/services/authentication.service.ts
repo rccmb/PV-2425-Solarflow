@@ -24,4 +24,8 @@ export class AuthenticationService {
   recoverAccount(email: string): Observable<any> {
     return this.http.post(this.apiUrl + "recover-account", { email });
   }
+
+  registerAccount(name: string, email: string, password: string): Observable<any> {
+    return this.http.post(this.apiUrl + "register", {name, email, password})
+  }
 }

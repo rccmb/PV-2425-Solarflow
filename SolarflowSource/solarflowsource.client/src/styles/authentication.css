@@ -66,3 +66,17 @@
   font-size: 32px;
   margin-bottom: 10px;
 }
+
+/* Style for the buttons in authentication. */
+.authentication-form-button {
+  width: 445px;
+  border: none;
+  font-weight: bolder;
+  border-radius: 10px;
+  padding-block: 10px;
+  padding-inline: 20px;
+  margin-top: 40px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  align-self: center;
+  cursor: pointer;
+}
