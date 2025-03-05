@@ -4,11 +4,19 @@
   <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
   <h1 class="authentication-form-title">Register</h1>
 
-  <form class="authentication-form" (submit)="register()">
+  <form class="authentication-form" (submit)="register(); $event.preventDefault()">
     <input class="authentication-form-text-input" placeholder="Name" type="text" [(ngModel)]="name" name="name" required />
+    <div class="register-error-message" *ngIf="errors.name">{{ errors.name }}</div>
+
     <input class="authentication-form-text-input" placeholder="Email" type="email" [(ngModel)]="email" name="email" required />
+    <div class="register-error-message" *ngIf="errors.email">{{ errors.email }}</div>
+
     <input class="authentication-form-text-input" placeholder="Password" type="password" [(ngModel)]="password" name="password" required />
+    <div class="register-error-message" *ngIf="errors.password">{{ errors.password }}</div>
+
     <input class="authentication-form-text-input" placeholder="Confirm Password" type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required />
+    <div class="register-error-message" *ngIf="errors.confirmPassword">{{ errors.confirmPassword }}</div>
+
     <button class="authentication-form-button background-blue" type="submit">Register Account</button>
   </form>
 </body>

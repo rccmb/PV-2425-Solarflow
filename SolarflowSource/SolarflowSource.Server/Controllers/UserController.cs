@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using SolarflowSource.Server.Models;
+using System.Text.RegularExpressions;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -119,6 +120,37 @@ public class UserController : ControllerBase
     public IActionResult PostUserRegistration([FromBody] AccountRegistrationRequest request)
     {
         _logger.LogInformation("User registration attempt: Email = {Email}", request.Email);
+
+        var errors = new Dictionary<string, string>();
+        bool isValid = true;
+
+        // Validate the name.
+        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.StartsWith(" "))
+        {
+            errors["name"] = "Name must have at least 3 characters and must not start with white space.";
+            isValid = false;
+        }
+
+        // Validate the email.
+        var emailPattern = new Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$");
+        if (!emailPattern.IsMatch(request.Email))
+        {
+            errors["email"] = "Invalid email format.";
+            isValid = false;
+        }
+
+        // Validate the password.
+        var passwordPattern = new Regex("^(?!.*\\s).{8,}$");
+        if (!passwordPattern.IsMatch(request.Password))
+        {
+            errors["password"] = "Password must have at least 8 characters with no white spaces.";
+            isValid = false;
+        }
+
+        if (!isValid)
+        {
+            return BadRequest(new { errors });
+        }
 
         try
         {

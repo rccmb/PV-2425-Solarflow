@@ -29,19 +29,19 @@ BEGIN
         DECLARE @Salt NVARCHAR(128) = NEWID();
         DECLARE @HashedPassword NVARCHAR(64);
 
-        -- Check if the email is already registered
+        -- Check if email already exists
         IF EXISTS (SELECT 1 FROM UserAccount WHERE email = @Email)
         BEGIN
-            PRINT '[Account Creation] Error. The email is already registered.';
+            RAISERROR ('The email is already registered.', 16, 1);
             RETURN;
         END
 
-        -- Hash the provided password with the generated salt
+        -- Hash the password
         SET @HashedPassword = dbo.fn_HashPassword(@Password, @Salt);
 
-        -- Insert the user into the UserAccount table with the real hashed password
-        INSERT INTO UserAccount (name, email, photo, salt, hashed_password, view_account_status, battery_api, created_at)
-        VALUES (@Name, @Email, @Photo, @Salt, @HashedPassword, 0, @BatteryAPI, GETDATE());
+        -- Insert into database
+        INSERT INTO UserAccount (name, email, photo, salt, hashed_password, view_account_status, confirmed_email, battery_api, created_at)
+        VALUES (@Name, @Email, @Photo, @Salt, @HashedPassword, 0, 0, @BatteryAPI, GETDATE());
 
         PRINT '[Account Creation] UserAccount successfully created.';
     END TRY

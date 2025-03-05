@@ -12,6 +12,7 @@ CREATE TABLE UserAccount (
     salt NVARCHAR(255) NOT NULL,
     hashed_password NVARCHAR(255) NOT NULL,
     view_account_status BIT DEFAULT 0,
+	confirmed_email BIT DEFAULT 0,
     battery_api NVARCHAR(255),
     created_at DATETIME DEFAULT GETDATE()
 );
