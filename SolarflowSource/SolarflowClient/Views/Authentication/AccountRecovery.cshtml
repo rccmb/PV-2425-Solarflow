@@ -1,14 +1,13 @@
 ﻿@{
     Layout = null;
-    ViewData["Title"] = "Solarflow - Login";
+    ViewData["Title"] = "Solarflow - Account Recovery";
 }
 
-@model SolarflowClient.Models.ViewModels.Authentication.LoginViewModel
+@model SolarflowClient.Models.ViewModels.Authentication.AccountRecoveryViewModel
 
 <link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/authentication/authentication-login.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 <body class="authentication-body">
     <div style="margin-top: 30px">
@@ -16,7 +15,7 @@
         <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
         <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
     </div>
-    
+
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="authentication-error-container">
@@ -27,26 +26,14 @@
         </div>
     }
 
-    <h1 class="authentication-form-title">Login</h1>
+    <h1 class="authentication-form-title">Account Recovery</h1>
 
     <form class="authentication-form" asp-action="Login" method="post">
         <div class="authentication-input-div">
             <label class="authentication-form-label">Email</label>
-            <input asp-for="Email" class="authentication-form-text-input"/>
+            <input asp-for="Email" class="authentication-form-text-input" />
         </div>
 
-        <div class="authentication-input-div">
-            <label class="authentication-form-label">Password</label>
-            <input asp-for="Password" type="password" class="authentication-form-text-input" />
-        </div>
-
-        <a class="login-form-forgot-password" asp-action="AccountRecovery">Forgot Password?</a>
-
-        <button type="submit" class="authentication-form-button background-blue">Login</button>
+        <button type="submit" class="authentication-form-button background-blue">Recover</button>
     </form>
-
-    <p class="login-or">OR</p>
-
-    <a asp-action="Register" class="authentication-form-button background-orange">Create Account</a>
 </body>
-

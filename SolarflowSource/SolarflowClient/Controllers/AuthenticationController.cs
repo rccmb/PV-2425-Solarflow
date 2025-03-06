@@ -79,4 +79,15 @@ public class AuthenticationController : Controller
         ModelState.AddModelError(string.Empty, errorMessage);
         return View(model);
     }
+
+    public IActionResult AccountRecovery()
+    {
+        return View();
+    }
+
+    //[HttpPost]
+    //public async Task<IActionResult> AccountRecovery(AccountRecoveryViewModel model)
+    //{
+    //    // TODO: Implement account recovery.
+    //}
 }
