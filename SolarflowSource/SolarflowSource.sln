@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarflowClient", "SolarflowClient\SolarflowClient.csproj", "{83AA16B3-DE70-22D6-BFF9-6D67CF195471}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarflowServer", "SolarflowServer\SolarflowServer.csproj", "{F3A06363-8705-9DDE-55EB-BECF803C29A8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{83AA16B3-DE70-22D6-BFF9-6D67CF195471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83AA16B3-DE70-22D6-BFF9-6D67CF195471}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83AA16B3-DE70-22D6-BFF9-6D67CF195471}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83AA16B3-DE70-22D6-BFF9-6D67CF195471}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3A06363-8705-9DDE-55EB-BECF803C29A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3A06363-8705-9DDE-55EB-BECF803C29A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3A06363-8705-9DDE-55EB-BECF803C29A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3A06363-8705-9DDE-55EB-BECF803C29A8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {512C4BFE-8421-4FDA-90AE-FCB0580ADB68}
+	EndGlobalSection
+EndGlobal
