@@ -26,10 +26,12 @@ public class AuthenticationController : ControllerBase
     {
         var user = new ApplicationUser
         {
-            UserName = model.Email,
-            Email = model.Email,
-            Name = model.Name,
-            Photo = model.Photo,
+            UserName = model.Email, // Do not remove.
+            Email = model.Email, // Do not remove.
+            Fullname = model.Fullname,
+            Photo = "",
+            ConfirmedEmail = false,
+            BatteryAPI = "",
             CreatedAt = DateTime.UtcNow
         };
 

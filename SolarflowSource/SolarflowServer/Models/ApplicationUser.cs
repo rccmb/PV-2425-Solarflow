@@ -3,7 +3,7 @@ using System;
 
 public class ApplicationUser : IdentityUser<int>
 {
-    public string Name { get; set; } 
+    public string Fullname { get; set; } 
 
     public string Photo { get; set; }
 

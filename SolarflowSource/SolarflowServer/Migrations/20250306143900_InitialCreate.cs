@@ -32,7 +32,7 @@ namespace SolarflowServer.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    fullname = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     photo = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     confirmed_email = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     battery_api = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),

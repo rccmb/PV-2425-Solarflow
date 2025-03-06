@@ -15,8 +15,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("Users");
 
-            entity.Property(u => u.Name)
-                .HasColumnName("name")
+            entity.Property(u => u.Fullname)
+                .HasColumnName("fullname")
                 .HasMaxLength(255)
                 .IsRequired();
 
