@@ -13,7 +13,6 @@
   <ItemGroup>
     <None Include="wwwroot\css\authentication\authentication-global.css" />
     <None Include="wwwroot\css\authentication\authentication-login.css" />
-    <None Include="wwwroot\css\authentication\authentication-register.css" />
   </ItemGroup>
 
 </Project>
