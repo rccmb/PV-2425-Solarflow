@@ -5,42 +5,54 @@
 
 @model SolarflowClient.Models.ViewModels.Authentication.RegisterViewModel
 
-<h2>Register</h2>
+<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <p>@error.ErrorMessage</p>
-        }
-    </div>
-}
-
-<form asp-action="Register" method="post">
-    <div>
-        <label>Full Name</label>
-        <input asp-for="Fullname" class="form-control" />
-        <span asp-validation-for="Fullname" class="text-danger"></span>
+<body class="authentication-body">
+    <div style="margin-top: 30px">
+        <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
+        <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
+        <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
     </div>
 
-    <div>
-        <label>Email</label>
-        <input asp-for="Email" class="form-control"/>
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="authentication-error-container">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <p class="authentication-error-message">@error.ErrorMessage</p>
+            }
+        </div>
+    }
 
-    <div>
-        <label>Password</label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
+    <h1 class="authentication-form-title">Register</h1>
 
-    <div>
-        <label>Confirm Password</label>
-        <input asp-for="ConfirmPassword" type="password" class="form-control" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
+    <form class="authentication-form" asp-action="Register" method="post">
+        <div class="authentication-input-div">
+            <label class="authentication-form-label">Full Name</label>
+            <input asp-for="Fullname" class="authentication-form-text-input" />
+        </div>
 
-    <button type="submit" class="btn btn-primary">Register</button>
-</form>
+        <div class="authentication-input-div">
+            <label class="authentication-form-label">Email</label>
+            <input asp-for="Email" class="authentication-form-text-input" />
+        </div>
+
+        <div class="authentication-input-div">
+            <label class="authentication-form-label">Password</label>
+            <input asp-for="Password" type="password" class="authentication-form-text-input" />
+        </div>
+
+        <div class="authentication-input-div">
+            <label class="authentication-form-label">Confirm Password</label>
+            <input asp-for="ConfirmPassword" type="password" class="authentication-form-text-input" />
+        </div>
+
+        <button type="submit" class="authentication-form-button background-blue">Register</button>
+    </form>
+</body>
+
+
+
+
