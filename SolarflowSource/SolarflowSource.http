@@ -1,0 +1,6 @@
+@SolarflowSource_HostAddress = http://localhost:5253
+
+GET {{SolarflowSource_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
