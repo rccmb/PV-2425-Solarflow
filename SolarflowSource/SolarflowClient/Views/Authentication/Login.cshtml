@@ -1,37 +1,54 @@
 ﻿@{
+    Layout = null;
     ViewData["Title"] = "Solarflow - Login";
 }
 
 @model SolarflowClient.Models.ViewModels.Authentication.LoginViewModel
 
-<h2>Login</h2>
+<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/authentication/authentication-login.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <p>@error.ErrorMessage</p>
-        }
+<body class="authentication-body">
+    <div style="margin-top: 30px">
+        <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
+        <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
+        <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
     </div>
-}
+    
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="authentication-error-container">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <p class="authentication-error-message">@error.ErrorMessage</p>
+            }
+        </div>
+    }
 
-<form asp-action="Login" method="post">
-    <div>
-        <label>Email</label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
+    <h1 class="authentication-form-title">Login</h1>
 
-    <div>
-        <label>Password</label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
+    <form class="authentication-form" asp-action="Login" method="post">
+        <div class="authentication-input-div">
+            <label class="authentication-form-label">Email</label>
+            <input asp-for="Email" placeholder="Email" class="authentication-form-text-input"/>
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Login</button>
-</form>
+        <div class="authentication-input-div">
+            <label class="authentication-form-label">Password</label>
+            <input asp-for="Password" type="password" class="authentication-form-text-input" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
 
-<div class="mt-3">
-    <a asp-action="Register" class="btn btn-secondary">Don't have an account? Register</a>
-</div>
+        <a class="login-form-forgot-password">Forgot Password?</a>
+
+        <button type="submit" class="authentication-form-button background-blue">Login</button>
+    </form>
+
+    <p class="login-or">OR</p>
+
+    <a asp-action="Register" class="authentication-form-button background-orange">Create Account</a>
+</body>
+
