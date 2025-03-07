@@ -58,6 +58,13 @@ public class AuthenticationController : ControllerBase
         return Ok(new { token });
     }
 
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return Ok(new { message = "User logged out successfully!" });
+    }
+
     private string GenerateJWTToken(ApplicationUser user)
     {
         var claims = new[]
