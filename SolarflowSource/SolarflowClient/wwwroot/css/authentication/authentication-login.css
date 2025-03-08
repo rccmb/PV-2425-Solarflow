@@ -1,0 +1,16 @@
+﻿/* Style for forgot password. */
+.login-form-forgot-password {
+    color: white;
+    margin-top: 10px;
+    width: 445px;
+    text-align: end;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Style for the OR text. */
+.login-or {
+    color: white;
+    font-weight: bolder;
+    margin-top: 40px;
+}

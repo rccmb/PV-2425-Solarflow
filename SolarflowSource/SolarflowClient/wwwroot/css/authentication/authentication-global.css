@@ -1,0 +1,122 @@
+﻿/* Style for the body container of the login screen. */
+.authentication-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background-color: #393E41;
+    font-family: Roboto;
+}
+
+/* Style for the project logo. */
+.authentication-solarflow-logo {
+    width: 150px;
+    height: 150px;
+    border-radius: 100px;
+    overflow: hidden;
+    object-fit: cover;
+}
+
+/* Style for the project name. */
+.authentication-solarflow-title {
+    margin-top: 10px;
+    color: white;
+    font-size: 32px;
+    font-weight: bolder;
+}
+
+/* Style for the project slogan. */
+.authentication-solarflow-slogan {
+    margin-top: 10px;
+    color: white;
+    font-size: 16px;
+}
+
+/* Style for the login form. */
+.authentication-form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Style for text inputs. */
+.authentication-form-text-input {
+    border: none;
+    border: solid 2px #ffffff;
+    border-radius: 10px;
+    padding-block: 10px;
+    padding-inline: 10px;
+    background-color: #393E41;
+    width: 445px;
+    color: white;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+/* Style for the login text. */
+.authentication-form-title {
+    color: white;
+    width: 445px;
+    text-align: start;
+    font-weight: bolder;
+    font-size: 32px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+/* Style for the authentication input div. */
+.authentication-input-div {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Style for the labels in the login form. */
+.authentication-form-label {
+    color: white;
+    width: 445px;
+    text-align: start;
+    font-size: 12px;
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+
+/* Style for the buttons in authentication. */
+.authentication-form-button {
+    display: inline-block;
+    width: 445px;
+    border: none;
+    font-weight: bolder;
+    border-radius: 10px;
+    padding: 10px 0px;
+    font-size: 12px;
+    margin-top: 40px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    cursor: pointer;
+}
+
+/* Style for the authentication error contaainer. */
+.authentication-error-container {
+    background-color: darkred;
+    width: 445px;
+    flex-direction: column;
+    display: flex;
+    padding-inline: 10px;
+    border-radius: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    margin-top: 20px;
+}
+
+/* Style for the authentication error messages. */
+.authentication-error-message {
+    color: white;
+    align-self: start;
+    font-size: 12px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
