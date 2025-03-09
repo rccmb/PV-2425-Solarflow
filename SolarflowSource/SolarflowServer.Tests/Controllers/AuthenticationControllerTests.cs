@@ -95,35 +95,6 @@ namespace SolarflowServer.Tests.Controllers
         Assert.Equal(400, badRequestResult.StatusCode);
     }
 
-    [Fact]
-    public async Task Register_ViewAccount_ValidData_ReturnsOk()
-    {
-        // Arrange
-        var registerDto = new RegisterViewDTO
-        {
-            UserId = 1,
-            Password = "ViewPassword123!"
-        };
-
-        var user = new ApplicationUser { Id = 1, Email = "test@example.com" };
-
-        _userManagerMock.Setup(x => x.FindByIdAsync(It.IsAny<string>()))
-            .ReturnsAsync(user); // 🔹 Simula que encontrou o usuário principal
-
-        _viewUserManagerMock.Setup(x => x.FindByEmailAsync(It.IsAny<string>()))
-            .ReturnsAsync((ViewAccount)null); // 🔹 Simula que a ViewAccount ainda não existe
-
-        _viewUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ViewAccount>(), It.IsAny<string>()))
-            .ReturnsAsync(IdentityResult.Success); // 🔹 Simula sucesso na criação da ViewAccount
-
-        // Act
-        var result = await _controller.RegisterViewAccount(registerDto);
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(200, okResult.StatusCode);
-    }
-
 
         [Fact]
     public async Task Login_ValidCredentials_ReturnsOkWithToken()

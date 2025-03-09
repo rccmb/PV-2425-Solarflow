@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 
@@ -55,18 +56,26 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("register-view")]
-    public async Task<IActionResult> RegisterViewAccount([FromBody] RegisterViewDTO model)
+  public async Task<IActionResult> RegisterViewAccount([FromBody] RegisterViewDTO model)
     {
-        // Verificar se o usuário principal existe
-        var user = await _userManager.FindByIdAsync(model.UserId.ToString());
+        var token = Request.Headers["Authorization"].ToString();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+          
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+           
+            var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
             return BadRequest("User not found.");
 
-        // Verificar se já existe uma ViewAccount associada
+        
         if (await _viewUserManager.FindByEmailAsync(user.Email) != null)
             return BadRequest("A ViewAccount is already registered for this user.");
 
-        // Criar a ViewAccount associada
+       
         var viewAccount = new ViewAccount
         {
             UserName = user.Email,
@@ -74,13 +83,14 @@ public class AuthenticationController : ControllerBase
             Name = $"{user.Fullname}'s View Account",
             UserId = user.Id 
         };
-
-        user.ViewAccount = viewAccount;
-
+            
         var viewResult = await _viewUserManager.CreateAsync(viewAccount, model.Password);
-        if (!viewResult.Succeeded)
+
+        Console.WriteLine(viewResult);
+            if (!viewResult.Succeeded)
             return BadRequest(viewResult.Errors);
 
+        user.ViewAccount = viewAccount;
         return Ok(new { message = "ViewAccount registered successfully!" });
     }
 
@@ -131,7 +141,8 @@ public class AuthenticationController : ControllerBase
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email)
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
