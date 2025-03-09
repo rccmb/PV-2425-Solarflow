@@ -42,6 +42,11 @@
 
         <a class="login-form-forgot-password" asp-action="AccountRecovery">Forgot Password?</a>
 
+        <div style="flex-direction: row; margin-top: 15px">
+            <input asp-for="RememberMe" type="checkbox"/>
+            <label class="authentication-form-label" style="padding-bottom: 15px;">Remember me?</label>
+        </div>
+
         <button type="submit" class="authentication-form-button background-blue">Login</button>
     </form>
 

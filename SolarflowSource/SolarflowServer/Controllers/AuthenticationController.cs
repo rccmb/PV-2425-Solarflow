@@ -50,7 +50,7 @@ public class AuthenticationController : ControllerBase
         if (user == null)
             return Unauthorized("Invalid credentials.");
 
-        var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+        var result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, false);
         if (!result.Succeeded)
             return Unauthorized("Invalid credentials.");
 

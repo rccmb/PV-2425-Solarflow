@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SolarflowClient.Models.ViewModels.Authentication;
 using SolarflowClient.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SolarflowClient.Controllers
 {
@@ -20,13 +21,20 @@ namespace SolarflowClient.Controllers
 
         public IActionResult Index()
         {
+            var token = Request.Cookies["AuthToken"];
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Authentication");
+            }
+
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            var token = HttpContext.Session.GetString("AuthToken");
+            var token = Request.Cookies["AuthToken"];
 
             if (!string.IsNullOrEmpty(token))
             {
@@ -35,9 +43,14 @@ namespace SolarflowClient.Controllers
                 await _httpClient.SendAsync(request);
             }
 
-            HttpContext.Session.Remove("AuthToken");
+            Response.Cookies.Delete("AuthToken");
 
             return RedirectToAction("Login", "Authentication");
+        }
+
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
