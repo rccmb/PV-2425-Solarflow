@@ -75,6 +75,8 @@ public class AuthenticationController : ControllerBase
             UserId = user.Id 
         };
 
+        user.ViewAccount = viewAccount;
+
         var viewResult = await _viewUserManager.CreateAsync(viewAccount, model.Password);
         if (!viewResult.Succeeded)
             return BadRequest(viewResult.Errors);

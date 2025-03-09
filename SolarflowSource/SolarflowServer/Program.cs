@@ -17,11 +17,16 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// IDENTITY CONFIGURATION VIEW
 builder.Services
-    .AddIdentity<ViewAccount, IdentityRole<int>>() 
+    .AddIdentityCore<ViewAccount>(options =>
+    {
+        options.User.RequireUniqueEmail = false; 
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<SignInManager<ViewAccount>>();
+
 
 // JWT AUTHENTICATION
 builder.Services.AddAuthentication(options =>
