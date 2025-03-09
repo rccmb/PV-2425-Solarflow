@@ -92,5 +92,75 @@ namespace SolarflowServer.Tests.Data
             // Assert
             Assert.Null(deletedUser); 
         }
+
+        [Fact]
+        public void Can_Create_User_With_ViewAccount()
+        {
+            // Arrange
+            var context = GetDbContext();
+            var user = new ApplicationUser
+            {
+                Id = 6,
+                Email = "user@example.com",
+                Fullname = "Test User"
+            };
+
+            var viewAccount = new ViewAccount
+            {
+                Id = 1,
+                Name = "Test View Account",
+                UserId = user.Id,
+                User = user
+            };
+
+            // Act
+            context.Users.Add(user);
+            context.ViewAccounts.Add(viewAccount);
+            context.SaveChanges();
+
+            var retrievedUser = context.Users.Include(u => u.ViewAccount).FirstOrDefault(u => u.Id == 6);
+
+            // Assert
+            Assert.NotNull(retrievedUser);
+            Assert.NotNull(retrievedUser.ViewAccount);
+            Assert.Equal("Test View Account", retrievedUser.ViewAccount.Name);
+        }
+
+        [Fact]
+        public void Deleting_User_Should_Delete_ViewAccount()
+        {
+            // Arrange
+            var context = GetDbContext();
+            var user = new ApplicationUser
+            {
+                Id = 99,
+                Email = "user@example.com",
+                Fullname = "Test User"
+            };
+
+            var viewAccount = new ViewAccount
+            {
+                Id = 2,
+                Name = "Test View Account",
+                UserId = user.Id,
+                User = user
+            };
+
+            context.Users.Add(user);
+            context.ViewAccounts.Add(viewAccount);
+            context.SaveChanges();
+
+            // Act
+            context.Users.Remove(user);
+            context.SaveChanges();
+
+            var retrievedViewAccount = context.ViewAccounts.Find(2);
+
+            // Assert
+            Assert.Null(retrievedViewAccount); 
+        }
+
+
+
     }
 }

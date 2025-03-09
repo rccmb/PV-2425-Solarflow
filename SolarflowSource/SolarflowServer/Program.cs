@@ -11,9 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 // DATABASE CONNECTION
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// IDENTITY CONFIGURATION
+// IDENTITY CONFIGURATION USER
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole<int>>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+// IDENTITY CONFIGURATION VIEW
+builder.Services
+    .AddIdentity<ViewAccount, IdentityRole<int>>() 
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 

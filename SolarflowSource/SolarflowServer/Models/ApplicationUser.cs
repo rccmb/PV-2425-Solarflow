@@ -11,5 +11,7 @@ public class ApplicationUser : IdentityUser<int>
 
     public string BatteryAPI { get; set; }
 
+    public ViewAccount ViewAccount { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
