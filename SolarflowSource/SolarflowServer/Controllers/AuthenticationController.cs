@@ -6,6 +6,8 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 
+namespace SolarflowServer.Controllers
+{
 [Route("api/auth")]
 [ApiController]
 public class AuthenticationController : ControllerBase
@@ -83,5 +85,6 @@ public class AuthenticationController : ControllerBase
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+}
 }
 
