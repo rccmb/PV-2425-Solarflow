@@ -1,12 +1,17 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SolarflowServer.Models;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
+
     public DbSet<ViewAccount> ViewAccounts { get; set; }
+
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -46,6 +51,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasDefaultValueSql("GETDATE()");
         });
 
+
         builder.Entity<ViewAccount>(entity =>
         {
             entity.ToTable("ViewAccounts");
@@ -54,6 +60,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .WithOne(u => u.ViewAccount)
                 .HasForeignKey<ViewAccount>(v => v.UserId)
                 .IsRequired(); 
+
+        // MAPPING THE AUDIT LOG.
+        builder.Entity<AuditLog>(entity =>
+        {
+            entity.ToTable("AuditLogs");
+            entity.Property(a => a.UserId).IsRequired();
+            entity.Property(a => a.Action).HasMaxLength(255).IsRequired();
+            entity.Property(a => a.Email).HasMaxLength(255).IsRequired();
+            entity.Property(a => a.IPAddress).HasMaxLength(50);
+            entity.Property(a => a.Timestamp).HasDefaultValueSql("GETDATE()");
+
         });
     }
 

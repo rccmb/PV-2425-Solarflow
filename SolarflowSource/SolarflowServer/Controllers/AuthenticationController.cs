@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
+using SolarflowServer.Services;
 
 namespace SolarflowServer.Controllers
 {
@@ -18,6 +19,8 @@ public class AuthenticationController : ControllerBase
     private readonly UserManager<ViewAccount> _viewUserManager;
     private readonly SignInManager<ViewAccount> _viewSignInManager;
     private readonly IConfiguration _configuration;
+    private readonly IAuditService _auditService;
+
 
     public AuthenticationController(
         UserManager<ApplicationUser> userManager,
@@ -25,12 +28,16 @@ public class AuthenticationController : ControllerBase
         UserManager<ViewAccount> viewUserManager,
         SignInManager<ViewAccount> viewSignInManager,
         IConfiguration configuration)
+
+    public AuthenticationController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IAuditService auditService)
+
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _viewUserManager = viewUserManager;
         _viewSignInManager = viewSignInManager;
         _configuration = configuration;
+        _auditService = auditService;
     }
 
         [HttpPost("register")]
@@ -51,6 +58,8 @@ public class AuthenticationController : ControllerBase
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
+
+        await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Registered", GetClientIPAddress());
 
         return Ok(new { message = "User registered successfully!" });
     }
@@ -116,6 +125,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized("Invalid credentials.");
         }
 
+
         var viewResult = await _viewSignInManager.PasswordSignInAsync(viewUser, model.Password, false, false);
         if (!viewResult.Succeeded)
         {
@@ -124,6 +134,12 @@ public class AuthenticationController : ControllerBase
 
         var viewToken = GenerateJWTToken(viewUser);
         return Ok(new { viewToken });
+
+        await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
+
+        var token = GenerateJWTToken(user);
+        return Ok(new { token });
+
     }
 
 
@@ -133,6 +149,13 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId != null)
+            await _auditService.LogAsync(userId, email, "User Logged Out", GetClientIPAddress());
+
         return Ok(new { message = "User logged out successfully!" });
     }
 
@@ -154,6 +177,11 @@ public class AuthenticationController : ControllerBase
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private string GetClientIPAddress()
+    {
+        return HttpContext.Connection.RemoteIpAddress?.ToString();
     }
 }
 }
