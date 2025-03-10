@@ -6,6 +6,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
+    public DbSet<ViewAccount> ViewAccounts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -34,10 +36,26 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasMaxLength(255)
                 .IsRequired(false);
 
+            entity.HasOne(u => u.ViewAccount) 
+                .WithOne(v => v.User)
+                .HasForeignKey<ViewAccount>(v => v.UserId) 
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.Property(u => u.CreatedAt)
                 .HasColumnName("created_at")
                 .HasDefaultValueSql("GETDATE()");
         });
+
+        builder.Entity<ViewAccount>(entity =>
+        {
+            entity.ToTable("ViewAccounts");
+
+            entity.HasOne(v => v.User) 
+                .WithOne(u => u.ViewAccount)
+                .HasForeignKey<ViewAccount>(v => v.UserId)
+                .IsRequired(); 
+        });
     }
+
 }
 

@@ -11,11 +11,22 @@ var builder = WebApplication.CreateBuilder(args);
 // DATABASE CONNECTION
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// IDENTITY CONFIGURATION
+// IDENTITY CONFIGURATION USER
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole<int>>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services
+    .AddIdentityCore<ViewAccount>(options =>
+    {
+        options.User.RequireUniqueEmail = false; 
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<SignInManager<ViewAccount>>();
+
 
 // JWT AUTHENTICATION
 builder.Services.AddAuthentication(options =>

@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Register View Account";
+}
+
+<div class="container">
+    <h2>Register View Account</h2>
+
+   
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="RegisterViewAccount" asp-controller="Home" method="post">
+        <div class="form-group">
+            <label for="Password">View Account Password</label>
+            <input type="password" class="form-control" id="Password" name="Password" required>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Create View Account</button>
+    </form>
+
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary mt-3">Back to Home</a>
+</div>
