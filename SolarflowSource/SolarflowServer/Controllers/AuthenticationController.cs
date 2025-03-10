@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
+using SolarflowServer.Services;
 
 [Route("api/auth")]
 [ApiController]
@@ -13,12 +14,14 @@ public class AuthenticationController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly IAuditService _auditService;
 
-    public AuthenticationController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
+    public AuthenticationController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IAuditService auditService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _auditService = auditService;
     }
 
     [HttpPost("register")]
@@ -40,6 +43,8 @@ public class AuthenticationController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
+        await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Registered", GetClientIPAddress());
+
         return Ok(new { message = "User registered successfully!" });
     }
 
@@ -54,6 +59,8 @@ public class AuthenticationController : ControllerBase
         if (!result.Succeeded)
             return Unauthorized("Invalid credentials.");
 
+        await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
+
         var token = GenerateJWTToken(user);
         return Ok(new { token });
     }
@@ -62,6 +69,13 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = User.FindFirstValue(ClaimTypes.Email);
+
+        if (userId != null)
+            await _auditService.LogAsync(userId, email, "User Logged Out", GetClientIPAddress());
+
         return Ok(new { message = "User logged out successfully!" });
     }
 
@@ -82,6 +96,11 @@ public class AuthenticationController : ControllerBase
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private string GetClientIPAddress()
+    {
+        return HttpContext.Connection.RemoteIpAddress?.ToString();
     }
 }
 
