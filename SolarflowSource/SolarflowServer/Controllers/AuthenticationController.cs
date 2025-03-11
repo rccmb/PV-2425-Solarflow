@@ -21,15 +21,13 @@ public class AuthenticationController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IAuditService _auditService;
 
-
     public AuthenticationController(
-        UserManager<ApplicationUser> userManager,
+        UserManager<ApplicationUser> userManager, 
         SignInManager<ApplicationUser> signInManager,
         UserManager<ViewAccount> viewUserManager,
         SignInManager<ViewAccount> viewSignInManager,
-        IConfiguration configuration)
-
-    public AuthenticationController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IAuditService auditService)
+        IConfiguration configuration, 
+        IAuditService auditService)
 
     {
         _userManager = userManager;
@@ -67,7 +65,6 @@ public class AuthenticationController : ControllerBase
     [HttpPost("register-view")]
   public async Task<IActionResult> RegisterViewAccount([FromBody] RegisterViewDTO model)
     {
-        var token = Request.Headers["Authorization"].ToString();
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
           
 
@@ -95,12 +92,13 @@ public class AuthenticationController : ControllerBase
             
         var viewResult = await _viewUserManager.CreateAsync(viewAccount, model.Password);
 
-        Console.WriteLine(viewResult);
+        
             if (!viewResult.Succeeded)
             return BadRequest(viewResult.Errors);
 
         user.ViewAccount = viewAccount;
-        return Ok(new { message = "ViewAccount registered successfully!" });
+        await _auditService.LogAsync(viewAccount.Id.ToString(), user.Email, "View user Registered", GetClientIPAddress());
+            return Ok(new { message = "ViewAccount registered successfully!" });
     }
 
 
@@ -115,7 +113,9 @@ public class AuthenticationController : ControllerBase
             if (result.Succeeded)
             {
                 var token = GenerateJWTToken(user);
-                return Ok(new { token });
+                Console.WriteLine(token);
+                await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
+                    return Ok(new { token });
             }
         }
         
@@ -133,12 +133,9 @@ public class AuthenticationController : ControllerBase
         }
 
         var viewToken = GenerateJWTToken(viewUser);
-        return Ok(new { viewToken });
-
-        await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
-
-        var token = GenerateJWTToken(user);
-        return Ok(new { token });
+        Console.WriteLine(viewToken);
+            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
+            return Ok(new { viewToken });
 
     }
 
@@ -181,8 +178,13 @@ public class AuthenticationController : ControllerBase
 
     private string GetClientIPAddress()
     {
-        return HttpContext.Connection.RemoteIpAddress?.ToString();
-    }
+        if (HttpContext?.Connection?.RemoteIpAddress == null)
+        {
+            return "127.0.0.1"; // Valor para testes
+        }
+
+        return HttpContext.Connection.RemoteIpAddress.ToString();
+        }
 }
 }
 

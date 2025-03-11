@@ -279,11 +279,10 @@ namespace SolarflowServer.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-<<<<<<<< HEAD:SolarflowSource/SolarflowServer/Migrations/20250309183552_InitialCreate.cs
-                name: "ViewAccounts");
-========
                 name: "AuditLogs");
->>>>>>>> 9f96fd6259b8aebf6b7e3a382d6d74e1fd061f42:SolarflowSource/SolarflowServer/Migrations/20250310101845_InitialCreate.cs
+
+            migrationBuilder.DropTable(
+                name: "ViewAccounts");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

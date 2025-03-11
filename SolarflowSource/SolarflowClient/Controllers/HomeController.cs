@@ -66,11 +66,7 @@ namespace SolarflowClient.Controllers
         [HttpPost]
         public async Task<IActionResult> RegisterViewAccount(string Password)
         {
-            var tokenJson = HttpContext.Session.GetString("AuthToken");
-            var tokenObj = JsonConvert.DeserializeObject<dynamic>(tokenJson);
-            var token = tokenObj?.token.ToString(); // Extraindo apenas o valor do token
-
-            
+            var token = Request.Cookies["AuthToken"];
 
 
             var requestData = new

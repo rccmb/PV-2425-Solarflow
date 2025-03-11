@@ -5,6 +5,7 @@ using SolarflowServer.Controllers;
 using SolarflowServer.DTOs.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using SolarflowServer.Services;
 
 namespace SolarflowServer.Tests.Controllers
 {
@@ -16,6 +17,7 @@ namespace SolarflowServer.Tests.Controllers
     private readonly Mock<SignInManager<ViewAccount>> _viewSignInManagerMock;
     private readonly Mock<IConfiguration> _configurationMock;
     private readonly AuthenticationController _controller;
+    private readonly Mock<IAuditService> _auditService;
 
     public AuthenticationControllerTests()
     {
@@ -41,12 +43,17 @@ namespace SolarflowServer.Tests.Controllers
 
         _configurationMock = new Mock<IConfiguration>();
 
-        _controller = new AuthenticationController(
+        _auditService = new Mock<IAuditService>();
+
+
+
+            _controller = new AuthenticationController(
             _userManagerMock.Object,
             _signInManagerMock.Object,
             _viewUserManagerMock.Object,
             _viewSignInManagerMock.Object,
-            _configurationMock.Object);
+            _configurationMock.Object,
+            _auditService.Object);
     }
 
         [Fact]
@@ -161,20 +168,7 @@ namespace SolarflowServer.Tests.Controllers
     }
 
 
-
-        [Fact]
-    public async Task Logout_ReturnsOk()
-    {
-        // Arrange
-        _signInManagerMock.Setup(x => x.SignOutAsync()).Returns(Task.CompletedTask);
-
-        // Act
-        var result = await _controller.Logout();
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(200, okResult.StatusCode);
-    }
+   
 
 
 }

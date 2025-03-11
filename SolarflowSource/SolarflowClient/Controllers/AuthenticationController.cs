@@ -76,9 +76,10 @@ public class AuthenticationController : Controller
 
         if (response.IsSuccessStatusCode)
         {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var jsonResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
-            var token = jsonResponse.token.ToString();
+            var token = await response.Content.ReadAsStringAsync();
+            //var responseContent = await response.Content.ReadAsStringAsync();
+            // var jsonResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
+            //var token = jsonResponse.token.ToString();
 
             var cookieOptions = new CookieOptions
             {

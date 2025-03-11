@@ -59,7 +59,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasOne(v => v.User) 
                 .WithOne(u => u.ViewAccount)
                 .HasForeignKey<ViewAccount>(v => v.UserId)
-                .IsRequired(); 
+                .IsRequired();
+        });
 
         // MAPPING THE AUDIT LOG.
         builder.Entity<AuditLog>(entity =>
