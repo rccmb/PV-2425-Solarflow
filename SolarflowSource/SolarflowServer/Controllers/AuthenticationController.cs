@@ -185,6 +185,6 @@ public class AuthenticationController : ControllerBase
 
         return HttpContext.Connection.RemoteIpAddress.ToString();
         }
-}
+    }
 }
 

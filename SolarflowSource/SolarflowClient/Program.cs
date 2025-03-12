@@ -12,9 +12,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Authentication/Login";  // Redirect to login page
-        options.LogoutPath = "/Authentication/Logout"; // Redirect to logout
-        options.AccessDeniedPath = "/Home/AccessDenied"; // Redirect if unauthorized
+        options.LoginPath = "/Authentication/Login";  
+        options.LogoutPath = "/Authentication/Logout"; 
+        options.AccessDeniedPath = "/Home/AccessDenied"; 
     });
 
 // HTTP CLIENT
