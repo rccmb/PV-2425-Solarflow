@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SolarflowServer.Services;
 
@@ -18,7 +17,7 @@ public class WindyController : ControllerBase
     public async Task<IActionResult> GetWeatherForecast([FromQuery] double lat, [FromQuery] double lon)
     {
         if (lat == 0 || lon == 0)
-            return BadRequest("Coordenadas inválidas");
+            return BadRequest();
 
         JObject weatherData;
         try
@@ -27,7 +26,7 @@ public class WindyController : ControllerBase
         }
         catch
         {
-            return StatusCode(500, "Erro ao obter dados meteorológicos.");
+            return StatusCode(500);
         }
 
         return Ok(weatherData);
