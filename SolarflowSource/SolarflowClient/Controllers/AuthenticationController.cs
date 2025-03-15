@@ -36,6 +36,7 @@ public class AuthenticationController : Controller
 
         if (response.IsSuccessStatusCode)
         {
+            TempData["SuccessMessage"] = "Registration successful! You can now log in.";
             return RedirectToAction("Login");
         }
 
