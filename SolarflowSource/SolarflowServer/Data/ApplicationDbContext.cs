@@ -12,6 +12,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    public DbSet<Battery> Batteries { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -72,6 +74,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(a => a.IPAddress).HasMaxLength(50);
             entity.Property(a => a.Timestamp).HasDefaultValueSql("GETDATE()");
 
+        });
+
+        // MAPPING THE BATTERY.
+        builder.Entity<Battery>(entity =>
+        {
+            entity.ToTable("Batteries");
+
+            entity.HasKey(b => b.ID);
+
+            entity.Property(b => b.Value)
+            .HasColumnName("value")
+            .HasDefaultValueSql("0")
+            .IsRequired();
+
+            entity.Property(b => b.UserId)
+            .HasColumnName("userId")
+            .IsRequired();
         });
     }
 
