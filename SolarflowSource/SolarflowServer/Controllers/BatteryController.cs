@@ -13,7 +13,7 @@ namespace SolarflowServer.Controllers
 {
     [Route("api/battery")]
     [ApiController]
-    [Authorize] // Requires authentication
+    [Authorize]
     public class BatteryController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -30,21 +30,10 @@ namespace SolarflowServer.Controllers
             if (battery == null)
                 return BadRequest("Dados inválidos para a bateria.");
 
-            var newBattery = new Battery
-            {
-                UserId = battery.UserId,
-                ApiKey = battery.ApiKey,
-                ChargeLevel = battery.ChargeLevel,
-                ChargingMode = battery.ChargingMode,
-                EmergencyMode = battery.EmergencyMode,
-                AutoOptimization = battery.AutoOptimization,
-                LastUpdate = battery.LastUpdate
-            };
-
-            _context.Batteries.Add(newBattery);
+            _context.Batteries.Add(battery);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetBatteryById), new { id = newBattery.ID }, newBattery);
+            return CreatedAtAction(nameof(GetBatteryById), new { id = battery.ID }, battery);
         }
 
 
