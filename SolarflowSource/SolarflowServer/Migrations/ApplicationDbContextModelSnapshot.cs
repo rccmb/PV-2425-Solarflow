@@ -295,19 +295,56 @@ namespace SolarflowServer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("userId");
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValue("")
+                        .HasColumnName("api_key");
 
-                    b.Property<int>("Value")
+                    b.Property<bool>("AutoOptimization")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("auto_optimization");
+
+                    b.Property<int>("ChargeLevel")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("value")
-                        .HasDefaultValueSql("0");
+                        .HasDefaultValue(0)
+                        .HasColumnName("charge_level");
+
+                    b.Property<string>("ChargingMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("")
+                        .HasColumnName("charging_mode");
+
+                    b.Property<bool>("EmergencyMode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("emergency_mode");
+
+                    b.Property<string>("LastUpdate")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("")
+                        .HasColumnName("last_update");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ApiKey")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Batteries", (string)null);
                 });
@@ -426,17 +463,6 @@ namespace SolarflowServer.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("SolarflowServer.Models.Battery", b =>
-                {
-                    b.HasOne("ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ViewAccount", b =>

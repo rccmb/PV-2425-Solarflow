@@ -12,11 +12,20 @@ namespace SolarflowServer.Models
         public int ID { get; set; }
 
         [Required]
-        public int Value { get; set; }
+        public int UserId { get; set; }
 
-        public int? UserId { get; set; }
+        [Required]
+        public string ApiKey { get; set; }
 
-        [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; }
+        [Required]
+        public int ChargeLevel { get; set; }
+
+        public string ChargingMode { get; set; }
+
+        public bool EmergencyMode { get; set; }
+
+        public bool AutoOptimization { get; set; }
+
+        public string LastUpdate { get; set; }
     }
 }
