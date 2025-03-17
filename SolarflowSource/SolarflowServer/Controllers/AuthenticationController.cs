@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.Services;
+using SolarflowServer.Models;
 
 namespace SolarflowServer.Controllers
 {
@@ -21,13 +22,16 @@ public class AuthenticationController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IAuditService _auditService;
 
+    private readonly ApplicationDbContext _context;
+
     public AuthenticationController(
         UserManager<ApplicationUser> userManager, 
         SignInManager<ApplicationUser> signInManager,
         UserManager<ViewAccount> viewUserManager,
         SignInManager<ViewAccount> viewSignInManager,
         IConfiguration configuration, 
-        IAuditService auditService)
+        IAuditService auditService,
+        ApplicationDbContext context)
 
     {
         _userManager = userManager;
@@ -36,6 +40,7 @@ public class AuthenticationController : ControllerBase
         _viewSignInManager = viewSignInManager;
         _configuration = configuration;
         _auditService = auditService;
+        _context = context;
     }
 
         [HttpPost("register")]
@@ -56,6 +61,22 @@ public class AuthenticationController : ControllerBase
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
+
+        var battery = new Battery
+        {
+            UserId = user.Id,
+            ApiKey = Guid.NewGuid().ToString(),
+            ChargeLevel = 0,
+            ChargingSource = "Solar",
+            BatteryMode = "Personalized",
+            MinimalTreshold = 0,
+            MaximumTreshold = 100,
+            SpendingStartTime = "00:00",
+            SpendingEndTime = "09:00",
+            LastUpdate = new DateTime().ToString(),
+        };
+
+        _context.Batteries.Add(battery);
 
         await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Registered", GetClientIPAddress());
 
