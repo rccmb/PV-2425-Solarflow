@@ -24,7 +24,7 @@ namespace SolarflowServer.Controllers
         }
 
         // Create a new battery
-        [HttpPost]
+        [HttpPost("create-battery")]
         public async Task<IActionResult> CreateBattery([FromBody] Battery battery)
         {
             if (battery == null)
@@ -38,7 +38,7 @@ namespace SolarflowServer.Controllers
 
 
         // Get all batteries
-        [HttpGet]
+        [HttpGet("get-all-batteries")]
         public async Task<IActionResult> GetAllBatteries()
         {
             var batteries = await _context.Batteries.ToListAsync();
@@ -46,8 +46,8 @@ namespace SolarflowServer.Controllers
         }
 
         // Get a single battery by ID
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetBatteryById(int id)
+        [HttpGet("get-one-battery")]
+        public async Task<IActionResult> GetBatteryById([FromQuery] int id)
         {
             var battery = await _context.Batteries.FindAsync(id);
             if (battery == null)
@@ -57,7 +57,7 @@ namespace SolarflowServer.Controllers
         }
 
         // Update a battery
-        [HttpPut("{id}")]
+        [HttpPut("update-battery")]
         public async Task<IActionResult> UpdateBattery(int id, [FromBody] Battery updatedBattery)
         {
             var battery = await _context.Batteries.FindAsync(id);
@@ -77,7 +77,7 @@ namespace SolarflowServer.Controllers
         }
 
         // Delete a battery
-        [HttpDelete("{id}")]
+        [HttpDelete("delete-battery")]
         public async Task<IActionResult> DeleteBattery(int id)
         {
             var battery = await _context.Batteries.FindAsync(id);
