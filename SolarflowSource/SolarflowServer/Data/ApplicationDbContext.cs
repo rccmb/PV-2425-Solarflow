@@ -12,6 +12,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    public DbSet<Battery> Batteries { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -72,6 +74,49 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(a => a.IPAddress).HasMaxLength(50);
             entity.Property(a => a.Timestamp).HasDefaultValueSql("GETDATE()");
 
+        });
+
+        // MAPPING THE BATTERY.
+        builder.Entity<Battery>(entity =>
+        {
+            entity.ToTable("Batteries");
+
+            entity.HasKey(b => b.ID);
+
+            entity.Property(b => b.UserId)
+            .HasColumnName("user_id")
+            .IsRequired();
+
+            entity.HasIndex(b => b.UserId)
+            .IsUnique();
+
+            entity.Property(b => b.ApiKey)
+            .HasColumnName("api_key")
+            .HasDefaultValue("")
+            .IsRequired();
+
+            entity.HasIndex(b => b.ApiKey)
+            .IsUnique();
+
+            entity.Property(b => b.ChargeLevel)
+            .HasColumnName("charge_level")
+            .HasDefaultValue(0);
+
+            entity.Property(b => b.ChargingMode)
+            .HasColumnName("charging_mode")
+            .HasDefaultValue("");
+
+            entity.Property(b => b.EmergencyMode)
+            .HasColumnName("emergency_mode")
+            .HasDefaultValue(false);
+
+            entity.Property(b => b.AutoOptimization)
+            .HasColumnName("auto_optimization")
+            .HasDefaultValue(false);
+
+            entity.Property(b => b.LastUpdate)
+            .HasColumnName("last_update")
+            .HasDefaultValue("");
         });
     }
 
