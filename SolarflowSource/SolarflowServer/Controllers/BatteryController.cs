@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SolarflowServer.Models;
+using System.Security.Claims;
 
 
 
@@ -91,6 +92,24 @@ namespace SolarflowServer.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Battery deleted successfully." });
+        }
+
+        [HttpPost("get-user-battery")]
+        public async Task<IActionResult> GetUserBattery()
+        {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var battery = await _context.Batteries.FindAsync("user_Id");
+            if (battery == null)
+                return NotFound("Battery not found.");
+
+            return Ok(battery);
         }
     }
 }
