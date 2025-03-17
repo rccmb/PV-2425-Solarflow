@@ -9,3 +9,70 @@
 <link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 <h1 class="page-title">Battery</h1>
+
+<div class="page-content">
+    <div class="battery-container">
+        <div class="battery-info">
+            <h2 class="battery-info-title">Battery Information</h2>
+            <div class="battery-info-content">
+                <p class="battery-info-content-text">Battery ID: 1</p>
+                <p class="battery-info-content-text">Battery Capacity: 1000 kWh</p>
+            </div>
+        </div>
+        <br />
+
+        <form method="post" action="/Battery/SaveConfigurations">
+            <div class="battery-configurations">
+                <h2 class="battery-actions-title">Battery Configurations</h2>
+                <div class="battery-actions-content">
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Battery Mode</label>
+                        <select class="authentication-form-text-input" name="BatteryMode">
+                            <option value="personalized">Personalized</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Charging Source</label>
+                        <select class="authentication-form-text-input" name="ChargingSource">
+                            <option value="solar">Solar</option>
+                            <option value="grid">Grid</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Minimal Threshold</label>
+                        <input class="authentication-form-text-input" type="number" name="MinThreshold" min="0" max="100" />
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Maximal Threshold</label>
+                        <input class="authentication-form-text-input" type="number" name="MaxThreshold" min="0" max="100" />
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Charging Schedules</label>
+                        <div class="authentication-input-div">
+                            <label class="authentication-form-label">Start Time</label>
+                            <input class="authentication-form-text-input" type="time" name="StartTime" />
+
+                            <label class="authentication-form-label">End Time</label>
+                            <input class="authentication-form-text-input" type="time" name="EndTime" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="battery-actions">
+                <div class="authentication-input-div">
+                    <button type="submit" class="battery-actions-button background-blue">Save</button>
+                    <button type="reset" class="battery-actions-button background-red">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
