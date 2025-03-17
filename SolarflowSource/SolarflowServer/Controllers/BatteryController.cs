@@ -67,9 +67,12 @@ namespace SolarflowServer.Controllers
             battery.UserId = updatedBattery.UserId;
             battery.ApiKey = updatedBattery.ApiKey;
             battery.ChargeLevel = updatedBattery.ChargeLevel;
-            battery.ChargingMode = updatedBattery.ChargingMode;
-            battery.EmergencyMode = updatedBattery.EmergencyMode;
-            battery.AutoOptimization = updatedBattery.AutoOptimization;
+            battery.ChargingSource = updatedBattery.ChargingSource;
+            battery.BatteryMode = updatedBattery.BatteryMode;
+            battery.MinimalTreshold = updatedBattery.MinimalTreshold;
+            battery.MaximumTreshold = updatedBattery.MaximumTreshold;
+            battery.SpendingStartTime = updatedBattery.SpendingStartTime;
+            battery.SpendingEndTime = updatedBattery.SpendingEndTime;
             battery.LastUpdate = updatedBattery.LastUpdate;
 
             await _context.SaveChangesAsync();

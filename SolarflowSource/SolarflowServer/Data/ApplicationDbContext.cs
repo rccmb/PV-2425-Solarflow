@@ -102,17 +102,29 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasColumnName("charge_level")
             .HasDefaultValue(0);
 
-            entity.Property(b => b.ChargingMode)
-            .HasColumnName("charging_mode")
+            entity.Property(b => b.ChargingSource)
+            .HasColumnName("charging_source")
             .HasDefaultValue("");
 
-            entity.Property(b => b.EmergencyMode)
-            .HasColumnName("emergency_mode")
-            .HasDefaultValue(false);
+            entity.Property(b => b.BatteryMode)
+            .HasColumnName("battery_mode")
+            .HasDefaultValue("");
 
-            entity.Property(b => b.AutoOptimization)
-            .HasColumnName("auto_optimization")
-            .HasDefaultValue(false);
+            entity.Property(b => b.MinimalTreshold)
+            .HasColumnName("minimal_treshold")
+            .HasDefaultValue(0);
+
+            entity.Property(b => b.MaximumTreshold)
+            .HasColumnName("maximum_treshold")
+            .HasDefaultValue(100);
+
+            entity.Property(b => b.SpendingStartTime)
+            .HasColumnName("spending_start_time")
+            .HasDefaultValue("00:00");
+
+            entity.Property(b => b.SpendingEndTime)
+            .HasColumnName("spending_end_time")
+            .HasDefaultValue("09:00");
 
             entity.Property(b => b.LastUpdate)
             .HasColumnName("last_update")

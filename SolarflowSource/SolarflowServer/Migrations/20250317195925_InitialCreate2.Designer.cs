@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250316162119_InitialCreate2")]
+    [Migration("20250317195925_InitialCreate2")]
     partial class InitialCreate2
     {
         /// <inheritdoc />
@@ -305,11 +305,12 @@ namespace SolarflowServer.Migrations
                         .HasDefaultValue("")
                         .HasColumnName("api_key");
 
-                    b.Property<bool>("AutoOptimization")
+                    b.Property<string>("BatteryMode")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("auto_optimization");
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("")
+                        .HasColumnName("battery_mode");
 
                     b.Property<int>("ChargeLevel")
                         .ValueGeneratedOnAdd()
@@ -317,18 +318,12 @@ namespace SolarflowServer.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("charge_level");
 
-                    b.Property<string>("ChargingMode")
+                    b.Property<string>("ChargingSource")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("")
-                        .HasColumnName("charging_mode");
-
-                    b.Property<bool>("EmergencyMode")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("emergency_mode");
+                        .HasColumnName("charging_source");
 
                     b.Property<string>("LastUpdate")
                         .IsRequired()
@@ -336,6 +331,32 @@ namespace SolarflowServer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("")
                         .HasColumnName("last_update");
+
+                    b.Property<int>("MaximumTreshold")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(100)
+                        .HasColumnName("maximum_treshold");
+
+                    b.Property<int>("MinimalTreshold")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("minimal_treshold");
+
+                    b.Property<string>("SpendingEndTime")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("09:00")
+                        .HasColumnName("spending_end_time");
+
+                    b.Property<string>("SpendingStartTime")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("00:00")
+                        .HasColumnName("spending_start_time");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int")
