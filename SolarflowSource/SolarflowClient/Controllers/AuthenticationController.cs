@@ -36,6 +36,7 @@ public class AuthenticationController : Controller
 
         if (response.IsSuccessStatusCode)
         {
+            TempData["SuccessMessage"] = "Registration successful! You can now log in.";
             return RedirectToAction("Login");
         }
 
@@ -53,6 +54,13 @@ public class AuthenticationController : Controller
 
     public IActionResult Login()
     {
+        var token = Request.Cookies["AuthToken"];
+
+        if(!string.IsNullOrEmpty(token))
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
         return View();
     }
 
@@ -70,7 +78,18 @@ public class AuthenticationController : Controller
         if (response.IsSuccessStatusCode)
         {
             var token = await response.Content.ReadAsStringAsync();
-            HttpContext.Session.SetString("AuthToken", token);
+            //var responseContent = await response.Content.ReadAsStringAsync();
+            // var jsonResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
+            //var token = jsonResponse.token.ToString();
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                Expires = model.RememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddHours(1)
+            };
+
+            Response.Cookies.Append("AuthToken", token, cookieOptions);
             return RedirectToAction("Index", "Home");
         }
 

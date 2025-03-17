@@ -1,0 +1,13 @@
+﻿.alert {
+    color: white;
+    font-weight: bolder;
+    margin-top: 20px;
+}
+
+.alert-success {
+    background-color: green;
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: black;
+    padding: 20px;
+}

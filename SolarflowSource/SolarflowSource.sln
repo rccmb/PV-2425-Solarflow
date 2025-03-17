@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarflowClient", "Solarflo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarflowServer", "SolarflowServer\SolarflowServer.csproj", "{F3A06363-8705-9DDE-55EB-BECF803C29A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarflowServer.Tests", "SolarflowServer.Tests\SolarflowServer.Tests.csproj", "{14772E2D-8A29-4B53-9390-8FFAD87E511F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarflowClient.UI.Tests", "SolarflowClient.Tests\SolarflowClient.UI.Tests.csproj", "{671B5CFA-E4FA-49E3-837C-A94C7DA6EBDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{F3A06363-8705-9DDE-55EB-BECF803C29A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3A06363-8705-9DDE-55EB-BECF803C29A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3A06363-8705-9DDE-55EB-BECF803C29A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14772E2D-8A29-4B53-9390-8FFAD87E511F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14772E2D-8A29-4B53-9390-8FFAD87E511F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14772E2D-8A29-4B53-9390-8FFAD87E511F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14772E2D-8A29-4B53-9390-8FFAD87E511F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{671B5CFA-E4FA-49E3-837C-A94C7DA6EBDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{671B5CFA-E4FA-49E3-837C-A94C7DA6EBDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{671B5CFA-E4FA-49E3-837C-A94C7DA6EBDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{671B5CFA-E4FA-49E3-837C-A94C7DA6EBDE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // CONTAINER
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Authentication/Login";  
+        options.LogoutPath = "/Authentication/Logout"; 
+        options.AccessDeniedPath = "/Home/AccessDenied"; 
+    });
 
 // HTTP CLIENT
 builder.Services.AddHttpClient<AuthenticationController>();
@@ -37,5 +46,15 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Authentication}/{action=Login}/{id?}");
+
+app.Use(async (context, next) =>
+{
+    var token = context.Request.Cookies["AuthToken"];
+    if (!string.IsNullOrEmpty(token))
+    {
+        context.Request.Headers.Append("Authorization", "Bearer " + token);
+    }
+    await next();
+});
 
 app.Run();

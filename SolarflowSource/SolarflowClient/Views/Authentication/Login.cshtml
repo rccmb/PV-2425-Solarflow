@@ -9,8 +9,16 @@
 <link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/authentication/authentication-login.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 <body class="authentication-body">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
     <div style="margin-top: 30px">
         <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
         <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
@@ -41,6 +49,11 @@
         </div>
 
         <a class="login-form-forgot-password" asp-action="AccountRecovery">Forgot Password?</a>
+
+        <div style="flex-direction: row; margin-top: 15px">
+            <input asp-for="RememberMe" type="checkbox"/>
+            <label class="authentication-form-label" style="padding-bottom: 15px;">Remember me?</label>
+        </div>
 
         <button type="submit" class="authentication-form-button background-blue">Login</button>
     </form>
