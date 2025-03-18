@@ -7,6 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using SolarflowServer.Models;
 using System.Security.Claims;
+using System.Net.Http;
+using Microsoft.AspNetCore.Identity;
+using SolarflowServer.DTOs.SolarflowServer.DTOs; // Make sure to import the DTO
 
 
 
@@ -18,10 +21,13 @@ namespace SolarflowServer.Controllers
     public class BatteryController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public BatteryController(ApplicationDbContext context)
+        public BatteryController(ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // Create a new battery
@@ -97,19 +103,43 @@ namespace SolarflowServer.Controllers
         [HttpPost("get-user-battery")]
         public async Task<IActionResult> GetUserBattery()
         {
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
+            var userEmail = Request.Cookies["UserEmail"];  // Fetch UserEmail from the cookie
+            if (string.IsNullOrEmpty(userEmail))
             {
-                return Unauthorized();
+                return Unauthorized("User email not found.");
             }
 
-            var battery = await _context.Batteries.FindAsync("user_Id");
-            if (battery == null)
-                return NotFound("Battery not found.");
+            var user = await _userManager.FindByEmailAsync(userEmail); // Find user by email
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
 
-            return Ok(battery);
+            var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == user.Id); // Fetch battery by UserId
+            if (battery == null)
+            {
+                return NotFound("Battery not found.");
+            }
+
+            // Map Battery model to GetBatteryDto
+            var batteryDto = new GetBatteryDto
+            {
+                ID = battery.ID,
+                UserId = battery.UserId,
+                ApiKey = battery.ApiKey,
+                ChargeLevel = battery.ChargeLevel,
+                ChargingSource = battery.ChargingSource,
+                BatteryMode = battery.BatteryMode,
+                MinimalTreshold = battery.MinimalTreshold,
+                MaximumTreshold = battery.MaximumTreshold,
+                SpendingStartTime = battery.SpendingStartTime,
+                SpendingEndTime = battery.SpendingEndTime,
+                LastUpdate = battery.LastUpdate
+            };
+
+            return Ok(batteryDto); // Return the battery info as a DTO
         }
+
+
     }
 }

@@ -4,7 +4,10 @@
 @{
     ViewData["Title"] = "Battery Page";
     var authToken = Context.Request.Cookies["AuthToken"];
+    var userId = Context.Request.Cookies["UserEmail"];
 }
+@model SolarflowClient.Models.ViewModels.Battery.GetBatteryViewModel
+
 
 <link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
@@ -15,8 +18,10 @@
         <div class="battery-info">
             <h2 class="battery-info-title">Battery Information</h2>
             <div class="battery-info-content">
-                <p class="battery-info-content-text">Battery ID: 1</p>
-                <p class="battery-info-content-text">Battery Capacity: 1000 kWh</p>
+                <p>Welcome, @ViewData["UserEmail"]!</p>
+                <pre>@Json.Serialize(Model)</pre>
+
+                <p class="battery-info-content-text">Battery Capacity: @Model.ChargeLevel</p>
             </div>
         </div>
         <br />

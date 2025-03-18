@@ -55,8 +55,8 @@ public class AuthenticationController : Controller
     public IActionResult Login()
     {
         var token = Request.Cookies["AuthToken"];
-
-        if(!string.IsNullOrEmpty(token))
+        
+        if (!string.IsNullOrEmpty(token))
         {
             return RedirectToAction("Index", "Home");
         }
@@ -85,11 +85,16 @@ public class AuthenticationController : Controller
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = false,
                 Expires = model.RememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddHours(1)
             };
 
+            var email = model.Email;
+
+            Response.Cookies.Append("UserEmail", email, cookieOptions);
+
             Response.Cookies.Append("AuthToken", token, cookieOptions);
+
             return RedirectToAction("Index", "Home");
         }
 

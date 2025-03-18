@@ -66,7 +66,7 @@ public class AuthenticationController : ControllerBase
         {
             UserId = user.Id,
             ApiKey = Guid.NewGuid().ToString(),
-            ChargeLevel = 0,
+            ChargeLevel = 40,
             ChargingSource = "Solar",
             BatteryMode = "Personalized",
             MinimalTreshold = 0,

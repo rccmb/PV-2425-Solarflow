@@ -19,10 +19,43 @@ namespace SolarflowClient.Controllers
             _httpClient.BaseAddress = new Uri("https://localhost:7280/api/battery/");
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var authToken = Request.Cookies["AuthToken"];
+            var userEmail = Request.Cookies["UserEmail"];
+
+            if (string.IsNullOrEmpty(authToken) || string.IsNullOrEmpty(userEmail))
+            {
+                // Redirect to login if no auth token or user email is found
+                return RedirectToAction("Login", "Account");
+            }
+
+            var battery = new GetBatteryViewModel(); // Initialize an empty model
+
+            try
+            {
+                var response = await _httpClient.PostAsync("get-user-battery", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    battery = JsonConvert.DeserializeObject<GetBatteryViewModel>(content);
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = $"Error: {response.StatusCode} - {response.ReasonPhrase}";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to retrieve battery: {ex.Message}";
+            }
+
+            return View(battery); // Pass the battery data to the view
         }
+
+
+
 
         [HttpPost]
         public async Task<IActionResult> CreateBattery(CreateBatteryViewModel model)
@@ -81,6 +114,7 @@ namespace SolarflowClient.Controllers
 
         public async Task<IActionResult> GetBatteryById(int id)
         {
+
             if (id <= 0)
             {
                 return BadRequest("Invalid battery ID.");
@@ -107,6 +141,43 @@ namespace SolarflowClient.Controllers
 
             return View();
         }
+
+        public IActionResult Dashboard()
+        {
+            var userEmail = Request.Cookies["UserEmail"];
+            ViewData["UserEmail"] = userEmail; // Pass to the view
+            return View();
+        }
+
+        public async Task<IActionResult> GetUserBattery()
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync("get-user-battery", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var battery = JsonConvert.DeserializeObject<GetBatteryViewModel>(content);
+
+                    return View("UserBattery", battery); // Return data to a view
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = $"Error: {response.StatusCode} - {response.ReasonPhrase}";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to retrieve battery: {ex.Message}";
+            }
+
+            return View("UserBattery", null);
+        }
+
+
+
+
 
     }
 }
