@@ -100,32 +100,40 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Battery deleted successfully." });
         }
 
-        [HttpPost("get-user-battery")]
+        [HttpGet("get-user-battery")]
+        [Authorize] // Ensure this is set to enforce authentication
         public async Task<IActionResult> GetUserBattery()
         {
-            var userEmail = Request.Cookies["UserEmail"];  // Fetch UserEmail from the cookie
-            if (string.IsNullOrEmpty(userEmail))
+            var authHeader = Request.Headers["Authorization"].ToString();
+            Console.WriteLine($"Received Auth Header: {authHeader}");
+
+            if (string.IsNullOrEmpty(authHeader))
             {
-                return Unauthorized("User email not found.");
+                return Unauthorized("Missing Authorization header.");
             }
 
-            var user = await _userManager.FindByEmailAsync(userEmail); // Find user by email
-            if (user == null)
+            // Print all claims for debugging
+            foreach (var claim in User.Claims)
             {
-                return Unauthorized("User not found.");
+                Console.WriteLine($"Claim: {claim.Type} - {claim.Value}");
             }
 
-            var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == user.Id); // Fetch battery by UserId
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == userId);
             if (battery == null)
             {
                 return NotFound("Battery not found.");
             }
 
-            // Map Battery model to GetBatteryDto
             var batteryDto = new GetBatteryDto
             {
                 ID = battery.ID,
-                UserId = battery.UserId,
+                UserId = userId,
                 ApiKey = battery.ApiKey,
                 ChargeLevel = battery.ChargeLevel,
                 ChargingSource = battery.ChargingSource,
@@ -137,8 +145,10 @@ namespace SolarflowServer.Controllers
                 LastUpdate = battery.LastUpdate
             };
 
-            return Ok(batteryDto); // Return the battery info as a DTO
+            return Ok(batteryDto);
         }
+
+
 
 
     }

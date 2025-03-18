@@ -26,33 +26,59 @@ namespace SolarflowClient.Controllers
 
             if (string.IsNullOrEmpty(authToken) || string.IsNullOrEmpty(userEmail))
             {
-                // Redirect to login if no auth token or user email is found
                 return RedirectToAction("Login", "Account");
             }
 
-            var battery = new GetBatteryViewModel(); // Initialize an empty model
+            // Ensure the Authorization header is set correctly
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
 
             try
             {
-                var response = await _httpClient.PostAsync("get-user-battery", null);
+                var response = await _httpClient.GetAsync("get-user-battery");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    battery = JsonConvert.DeserializeObject<GetBatteryViewModel>(content);
+                    var battery = JsonConvert.DeserializeObject<GetBatteryViewModel>(content);
+                    ViewData["UserEmail"] = userEmail;
+                    return View(battery);
                 }
-                else
-                {
-                    TempData["ErrorMessage"] = $"Error: {response.StatusCode} - {response.ReasonPhrase}";
-                }
+
+                // Log and display errors
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                TempData["ErrorMessage"] = $"API Error: {response.StatusCode} - {response.ReasonPhrase}. Response: {errorMessage}";
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Failed to retrieve battery: {ex.Message}";
             }
 
-            return View(battery); // Pass the battery data to the view
+            return View(new GetBatteryViewModel());
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -153,7 +179,7 @@ namespace SolarflowClient.Controllers
         {
             try
             {
-                var response = await _httpClient.PostAsync("get-user-battery", null);
+                var response = await _httpClient.GetAsync("get-user-battery");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -174,10 +200,5 @@ namespace SolarflowClient.Controllers
 
             return View("UserBattery", null);
         }
-
-
-
-
-
     }
 }

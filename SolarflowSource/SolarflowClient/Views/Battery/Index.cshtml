@@ -3,11 +3,20 @@
 *@
 @{
     ViewData["Title"] = "Battery Page";
-    var authToken = Context.Request.Cookies["AuthToken"];
-    var userId = Context.Request.Cookies["UserEmail"];
+    var userEmail = Context.Request.Cookies["UserEmail"];
 }
 @model SolarflowClient.Models.ViewModels.Battery.GetBatteryViewModel
 
+<link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+
+<h1 class="page-title">Battery</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
 
 <link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
