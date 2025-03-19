@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SolarflowServer.DTOs;
 using SolarflowServer.DTOs.SolarflowServer.DTOs;
 using SolarflowServer.Models;
+using SolarflowServer.Services;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -14,10 +15,12 @@ using System.Threading.Tasks;
 public class BatteryController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IAuditService _auditService;
 
-    public BatteryController(ApplicationDbContext context)
+    public BatteryController(ApplicationDbContext context, IAuditService auditService)
     {
         _context = context;
+        _auditService = auditService;
     }
 
     [HttpGet("get-battery")]
@@ -44,8 +47,12 @@ public class BatteryController : ControllerBase
             .FirstOrDefaultAsync();
 
         if (battery == null)
+        {
+            await _auditService.LogAsync(userId, "Battery Access", "Failed - Not Found", GetClientIPAddress());
             return NotFound(new { error = "Battery not found" });
+        }
 
+        await _auditService.LogAsync(userId, "Battery Access", "Success", GetClientIPAddress());
         return Ok(battery);
     }
 
@@ -61,7 +68,10 @@ public class BatteryController : ControllerBase
 
         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == parsedUserId);
         if (battery == null)
+        {
+            await _auditService.LogAsync(userId, "Battery Update", "Failed - Not Found", GetClientIPAddress());
             return NotFound(new { error = "Battery not found" });
+        }
 
         battery.ChargingSource = model.ChargingSource;
         battery.BatteryMode = model.BatteryMode;
@@ -74,9 +84,18 @@ public class BatteryController : ControllerBase
         _context.Batteries.Update(battery);
         await _context.SaveChangesAsync();
 
+        await _auditService.LogAsync(userId, "Battery Update", "Success", GetClientIPAddress());
         return Ok(new { message = "Battery settings updated successfully!" });
     }
 
+    private string GetClientIPAddress()
+    {
+        if (HttpContext?.Connection?.RemoteIpAddress == null)
+        {
+            return "127.0.0.1"; // Default for testing
+        }
+        return HttpContext.Connection.RemoteIpAddress.ToString();
+    }
 }
 
 
