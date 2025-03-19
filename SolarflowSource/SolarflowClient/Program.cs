@@ -15,7 +15,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Authentication/Login";  
         options.LogoutPath = "/Authentication/Logout"; 
         options.AccessDeniedPath = "/Home/AccessDenied"; 
-    });
+    }); 
 
 // HTTP CLIENT
 builder.Services.AddHttpClient<AuthenticationController>();
@@ -42,9 +42,6 @@ app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseMiddleware<UserEmailMiddleware>();
-
 
 app.MapControllerRoute(
     name: "default",

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SolarflowServer.Models;
 using System;
 
 public class ApplicationUser : IdentityUser<int>
@@ -9,9 +10,9 @@ public class ApplicationUser : IdentityUser<int>
 
     public bool ConfirmedEmail { get; set; } = false;
 
-    public string BatteryAPI { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public Battery Battery { get; set; }
 
     public ViewAccount ViewAccount { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

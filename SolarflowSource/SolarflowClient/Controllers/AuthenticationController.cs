@@ -78,9 +78,6 @@ public class AuthenticationController : Controller
         if (response.IsSuccessStatusCode)
         {
             var token = await response.Content.ReadAsStringAsync();
-            //var responseContent = await response.Content.ReadAsStringAsync();
-            // var jsonResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
-            //var token = jsonResponse.token.ToString();
 
             var cookieOptions = new CookieOptions
             {
@@ -108,10 +105,4 @@ public class AuthenticationController : Controller
     {
         return View();
     }
-
-    //[HttpPost]
-    //public async Task<IActionResult> AccountRecovery(AccountRecoveryViewModel model)
-    //{
-    //    // TODO: Implement account recovery.
-    //}
 }

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SolarflowClient.Models;
-using SolarflowClient.Models.ViewModels.Authentication;
 using SolarflowClient.Models.ViewModels.Battery;
 using System.Net.Http;
 using System.Text;
@@ -21,184 +19,53 @@ namespace SolarflowClient.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var authToken = Request.Cookies["AuthToken"];
-            var userEmail = Request.Cookies["UserEmail"];
-
-            if (string.IsNullOrEmpty(authToken) || string.IsNullOrEmpty(userEmail))
+            var token = Request.Cookies["AuthToken"];
+            if (string.IsNullOrEmpty(token))
             {
-                return RedirectToAction("Login", "Account");
+                TempData["ErrorMessage"] = "You must be logged in to view battery information.";
+                return RedirectToAction("Login", "Authentication");
             }
 
-            // Ensure the Authorization header is set correctly
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "get-battery");
+            requestMessage.Headers.Add("Authorization", $"Bearer {token}");
 
-            try
+            var response = await _httpClient.SendAsync(requestMessage);
+            if (response.IsSuccessStatusCode)
             {
-                var response = await _httpClient.GetAsync("get-user-battery");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var battery = JsonConvert.DeserializeObject<GetBatteryViewModel>(content);
-                    ViewData["UserEmail"] = userEmail;
-                    return View(battery);
-                }
-
-                // Log and display errors
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                TempData["ErrorMessage"] = $"API Error: {response.StatusCode} - {response.ReasonPhrase}. Response: {errorMessage}";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Failed to retrieve battery: {ex.Message}";
-            }
-
-            return View(new GetBatteryViewModel());
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        [HttpPost]
-        public async Task<IActionResult> CreateBattery(CreateBatteryViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
+                var batteryData = await response.Content.ReadAsStringAsync();
+                var model = JsonConvert.DeserializeObject<GetBatteryViewModel>(batteryData);
                 return View(model);
             }
 
-            try
-            {
-                var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync("create-battery", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    TempData["SuccessMessage"] = "Battery created successfully!";
-                    return RedirectToAction("Index");
-                }
-
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                var errors = JsonConvert.DeserializeObject<List<ErrorDetail>>(errorMessage) ?? new List<ErrorDetail>();
-
-                foreach (var error in errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, $"An error occurred: {ex.Message}");
-            }
-
-            return View(model);
+            TempData["ErrorMessage"] = "Error fetching battery data.";
+            return RedirectToAction("Index", "Home");
         }
 
-        public async Task<IActionResult> GetAllBatteries()
+        [HttpPost]
+        public async Task<IActionResult> UpdateBattery(GetBatteryViewModel model)
         {
-            try
+            var token = Request.Cookies["AuthToken"];
+            if (string.IsNullOrEmpty(token))
             {
-                var response = await _httpClient.GetAsync("get-all-batteries");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var batteries = JsonConvert.DeserializeObject<List<GetBatteryViewModel>>(content) ?? new List<GetBatteryViewModel>();
-                    return View(batteries);
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Failed to retrieve batteries: {ex.Message}";
+                TempData["ErrorMessage"] = "You must be logged in to update battery settings.";
+                return RedirectToAction("Login", "Authentication");
             }
 
-            return View(new List<GetBatteryViewModel>());
-        }
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "update-battery");
+            requestMessage.Headers.Add("Authorization", $"Bearer {token}");
+            var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+            requestMessage.Content = content;
 
-        public async Task<IActionResult> GetBatteryById(int id)
-        {
-
-            if (id <= 0)
+            var response = await _httpClient.SendAsync(requestMessage);
+            if (response.IsSuccessStatusCode)
             {
-                return BadRequest("Invalid battery ID.");
+                TempData["SuccessMessage"] = "Battery settings updated successfully!";
+                return RedirectToAction("Index");
             }
 
-            try
-            {
-                var response = await _httpClient.GetAsync($"get-one-battery?id={id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var battery = JsonConvert.DeserializeObject<GetBatteryViewModel>(content);
-                    return View(battery);
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = $"Error: {response.StatusCode} - {response.ReasonPhrase}";
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Failed to retrieve battery: {ex.Message}";
-            }
-
-            return View();
-        }
-
-        public IActionResult Dashboard()
-        {
-            var userEmail = Request.Cookies["UserEmail"];
-            ViewData["UserEmail"] = userEmail; // Pass to the view
-            return View();
-        }
-
-        public async Task<IActionResult> GetUserBattery()
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync("get-user-battery");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var battery = JsonConvert.DeserializeObject<GetBatteryViewModel>(content);
-
-                    return View("UserBattery", battery); // Return data to a view
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = $"Error: {response.StatusCode} - {response.ReasonPhrase}";
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Failed to retrieve battery: {ex.Message}";
-            }
-
-            return View("UserBattery", null);
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            TempData["ErrorMessage"] = errorMessage;
+            return RedirectToAction("Index");
         }
     }
 }

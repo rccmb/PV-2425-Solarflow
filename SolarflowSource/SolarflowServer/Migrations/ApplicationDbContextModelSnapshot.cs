@@ -32,11 +32,6 @@ namespace SolarflowServer.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("BatteryAPI")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("battery_api");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -44,13 +39,11 @@ namespace SolarflowServer.Migrations
                     b.Property<bool>("ConfirmedEmail")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("confirmed_email");
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
                         .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Email")
@@ -63,8 +56,7 @@ namespace SolarflowServer.Migrations
                     b.Property<string>("Fullname")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("fullname");
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -91,8 +83,7 @@ namespace SolarflowServer.Migrations
 
                     b.Property<string>("Photo")
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("photo");
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -295,74 +286,55 @@ namespace SolarflowServer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("ApiKey")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValue("")
-                        .HasColumnName("api_key");
-
                     b.Property<string>("BatteryMode")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("")
-                        .HasColumnName("battery_mode");
+                        .HasDefaultValue("");
 
                     b.Property<int>("ChargeLevel")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("charge_level");
+                        .HasDefaultValue(0);
 
                     b.Property<string>("ChargingSource")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("")
-                        .HasColumnName("charging_source");
+                        .HasDefaultValue("");
 
                     b.Property<string>("LastUpdate")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("")
-                        .HasColumnName("last_update");
+                        .HasDefaultValue("");
 
                     b.Property<int>("MaximumTreshold")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(100)
-                        .HasColumnName("maximum_treshold");
+                        .HasDefaultValue(100);
 
                     b.Property<int>("MinimalTreshold")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("minimal_treshold");
+                        .HasDefaultValue(0);
 
                     b.Property<string>("SpendingEndTime")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("09:00")
-                        .HasColumnName("spending_end_time");
+                        .HasDefaultValue("09:00");
 
                     b.Property<string>("SpendingStartTime")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("00:00")
-                        .HasColumnName("spending_start_time");
+                        .HasDefaultValue("00:00");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
+                        .HasColumnType("int");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("ApiKey")
-                        .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -486,6 +458,17 @@ namespace SolarflowServer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SolarflowServer.Models.Battery", b =>
+                {
+                    b.HasOne("ApplicationUser", "User")
+                        .WithOne("Battery")
+                        .HasForeignKey("SolarflowServer.Models.Battery", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ViewAccount", b =>
                 {
                     b.HasOne("ApplicationUser", "User")
@@ -499,6 +482,9 @@ namespace SolarflowServer.Migrations
 
             modelBuilder.Entity("ApplicationUser", b =>
                 {
+                    b.Navigation("Battery")
+                        .IsRequired();
+
                     b.Navigation("ViewAccount")
                         .IsRequired();
                 });

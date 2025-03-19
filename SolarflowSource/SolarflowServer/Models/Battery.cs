@@ -12,12 +12,6 @@ namespace SolarflowServer.Models
         public int ID { get; set; }
 
         [Required]
-        public int UserId { get; set; }
-
-        [Required]
-        public string ApiKey { get; set; }
-
-        [Required]
         public int ChargeLevel { get; set; }
 
         public string ChargingSource { get; set; }
@@ -33,5 +27,10 @@ namespace SolarflowServer.Models
         public string SpendingEndTime { get; set; }
 
         public string LastUpdate { get; set; }
+
+        [ForeignKey("ApplicationUser")]
+        public int UserId { get; set; }
+
+        public ApplicationUser User { get; set; }
     }
 }
