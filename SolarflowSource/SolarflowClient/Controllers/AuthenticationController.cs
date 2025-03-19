@@ -99,14 +99,37 @@ public class AuthenticationController : Controller
         return View(model);
     }
 
+    // GET: Account Recovery form (to display the page)
     public IActionResult AccountRecovery()
     {
         return View();
     }
 
-    //[HttpPost]
-    //public async Task<IActionResult> AccountRecovery(AccountRecoveryViewModel model)
-    //{
-    //    // TODO: Implement account recovery.
-    //}
+    
+    // Controller Method for Forgot Password
+    [HttpPost]
+    public async Task<IActionResult> SubmitAccountRecovery(AccountRecoveryViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View("AccountRecovery", model);
+        }
+
+        var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("forgotpassword", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            TempData["SuccessMessage"] = "If the email exists, a reset link has been sent.";
+            return RedirectToAction("AccountRecovery");
+        }
+
+        var errorMessage = await response.Content.ReadAsStringAsync();
+        ModelState.AddModelError(string.Empty, errorMessage);
+        return View("AccountRecovery", model);
+    }
+
+
+
+
 }
