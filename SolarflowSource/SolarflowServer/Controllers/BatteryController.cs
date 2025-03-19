@@ -24,10 +24,11 @@ public class BatteryController : ControllerBase
     public async Task<IActionResult> GetBattery()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized("User not authenticated.");
+        if (userId == null)
+            return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest("Invalid user ID");
+            return BadRequest(new { error = "Invalid user ID" });
 
         var battery = await _context.Batteries
             .Where(b => b.UserId == parsedUserId)
@@ -43,7 +44,7 @@ public class BatteryController : ControllerBase
             .FirstOrDefaultAsync();
 
         if (battery == null)
-            return NotFound("Battery not found");
+            return NotFound(new { error = "Battery not found" });
 
         return Ok(battery);
     }
@@ -52,13 +53,15 @@ public class BatteryController : ControllerBase
     public async Task<IActionResult> UpdateBattery([FromBody] BatteryDTO model)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized("User not authenticated.");
+        if (userId == null)
+            return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest("Invalid user ID");
+            return BadRequest(new { error = "Invalid user ID" });
 
         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == parsedUserId);
-        if (battery == null) return NotFound("Battery not found");
+        if (battery == null)
+            return NotFound(new { error = "Battery not found" });
 
         battery.ChargingSource = model.ChargingSource;
         battery.BatteryMode = model.BatteryMode;
@@ -73,6 +76,7 @@ public class BatteryController : ControllerBase
 
         return Ok(new { message = "Battery settings updated successfully!" });
     }
+
 }
 
 

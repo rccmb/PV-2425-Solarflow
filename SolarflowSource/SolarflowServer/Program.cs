@@ -28,7 +28,6 @@ builder.Services
 
 builder.Services.AddScoped<SignInManager<ViewAccount>>();
 
-
 // JWT AUTHENTICATION
 builder.Services.AddAuthentication(options =>
 {
@@ -45,6 +44,19 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])),
         ValidateIssuer = false,
         ValidateAudience = false
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("JWT Authentication failed: " + context.Exception.Message);
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("JWT Token validated successfully.");
+            return Task.CompletedTask;
+        }
     };
 });
 

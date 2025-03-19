@@ -77,29 +77,29 @@ public class AuthenticationController : Controller
 
         if (response.IsSuccessStatusCode)
         {
-            var token = await response.Content.ReadAsStringAsync();
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            dynamic tokenResponse = JsonConvert.DeserializeObject(jsonResponse);
+            string token = tokenResponse.token;
 
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
+                Secure = false, 
                 Expires = model.RememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddHours(1)
             };
 
-            var email = model.Email;
-
-            Response.Cookies.Append("UserEmail", email, cookieOptions);
-
             Response.Cookies.Append("AuthToken", token, cookieOptions);
+
+            Response.Cookies.Append("UserEmail", model.Email, cookieOptions);
 
             return RedirectToAction("Index", "Home");
         }
 
         var errorMessage = await response.Content.ReadAsStringAsync();
-
         ModelState.AddModelError(string.Empty, errorMessage);
         return View(model);
     }
+
 
     public IActionResult AccountRecovery()
     {

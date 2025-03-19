@@ -6,13 +6,6 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-
     @if (!string.IsNullOrEmpty(authToken))
     {
         <a asp-controller="Home" asp-action="RegisterViewAccount" class="btn btn-primary">Register View Account</a>

@@ -20,10 +20,9 @@ namespace SolarflowClient.Controllers
         public async Task<IActionResult> Index()
         {
             var token = Request.Cookies["AuthToken"];
-            if (string.IsNullOrEmpty(token))
+            if (!string.IsNullOrEmpty(token) && token.StartsWith("Bearer "))
             {
-                TempData["ErrorMessage"] = "You must be logged in to view battery information.";
-                return RedirectToAction("Login", "Authentication");
+                token = token.Substring("Bearer ".Length);
             }
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, "get-battery");
@@ -36,9 +35,21 @@ namespace SolarflowClient.Controllers
                 var model = JsonConvert.DeserializeObject<GetBatteryViewModel>(batteryData);
                 return View(model);
             }
-
-            TempData["ErrorMessage"] = "Error fetching battery data.";
-            return RedirectToAction("Index", "Home");
+            else
+            {
+                // Try to extract the error from JSON
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var errorObj = JsonConvert.DeserializeObject<dynamic>(errorResponse);
+                    TempData["ErrorMessage"] = errorObj.error != null ? errorObj.error.ToString() : errorResponse;
+                }
+                catch
+                {
+                    TempData["ErrorMessage"] = errorResponse;
+                }
+                return View();
+            }
         }
 
         [HttpPost]
