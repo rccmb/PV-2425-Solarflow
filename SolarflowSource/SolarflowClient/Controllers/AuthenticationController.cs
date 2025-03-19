@@ -36,6 +36,7 @@ public class AuthenticationController : Controller
 
         if (response.IsSuccessStatusCode)
         {
+            TempData["SuccessMessage"] = "Registration successful! You can now log in.";
             return RedirectToAction("Login");
         }
 
@@ -54,8 +55,8 @@ public class AuthenticationController : Controller
     public IActionResult Login()
     {
         var token = Request.Cookies["AuthToken"];
-
-        if(!string.IsNullOrEmpty(token))
+        
+        if (!string.IsNullOrEmpty(token))
         {
             return RedirectToAction("Index", "Home");
         }
@@ -76,36 +77,32 @@ public class AuthenticationController : Controller
 
         if (response.IsSuccessStatusCode)
         {
-            var token = await response.Content.ReadAsStringAsync();
-            //var responseContent = await response.Content.ReadAsStringAsync();
-            // var jsonResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
-            //var token = jsonResponse.token.ToString();
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            dynamic tokenResponse = JsonConvert.DeserializeObject(jsonResponse);
+            string token = tokenResponse.token;
 
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = false, 
                 Expires = model.RememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddHours(1)
             };
 
             Response.Cookies.Append("AuthToken", token, cookieOptions);
+
+            Response.Cookies.Append("UserEmail", model.Email, cookieOptions);
+
             return RedirectToAction("Index", "Home");
         }
 
         var errorMessage = await response.Content.ReadAsStringAsync();
-
         ModelState.AddModelError(string.Empty, errorMessage);
         return View(model);
     }
+
 
     public IActionResult AccountRecovery()
     {
         return View();
     }
-
-    //[HttpPost]
-    //public async Task<IActionResult> AccountRecovery(AccountRecoveryViewModel model)
-    //{
-    //    // TODO: Implement account recovery.
-    //}
 }

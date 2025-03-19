@@ -6,11 +6,9 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     
-
     @if (!string.IsNullOrEmpty(authToken))
     {
         <a asp-controller="Home" asp-action="RegisterViewAccount" class="btn btn-primary">Register View Account</a>
-        <p></p>
         <form asp-action="Logout" asp-controller="Home" method="post">
             <button type="submit" class="btn btn-danger">Logout</button>
         </form>

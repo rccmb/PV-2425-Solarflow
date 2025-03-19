@@ -1,0 +1,92 @@
+﻿@model SolarflowClient.Models.ViewModels.Battery.GetBatteryViewModel
+
+@{
+    ViewData["Title"] = "Battery Page";
+    var userEmail = Context.Request.Cookies["UserEmail"];
+}
+
+<link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+
+<h1 class="page-title">Battery</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="page-content">
+    <div class="battery-container">
+        <div class="battery-info">
+            <h2 class="battery-info-title">Battery Information</h2>
+            <div class="battery-info-content">
+                <p>Welcome, @userEmail!</p>
+                <p class="battery-info-content-text">Battery Capacity: @Model.ChargeLevel%</p>
+            </div>
+        </div>
+
+        <br />
+
+        <form method="post" action="/Battery/UpdateBattery">
+            <div class="battery-configurations">
+                <h2 class="battery-actions-title">Battery Configurations</h2>
+                <div class="battery-actions-content">
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Battery Mode</label>
+                        <select class="authentication-form-text-input" name="BatteryMode">
+                            <option value="personalized" selected="@(Model.BatteryMode == "personalized" ? "selected" : null)">Personalized</option>
+                            <option value="emergency" selected="@(Model.BatteryMode == "emergency" ? "selected" : null)">Emergency</option>
+                        </select>
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Charging Source</label>
+                        <select class="authentication-form-text-input" name="ChargingSource">
+                            <option value="solar" selected="@(Model.ChargingSource == "solar" ? "selected" : null)">Solar</option>
+                            <option value="grid" selected="@(Model.ChargingSource == "grid" ? "selected" : null)">Grid</option>
+                            <option value="both" selected="@(Model.ChargingSource == "both" ? "selected" : null)">Both</option>
+                        </select>
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Minimal Threshold</label>
+                        <input class="authentication-form-text-input" type="number" name="MinimalTreshold" min="0" max="100" value="@Model.MinimalTreshold" />
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Maximal Threshold</label>
+                        <input class="authentication-form-text-input" type="number" name="MaximumTreshold" min="0" max="100" value="@Model.MaximumTreshold" />
+                    </div>
+
+                    <div class="authentication-input-div">
+                        <label class="authentication-form-label">Charging Schedules</label>
+                        <div class="authentication-input-div">
+                            <label class="authentication-form-label">Start Time</label>
+                            <input class="authentication-form-text-input" type="time" name="SpendingStartTime" value="@Model.SpendingStartTime" />
+
+                            <label class="authentication-form-label">End Time</label>
+                            <input class="authentication-form-text-input" type="time" name="SpendingEndTime" value="@Model.SpendingEndTime" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="battery-actions">
+                <div class="authentication-input-div">
+                    <button type="submit" class="battery-actions-button background-blue">Save</button>
+                    <button type="reset" class="battery-actions-button background-red">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

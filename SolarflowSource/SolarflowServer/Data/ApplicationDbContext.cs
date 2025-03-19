@@ -7,11 +7,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-
+    public DbSet<ApplicationUser> Users { get; set; }
+    public DbSet<Battery> Batteries { get; set; }
     public DbSet<ViewAccount> ViewAccounts { get; set; }
-
     public DbSet<AuditLog> AuditLogs { get; set; }
-
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -22,36 +21,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("Users");
 
-            entity.Property(u => u.Fullname)
-                .HasColumnName("fullname")
-                .HasMaxLength(255)
-                .IsRequired();
+            entity.Property(u => u.Fullname).HasMaxLength(255).IsRequired();
+            entity.Property(u => u.Photo).HasMaxLength(255).IsRequired(false);
+            entity.Property(u => u.ConfirmedEmail).HasDefaultValue(false);
+            entity.Property(u => u.CreatedAt).HasDefaultValueSql("GETDATE()");
 
-            entity.Property(u => u.Photo)
-                .HasColumnName("photo")
-                .HasMaxLength(255)
-                .IsRequired(false);
-
-            entity.Property(u => u.ConfirmedEmail)
-                .HasColumnName("confirmed_email")
-                .HasDefaultValue(false);
-
-            entity.Property(u => u.BatteryAPI)
-                .HasColumnName("battery_api")
-                .HasMaxLength(255)
-                .IsRequired(false);
+            entity.HasOne(u => u.Battery)
+                .WithOne(b => b.User)
+                .HasForeignKey<Battery>(b => b.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(u => u.ViewAccount) 
                 .WithOne(v => v.User)
                 .HasForeignKey<ViewAccount>(v => v.UserId) 
                 .OnDelete(DeleteBehavior.Cascade);
-
-            entity.Property(u => u.CreatedAt)
-                .HasColumnName("created_at")
-                .HasDefaultValueSql("GETDATE()");
         });
 
-
+        // MAPPING THE VIEW ACCOUNT.
         builder.Entity<ViewAccount>(entity =>
         {
             entity.ToTable("ViewAccounts");
@@ -73,7 +59,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(a => a.Timestamp).HasDefaultValueSql("GETDATE()");
 
         });
-    }
 
+        // MAPPING THE BATTERY.
+        builder.Entity<Battery>(entity =>
+        {
+            entity.ToTable("Batteries");
+
+            entity.HasKey(b => b.ID);
+
+            entity.Property(b => b.ChargeLevel).HasDefaultValue(0);
+            entity.Property(b => b.ChargingSource).HasDefaultValue("");
+            entity.Property(b => b.BatteryMode).HasDefaultValue("");
+            entity.Property(b => b.MinimalTreshold).HasDefaultValue(0);
+            entity.Property(b => b.MaximumTreshold).HasDefaultValue(100);
+            entity.Property(b => b.SpendingStartTime).HasDefaultValue("00:00");
+            entity.Property(b => b.SpendingEndTime).HasDefaultValue("09:00");
+            entity.Property(b => b.LastUpdate).HasDefaultValue("");
+
+            entity.HasOne(b => b.User)
+                  .WithOne(u => u.Battery)
+                  .HasForeignKey<Battery>(b => b.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
 }
 

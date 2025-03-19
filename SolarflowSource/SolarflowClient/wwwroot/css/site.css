@@ -20,7 +20,6 @@ time, mark, audio, video {
     vertical-align: baseline;
 }
 
-/* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
     display: block;
@@ -47,4 +46,117 @@ blockquote, q {
 table {
     border-collapse: collapse;
     border-spacing: 0;
+}
+
+body, html {
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+.wrapper {
+    display: flex;
+    height: 100vh;
+}
+
+.d-flex {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 100px;
+    background-color: #2C2F33;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar-icon {
+    width: 30px;
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.nav {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.nav-item {
+    width: 100%;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-link {
+    color: white;
+    padding: 20px 20px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    background-color: #40444B;
+}
+
+.logout-section {
+    background-color: #2C2F33;
+    margin-top: auto;
+    padding-bottom: 15px;
+    width: 100%;
+}
+
+.logout {
+    background-color: #2C2F33;
+    padding: 20px;
+    display: flex;
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-width: 0px;
+}
+
+.logout:hover {
+    background-color: #c9302c;
+    cursor: pointer;
+}
+
+/* Main Content */
+.main-content {
+    flex-grow: 1;
+    background-color: #F4F4F4;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-title {
+    padding: 10px 20px;
+    margin: 0;
+}
+
+.content {
+    flex-grow: 1; 
+    overflow: auto; 
+    padding: 20px;
 }
