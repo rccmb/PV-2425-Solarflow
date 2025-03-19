@@ -22,6 +22,7 @@ namespace SolarflowServer.Controllers
         private readonly SignInManager<ViewAccount> _viewSignInManager;
         private readonly IConfiguration _configuration;
         private readonly IAuditService _auditService;
+        private readonly IEmailSender _emailSender;
 
 
         public AuthenticationController(
@@ -30,7 +31,8 @@ namespace SolarflowServer.Controllers
         UserManager<ViewAccount> viewUserManager,
         SignInManager<ViewAccount> viewSignInManager,
         IConfiguration configuration,
-        IAuditService auditService)
+        IAuditService auditService,
+        IEmailSender emailSender)
 
         {
             _userManager = userManager;
@@ -39,6 +41,7 @@ namespace SolarflowServer.Controllers
             _viewSignInManager = viewSignInManager;
             _configuration = configuration;
             _auditService = auditService;
+            _emailSender = emailSender;
         }
 
         [HttpPost("register")]
@@ -190,25 +193,14 @@ namespace SolarflowServer.Controllers
 
         }
 
-        [HttpPost("forgotpassword")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest model)
+        [HttpGet("forgotpassword")]
+        public async Task<IActionResult> ForgotPassword()
         {
             if (!ModelState.IsValid)
                 return BadRequest("Invalid email format.");
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                // Return a success message regardless of whether the user exists
-                return Ok(new { message = "If the email exists, a reset link has been sent." });
-            }
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = Url.Action("ResetPassword", "Account", new { token, email = user.Email }, Request.Scheme);
-
-            var emailSettings = _configuration.GetSection("EmailSettings");
-            var emailService = new EmailSender(emailSettings);
-            await emailService.SendEmailAsync(user.Email, "Password Reset", $"Click <a href='{resetLink}'>here</a> to reset your password.");
+            var message = new Message(new string[] { "matos.afonsofilipe@gmail.com" }, "Password Reset Link", "Content");
+            _emailSender.SendEmail(message);
 
             // Return a success message
             return Ok(new { message = "If the email exists, a reset link has been sent." });
