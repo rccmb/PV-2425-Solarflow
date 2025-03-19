@@ -1,34 +1,53 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using SolarflowServer.Services;
+using System;
+using System.Threading.Tasks;
 
-[Route("api/weather")]
-[ApiController]
-public class WindyController : ControllerBase
+namespace SolarflowServer.Controllers
 {
-    private readonly IWindyService _windyService;
-
-    public WindyController(IWindyService windyService)
+    [Route("api/windy")]
+    [ApiController]
+    public class WindyController : ControllerBase
     {
-        _windyService = windyService;
-    }
+        private readonly WindyService _windyService;
 
-    [HttpGet("forecast")]
-    public async Task<IActionResult> GetWeatherForecast([FromQuery] double lat, [FromQuery] double lon)
-    {
-        if (lat == 0 || lon == 0)
-            return BadRequest();
-
-        JObject weatherData;
-        try
+        public WindyController(WindyService windyService)
         {
-            weatherData = await _windyService.GetWeatherDataAsync(lat, lon);
-        }
-        catch
-        {
-            return StatusCode(500);
+            _windyService = windyService;
         }
 
-        return Ok(weatherData);
+        [HttpGet("forecast")]
+        public async Task<IActionResult> GetWeather(
+            [FromQuery] double lat, 
+            [FromQuery] double lon,
+            [FromQuery] int days)
+        {
+            try
+            {
+                var forecast = await _windyService.GetWeatherForecastAsync(lat, lon, days);
+                return Ok(forecast);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("solar-forecast")]
+        public async Task<IActionResult> GetSolarForecast(
+            [FromQuery] double lat, 
+            [FromQuery] double lon,
+            [FromQuery] int days)
+        {
+            try
+            {
+                var result = await _windyService.GetSolarForecastAsync(lat, lon, days);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }

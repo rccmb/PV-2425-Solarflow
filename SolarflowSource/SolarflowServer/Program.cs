@@ -64,9 +64,9 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+builder.Services.AddHttpClient<WindyService>();
 
-builder.Services.AddHttpClient<IWindyService, WindyService>();
+builder.Services.AddControllers();
 
 
 // SWAGGER
