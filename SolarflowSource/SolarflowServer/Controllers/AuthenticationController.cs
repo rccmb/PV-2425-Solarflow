@@ -11,6 +11,7 @@ using static Org.BouncyCastle.Math.EC.ECCurve;
 using Microsoft.AspNetCore.Identity.Data;
 using static System.Net.WebRequestMethods;
 using SolarflowServer.Models;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace SolarflowServer.Controllers
 {
@@ -24,19 +25,19 @@ namespace SolarflowServer.Controllers
         private readonly SignInManager<ViewAccount> _viewSignInManager;
         private readonly IConfiguration _configuration;
         private readonly IAuditService _auditService;
-		private readonly IEmailSender _emailSender;
+        private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
 
         public AuthenticationController(
-			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager,
-			UserManager<ViewAccount> viewUserManager,
-			SignInManager<ViewAccount> viewSignInManager,
-			IConfiguration configuration,
-			IAuditService auditService,
-			IEmailSender emailSender,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ViewAccount> viewUserManager,
+            SignInManager<ViewAccount> viewSignInManager,
+            IConfiguration configuration,
+            IAuditService auditService,
+            IEmailSender emailSender,
             ApplicationDbContext context
-		)
+        )
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -67,7 +68,7 @@ namespace SolarflowServer.Controllers
 
             var battery = new Battery
             {
-                User = user, 
+                User = user,
                 ChargeLevel = 40,
                 ChargingSource = "Solar",
                 BatteryMode = "Personalized",
@@ -79,7 +80,7 @@ namespace SolarflowServer.Controllers
             };
 
             _context.Batteries.Add(battery);
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
 
             await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Registered", GetClientIPAddress());
 
@@ -90,17 +91,17 @@ namespace SolarflowServer.Controllers
         public async Task<IActionResult> RegisterViewAccount([FromBody] RegisterViewDTO model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-          
+
 
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
-           
+
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null) return BadRequest("User not found.");
 
-        
+
             if (await _viewUserManager.FindByEmailAsync(user.Email) != null) return BadRequest("A ViewAccount is already registered for this user.");
 
             var viewAccount = new ViewAccount
@@ -108,9 +109,9 @@ namespace SolarflowServer.Controllers
                 UserName = user.Email,
                 Email = user.Email,
                 Name = $"{user.Fullname}'s View Account",
-                UserId = user.Id 
+                UserId = user.Id
             };
-            
+
             var viewResult = await _viewUserManager.CreateAsync(viewAccount, model.Password);
 
             if (!viewResult.Succeeded) return BadRequest(viewResult.Errors);
@@ -135,9 +136,9 @@ namespace SolarflowServer.Controllers
                         HttpOnly = true,
                         Expires = DateTime.UtcNow.AddHours(1),
                         Secure = true,
-                        SameSite = SameSiteMode.Strict 
+                        SameSite = SameSiteMode.Strict
                     };
-                    
+
                     Response.Cookies.Append("AuthToken", token, cookieOptions);
                     await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
                     return Ok(new { token });
@@ -214,7 +215,7 @@ namespace SolarflowServer.Controllers
         }
 
         [HttpPost("forgotpassword")]
-        public async Task<IActionResult> ForgotPassword([FromBody] AccountRecoveryViewModel model)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO model)
         {
             // Validate model
             if (!ModelState.IsValid || string.IsNullOrEmpty(model.Email))
@@ -222,13 +223,51 @@ namespace SolarflowServer.Controllers
                 return BadRequest(new { message = "Invalid email format." });
             }
 
-            var message = new Message(new string[] { model.Email }, "Password Reset Link", "https://www.youtube.com/");
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest(new { message = "If the email exists, a reset link has been sent." });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var param = new Dictionary<string, string>
+            {
+                { "token", token },
+                { "email", model.Email }
+            };
+
+            var callback = QueryHelpers.AddQueryString(model.ClientUri!, param);
+
+            var message = new Message([user.Email], "Password Reset Link", callback);
 
             // Send the email
             await _emailSender.SendEmailAsync(message);
 
             // Return success response
             return Ok(new { message = "If the email exists, a reset link has been sent." });
+        }
+
+        [HttpPost("resetpassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
+        {
+            // Validate model
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { message = "Invalid email format." });
+            }
+            var user = await _userManager.FindByEmailAsync(model.Email!);
+            if (user == null)
+            {
+                return BadRequest(new { message = "If the email exists, a reset link has been sent." });
+            }
+            var result = await _userManager.ResetPasswordAsync(user, model.Token!, model.Password!);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { message = "Invalid token." });
+            }
+            return Ok(new { message = "Password reset successfully." });
+
+
         }
     }
 }
