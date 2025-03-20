@@ -240,6 +240,28 @@ namespace SolarflowServer.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Forecasts",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BatteryID = table.Column<int>(type: "int", nullable: false),
+                    ForecastDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SolarHoursExpected = table.Column<double>(type: "float", nullable: false),
+                    WeatherCondition = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Forecasts", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Forecasts_Batteries_BatteryID",
+                        column: x => x.BatteryID,
+                        principalTable: "Batteries",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -272,6 +294,11 @@ namespace SolarflowServer.Migrations
                 table: "Batteries",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Forecasts_BatteryID",
+                table: "Forecasts",
+                column: "BatteryID");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -314,13 +341,16 @@ namespace SolarflowServer.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
-                name: "Batteries");
+                name: "Forecasts");
 
             migrationBuilder.DropTable(
                 name: "ViewAccounts");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Batteries");
 
             migrationBuilder.DropTable(
                 name: "Users");
