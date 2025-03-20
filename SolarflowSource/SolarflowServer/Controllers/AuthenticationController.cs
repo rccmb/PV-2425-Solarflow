@@ -199,7 +199,7 @@ namespace SolarflowServer.Controllers
             if (!ModelState.IsValid)
                 return BadRequest("Invalid email format.");
 
-            var message = new Message(new string[] { "matos.afonsofilipe@gmail.com" }, "Password Reset Link", "Content");
+            var message = new Message(new string[] { "matos.afonsofilipe@gmail.com" }, "Password Reset Link", "https://www.youtube.com/");
             _emailSender.SendEmail(message);
 
             // Return a success message
