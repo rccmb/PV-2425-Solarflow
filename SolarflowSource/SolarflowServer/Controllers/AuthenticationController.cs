@@ -9,6 +9,8 @@ using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.Services;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using Microsoft.AspNetCore.Identity.Data;
+using static System.Net.WebRequestMethods;
+using SolarflowServer.Models;
 
 namespace SolarflowServer.Controllers
 {
@@ -193,18 +195,24 @@ namespace SolarflowServer.Controllers
 
         }
 
-        [HttpGet("forgotpassword")]
-        public async Task<IActionResult> ForgotPassword()
+        [HttpPost("forgotpassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody] AccountRecoveryViewModel model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Invalid email format.");
+            // Validate model
+            if (!ModelState.IsValid || string.IsNullOrEmpty(model.Email))
+            {
+                return BadRequest(new { message = "Invalid email format." });
+            }
 
-            var message = new Message(new string[] { "matos.afonsofilipe@gmail.com" }, "Password Reset Link", "https://www.youtube.com/");
-            _emailSender.SendEmail(message);
+            var message = new Message(new string[] { model.Email }, "Password Reset Link", "https://www.youtube.com/");
 
-            // Return a success message
+            // Send the email
+            await _emailSender.SendEmailAsync(message);
+
+            // Return success response
             return Ok(new { message = "If the email exists, a reset link has been sent." });
         }
+
 
 
 

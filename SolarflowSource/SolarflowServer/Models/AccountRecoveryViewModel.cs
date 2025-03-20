@@ -2,7 +2,7 @@
 
 namespace SolarflowServer.Models
 {
-    public class ForgotPasswordRequest
+    public class AccountRecoveryViewModel
     {
         [Required]
         [EmailAddress]

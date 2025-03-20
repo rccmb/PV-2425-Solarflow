@@ -19,6 +19,13 @@ namespace SolarflowServer
             SendEmail(emailMessage);
         }
 
+        public async Task SendEmailAsync(Message message)
+        {
+            var emailMessage = CreateEmailMessage(message);
+            
+            await SendAsync(emailMessage);
+        }
+
         private MimeMessage CreateEmailMessage(Message message)
         {
             var emailMessage = new MimeMessage();
@@ -40,6 +47,19 @@ namespace SolarflowServer
                 client.Disconnect(true);
             }
         }
+
+        private async Task SendAsync(MimeMessage mailMessage)
+        {
+            using (var client = new MailKit.Net.Smtp.SmtpClient())
+            {
+                await client.ConnectAsync("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(emailConfig.Username, emailConfig.Password);
+                await client.SendAsync(mailMessage);
+                await client.DisconnectAsync(true);
+            }
+
+        }
+        
 
     }
 }

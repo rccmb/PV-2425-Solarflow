@@ -14,13 +14,6 @@
         <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="Solarflow Logo">
         <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
         <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
-
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="authentication-success-container">
-                <p class="authentication-success-message">@TempData["SuccessMessage"]</p>
-            </div>
-        }
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -42,7 +35,7 @@
 
     <h1 class="authentication-form-title">Account Recovery</h1>
 
-    <form class="authentication-form" asp-action="AccountRecovery" method="post">
+    <form class="authentication-form" asp-action="SubmitAccountRecovery" method="post">
         <div class="authentication-input-div">
             <label class="authentication-form-label">Email</label>
             <input asp-for="Email" class="authentication-form-text-input" />
