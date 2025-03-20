@@ -9,7 +9,7 @@
 <link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/battery/battery.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
-<h1 class="page-title">Battery</h1>
+<h1 class="page-title">Battery Management</h1>
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -29,12 +29,11 @@
 
 <div class="battery-container">
     <div>
-        <p>Battery Capacity: @Model.ChargeLevel%</p>
+        <p class="battery-form-title">Battery Capacity: @Model.ChargeLevel%</p>
     </div>
     <div class="battery-content">
         <form method="post" action="/Battery/UpdateBattery">
             <div>
-                <h2>Battery Configurations</h2>
                 <div class="battery-form-group">
                     <div class="battery-input-group">
                         <label class="battery-input-label">Battery Mode</label>
@@ -85,8 +84,8 @@
             <br />
 
             <div class="battery-button-group">
-                <button class="battery-button" type="submit">Save</button>
-                <button class="battery-button" type="reset">Cancel</button>
+                <button class="battery-button cancel-button" type="reset">Cancel</button>
+                <button class="battery-button save-button" type="submit">Save</button>
             </div>
         </form>
     </div>
