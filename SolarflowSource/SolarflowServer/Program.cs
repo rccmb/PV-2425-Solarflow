@@ -64,7 +64,12 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddHttpClient<WindyApiClient>(); 
+builder.Services.AddScoped<WeatherProcessingService>(); 
+builder.Services.AddScoped<ForecastService>();
+
 builder.Services.AddControllers();
+
 
 // SWAGGER
 builder.Services.AddEndpointsApiExplorer();

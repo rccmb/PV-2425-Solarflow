@@ -9,6 +9,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<ApplicationUser> Users { get; set; }
     public DbSet<Battery> Batteries { get; set; }
+
+    public DbSet<Forecast> Forecasts { get; set; }
     public DbSet<ViewAccount> ViewAccounts { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
 
@@ -80,6 +82,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                   .WithOne(u => u.Battery)
                   .HasForeignKey<Battery>(b => b.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Forecast>(entity =>
+        {
+            entity.ToTable("Forecasts");
+            entity.HasKey(f => f.ID);
+            entity.Property(f => f.ForecastDate).IsRequired();
+            entity.Property(f => f.SolarHoursExpected).IsRequired();
+            entity.Property(f => f.WeatherCondition).HasMaxLength(100).IsRequired();
+            entity.HasOne<Battery>()
+                .WithMany()  
+                .HasForeignKey(f => f.BatteryID)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
