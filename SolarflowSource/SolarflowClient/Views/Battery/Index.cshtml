@@ -8,26 +8,33 @@
 <link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/battery/battery.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 <h1 class="page-title">Battery Management</h1>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div>
-        @TempData["SuccessMessage"]
-    </div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div>
-        @TempData["ErrorMessage"]
-    </div>
-}
 
 <div asp-validation-summary="All" class="text-danger"></div>
 
 <div class="battery-container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="battery-error-container">
+                <p class="battery-error-message">@TempData["ErrorMessage"]</p>
+            </div>
+        }
+    }
     <div>
         <p class="battery-form-title">Battery Capacity: @Model.ChargeLevel%</p>
     </div>
