@@ -1,0 +1,74 @@
+﻿body {
+    background-color: #f8f9fa; 
+}
+
+.battery-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 75vh;
+    max-height: 100vh; 
+    overflow: auto;
+    padding: 20px; 
+    box-sizing: border-box; 
+}
+
+.battery-content {
+    width: 75%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-width: 3px;
+    border-color: #2C2F33;
+}
+
+.battery-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.battery-input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.battery-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.battery-time-group {
+    display: flex;
+    gap: 10px;
+}
+
+.battery-button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.battery-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.battery-button:hover {
+    background-color: #0056b3;
+}
+
+.battery-input-label {
+    
+}
+
+.battery-input-label-time {
+    
+}

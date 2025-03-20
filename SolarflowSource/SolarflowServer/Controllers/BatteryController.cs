@@ -59,6 +59,16 @@ public class BatteryController : ControllerBase
     [HttpPost("update-battery")]
     public async Task<IActionResult> UpdateBattery([FromBody] BatteryDTO model)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (model.MaximumTreshold < model.MinimalTreshold)
+        {
+            return BadRequest(new { error = "Maximum Threshold cannot be lower than Minimal Threshold." });
+        }
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null)
             return Unauthorized(new { error = "User not authenticated." });

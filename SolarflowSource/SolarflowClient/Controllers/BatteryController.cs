@@ -62,6 +62,11 @@ namespace SolarflowClient.Controllers
                 return RedirectToAction("Login", "Authentication");
             }
 
+            if (!ModelState.IsValid)
+            {
+                return View("Index", model);
+            }
+
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, "update-battery");
             requestMessage.Headers.Add("Authorization", $"Bearer {token}");
             var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
