@@ -192,7 +192,7 @@ namespace SolarflowServer.Migrations
                     MaximumTreshold = table.Column<int>(type: "int", nullable: false, defaultValue: 100),
                     SpendingStartTime = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "00:00"),
                     SpendingEndTime = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "09:00"),
-                    LastUpdate = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: ""),
+                    LastUpdate = table.Column<string>(type: "nvarchar(max)", nullable: true, defaultValue: ""),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

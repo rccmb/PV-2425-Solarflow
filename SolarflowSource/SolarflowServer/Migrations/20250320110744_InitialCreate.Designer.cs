@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250319230726_InitialCreate")]
+    [Migration("20250320110744_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -307,7 +307,6 @@ namespace SolarflowServer.Migrations
                         .HasDefaultValue("");
 
                     b.Property<string>("LastUpdate")
-                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("");

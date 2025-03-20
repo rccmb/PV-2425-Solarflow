@@ -304,7 +304,6 @@ namespace SolarflowServer.Migrations
                         .HasDefaultValue("");
 
                     b.Property<string>("LastUpdate")
-                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("");

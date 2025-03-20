@@ -56,6 +56,14 @@ public class BatteryController : ControllerBase
         return Ok(battery);
     }
 
+    //[AllowAnonymous]
+    //[HttpGet("get-all-batteries")]
+    //public async Task<IActionResult> GetBatteryList()
+    //{
+    //    var batteries = await _context.Batteries.ToListAsync();
+    //    return Ok(batteries);
+    //}
+
     [HttpPost("update-battery")]
     public async Task<IActionResult> UpdateBattery([FromBody] BatteryDTO model)
     {
