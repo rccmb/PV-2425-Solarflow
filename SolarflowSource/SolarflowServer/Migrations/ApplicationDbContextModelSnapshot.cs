@@ -342,6 +342,35 @@ namespace SolarflowServer.Migrations
                     b.ToTable("Batteries", (string)null);
                 });
 
+            modelBuilder.Entity("SolarflowServer.Models.Forecast", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("BatteryID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ForecastDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("SolarHoursExpected")
+                        .HasColumnType("float");
+
+                    b.Property<string>("WeatherCondition")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BatteryID");
+
+                    b.ToTable("Forecasts", (string)null);
+                });
+
             modelBuilder.Entity("ViewAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -467,6 +496,15 @@ namespace SolarflowServer.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SolarflowServer.Models.Forecast", b =>
+                {
+                    b.HasOne("SolarflowServer.Models.Battery", null)
+                        .WithMany()
+                        .HasForeignKey("BatteryID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ViewAccount", b =>
