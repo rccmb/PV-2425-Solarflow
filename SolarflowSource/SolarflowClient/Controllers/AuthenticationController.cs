@@ -101,18 +101,11 @@ public class AuthenticationController : Controller
         return View(model);
     }
 
-<<<<<<< HEAD
-
-=======
     // GET: Account Recovery form (to display the page)
->>>>>>> Email-Confirmation
     public IActionResult AccountRecovery()
     {
         return View();
     }
-<<<<<<< HEAD
-=======
-
     
     // Controller Method for Forgot Password
     [HttpPost]
@@ -136,9 +129,4 @@ public class AuthenticationController : Controller
         ModelState.AddModelError(string.Empty, errorMessage);
         return View("AccountRecovery", model);
     }
-
-
-
-
->>>>>>> Email-Confirmation
 }
