@@ -106,7 +106,7 @@ public class AuthenticationController : Controller
     {
         return View();
     }
-    
+
     // Controller Method for Forgot Password
     [HttpPost]
     public async Task<IActionResult> SubmitAccountRecovery(AccountRecoveryViewModel model)
@@ -116,17 +116,33 @@ public class AuthenticationController : Controller
             return View("AccountRecovery", model);
         }
 
-        var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+        // Construct the ClientUri dynamically using the current scheme (http/https) and host (domain)
+        string clientUri = $"{Request.Scheme}://{Request.Host}/reset-password";
+
+        // Create the model with ClientUri
+        var modelWithClientUri = new
+        {
+            Email = model.Email,
+            ClientUri = clientUri,
+        };
+
+        // Serialize the modelWithClientUri to send to the backend
+        var content = new StringContent(JsonConvert.SerializeObject(modelWithClientUri), Encoding.UTF8, "application/json");
+
+        // Send the POST request to the forgotpassword endpoint
         var response = await _httpClient.PostAsync("forgotpassword", content);
 
+        // Handle the response
         if (response.IsSuccessStatusCode)
         {
             TempData["SuccessMessage"] = "If the email exists, a reset link has been sent.";
             return RedirectToAction("AccountRecovery");
         }
 
+        // Handle any errors from the response
         var errorMessage = await response.Content.ReadAsStringAsync();
         ModelState.AddModelError(string.Empty, errorMessage);
         return View("AccountRecovery", model);
     }
+
 }
