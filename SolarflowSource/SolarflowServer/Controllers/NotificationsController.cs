@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SolarflowServer.DTOs.Notification;
+using SolarflowServer.Models;
 using SolarflowServer.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -13,10 +14,13 @@ namespace SolarflowServer.Controllers
     public class NotificationsController : ControllerBase
     {
         private readonly INotificationService _notificationService;
+        private readonly ApplicationDbContext _context;
 
-        public NotificationsController(INotificationService notificationService)
+
+        public NotificationsController(INotificationService notificationService, ApplicationDbContext context)
         {
             _notificationService = notificationService;
+            _context = context;
         }
 
         // GET: api/notifications
@@ -73,10 +77,30 @@ namespace SolarflowServer.Controllers
             await _notificationService.DeleteAllNotificationsAsync(userId);
             return NoContent();
         }
+        [HttpPost("generate-test")]
+        [AllowAnonymous] 
+        public async Task<IActionResult> GenerateTestNotifications()
+        {
+
+            var testNotifications = new List<Notification>
+            {
+                new Notification { Title = "New Feature!", Description = "Check out the new notification module.", TimeSent = DateTime.UtcNow, UserId = 1 },
+                new Notification { Title = "Reminder", Description = "Battery needs calibration.", TimeSent = DateTime.UtcNow.AddHours(-1), UserId = 1 },
+                new Notification { Title = "Success", Description = "Your profile was updated.", TimeSent = DateTime.UtcNow.AddDays(-1), UserId = 1, Status = NotificationStatus.Read, TimeRead = DateTime.UtcNow.AddDays(-1).AddMinutes(5) }
+            };
+
+            _context.Notifications.AddRange(testNotifications);
+            await _context.SaveChangesAsync();
+
+            return Ok("Test notifications created.");
+        }
+
 
         private int GetUserId()
         {
             return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         }
+
+
     }
 }
