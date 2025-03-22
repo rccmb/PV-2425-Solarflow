@@ -1,0 +1,138 @@
+﻿
+body {
+    background-color: #f8f9fa;
+}
+
+.battery-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 75vh;
+    max-height: 100vh;
+    overflow: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.battery-content {
+    width: 75%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-width: 3px;
+    border-color: #2C2F33;
+}
+
+.battery-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.battery-input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.battery-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.battery-time-group {
+    display: flex;
+    gap: 10px;
+}
+
+.battery-button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    width: 100%;
+}
+
+.save-button {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+    .save-button:hover {
+        background-color: #218838;
+    }
+
+.cancel-button {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+    .cancel-button:hover {
+        background-color: #c82333;
+    }
+
+.battery-button {
+    padding: 10px 20px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.battery-input {
+    border: none;
+    border: solid 1px #2C2F33;
+    border-radius: 10px;
+    padding-block: 10px;
+    box-shadow: rgba(0, 0, 0, 0.10) 0px 5px 5px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.battery-form-title {
+    font-weight: bolder;
+    font-size: 28px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+.battery-input-label {
+    text-align: start;
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+}
+
+.battery-time-group {
+    display: flex;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.battery-error-container {
+    background-color: darkred;
+    width: 445px;
+    flex-direction: column;
+    display: flex;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid black;
+    margin-top: 20px;
+}
+
+.battery-error-message {
+    color: white;
+    font-size: 12px;
+    margin: 10px 0;
+}
+
+.readonly-input {
+    background-color: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #ced4da;
+    pointer-events: none;
+}

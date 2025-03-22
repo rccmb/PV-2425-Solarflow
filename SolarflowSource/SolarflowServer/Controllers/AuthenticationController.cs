@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
+using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Services;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using Microsoft.AspNetCore.Identity.Data;
@@ -230,6 +231,59 @@ namespace SolarflowServer.Controllers
             // Return success response
             return Ok(new { message = "If the email exists, a reset link has been sent." });
         }
+
+        [HttpGet("get-user")]
+        public async Task<IActionResult> GetUser()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+                return Unauthorized(new { error = "User not authenticated." });
+
+            if (!int.TryParse(userId, out var parsedUserId))
+                return BadRequest(new { error = "Invalid user ID" });
+
+            var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
+
+            if (user == null)
+                return NotFound(new { error = "User not found." });
+
+            var viewAccount = await _viewUserManager.FindByEmailAsync(user.Email);
+
+            var userDTO = new GetUserDTO
+            {
+                Fullname = user.Fullname,
+                Email = user.Email,
+                Photo = user.Photo,
+                CreatedAt = user.CreatedAt,
+                HasViewAccount = viewAccount != null
+            };
+
+            return Ok(userDTO);
+        }
+
+        [HttpPost("update-user")]
+        public async Task<IActionResult> UpdateUser([FromBody] ChangeUserDTO model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+                return Unauthorized(new { error = "User not authenticated." });
+
+            if (!int.TryParse(userId, out var parsedUserId))
+                return BadRequest(new { error = "Invalid user ID" });
+            var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
+
+            if (user == null)
+                return NotFound(new { error = "User not found." });
+
+            user.Fullname = model.Fullname;
+
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new { message = "User updated successfully!" });
+        }
+
     }
 }
 

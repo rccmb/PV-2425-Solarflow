@@ -1,4 +1,4 @@
-﻿namespace SolarflowServer
+﻿namespace SolarflowServer.Models
 {
     public class EmailConfiguration
     {

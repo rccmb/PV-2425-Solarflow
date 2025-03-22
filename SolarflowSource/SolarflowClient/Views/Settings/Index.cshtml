@@ -1,11 +1,74 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model SolarflowClient.Models.ViewModels.Authentication.GetUserViewModel
+
 @{
     ViewData["Title"] = "Settings Page";
     var authToken = Context.Request.Cookies["AuthToken"];
 }
 
+<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/battery/battery.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 <h1 class="page-title">Settings</h1>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div class="battery-container">
+    <div class="battery-content">
+        <div class="battery-input-group">
+            <img src="~/images/icons/profile.png" alt="User Avatar" class="avatar">
+        </div>
+
+        <div class="battery-input-group">
+            <label class="battery-input-label">Email:</label>
+            <div class="readonly-text">@Model.Email</div>
+            <span class="text-danger"></span>
+        </div>
+
+        <div class="battery-input-group">
+            <label class="battery-input-label">Created At:</label>
+            <div class="readonly-text">@Model.CreatedAt</div>
+            <span class="text-danger"></span>
+        </div>
+
+
+        <form method="post" action="/Auth/UpdateUser">
+            <div class="battery-input-group">
+                <label class="battery-input-label">Full Name:</label>
+                <input class="battery-input" type="text" name="Fullname" value="@Model.Fullname" required />
+                <span asp-validation-for="Fullname" class="text-danger"></span>
+            </div>
+
+            <div class="battery-button-group">
+                <button class="battery-button cancel-button" type="reset">Cancel</button>
+                <button class="battery-button save-button" type="submit">Save</button>
+            </div>
+        </form>
+
+
+        <div class="battery-input-group">
+            @if (Model.HasViewAccount)
+            {
+                <p>You already have a view account</p>
+                <form asp-controller="Home" asp-action="DeleteViewAccount" method="post">
+                    <button type="submit" class="btn btn-danger">Delete View Account</button>
+                </form>
+
+                <a class="login-form-forgot-password" asp-controller="Authentication" asp-action="AccountRecovery">Forgot Password?</a>
+            }
+            else
+            {
+                <p>At the moment you don't have a view account</p>
+                <a asp-controller="Home" asp-action="RegisterViewAccount" class="btn btn-primary">Register View Account</a>
+            }
+        </div>
+
+
+        <div class="battery-input-group">
+            <form asp-action="Logout" asp-controller="Home" method="post">
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
+    </div>
+</div>

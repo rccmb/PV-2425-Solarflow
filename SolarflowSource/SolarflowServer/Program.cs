@@ -6,8 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Services;
-using SolarflowServer;
 using Microsoft.Extensions.Options;
+using SolarflowServer.Models;
+using SolarflowServer.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
