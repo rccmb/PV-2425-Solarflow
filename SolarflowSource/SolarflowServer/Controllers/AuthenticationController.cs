@@ -223,7 +223,22 @@ namespace SolarflowServer.Controllers
                 return BadRequest(new { message = "Invalid email format." });
             }
 
-            var message = new Message(new string[] { model.Email }, "Password Reset Link", "https://www.youtube.com/");
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return Ok(new { message = "If the email exists, a reset link has been sent." });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var baseUrl = _configuration["BaseUrl"]; // Get the base URL from config
+            var resetLink = $"{baseUrl}Authentication/ResetPassword?token={Uri.EscapeDataString(token)}";
+
+            var message = new Message(
+                new string[] { model.Email },
+                "Password Reset Link",
+                $"Click <a href='{resetLink}'>here</a> to reset your password."
+            );
 
             // Send the email
             await _emailSender.SendEmailAsync(message);
@@ -231,6 +246,31 @@ namespace SolarflowServer.Controllers
             // Return success response
             return Ok(new { message = "If the email exists, a reset link has been sent." });
         }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { message = "Invalid request data." });
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest(new { message = "Invalid reset request." });
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(new { message = "Password reset successfully!" });
+        }
+
+
 
         [HttpGet("get-user")]
         public async Task<IActionResult> GetUser()
