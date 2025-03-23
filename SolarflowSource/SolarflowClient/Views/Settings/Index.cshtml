@@ -94,8 +94,10 @@
         </div>
 
         <div class="settings-logout">
-            <form asp-action="Logout" asp-controller="Home" method="post">
-                <button type="submit" class="btn btn-danger">Logout</button>
+            <form action="@Url.Action("Logout", "Home")" method="post">
+                <button type="submit" class="nav-link logout">
+                    <img src="~/images/icons/logout.png" alt="Logout" class="sidebar-icon">
+                </button>
             </form>
         </div>
     </div>

@@ -147,3 +147,19 @@ body {
     border: 1px solid #ced4da;
     pointer-events: none;
 }
+
+
+.settings-logout button {
+    background-color: transparent; /* Transparent button */
+    border: none; /* Removes button border */
+    cursor: pointer; /* Ensures it looks clickable */
+}
+
+.settings-logout button:hover {
+    background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background on hover */
+    border-radius: 5px; /* Optional: Adds rounded corners */
+}
+
+        
+
+
