@@ -1,0 +1,39 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Solarflow - Email Confirmation";
+}
+
+@model SolarflowClient.Models.ViewModels.Authentication.ConfirmEmailViewModel
+
+<div class="email-confirmation">
+    <h2>Email Confirmation</h2>
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success">@ViewBag.Message</div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <p>Click the button below to confirm your email address. If you haven't received the confirmation email, please check your spam folder or request a new one.</p>
+
+    
+    <form asp-action="SubmitConfirmEmail" method="post">
+
+        <div class="authentication-input-div">
+            <input type="hidden" asp-for="Token" />
+            <input type="hidden" asp-for="UserId" />
+        </div>
+
+        <button type="submit" class="authentication-form-button background-blue">Confirm Email</button>
+    </form>
+
+    <div class="resend-link">
+        <p>If you haven't received the confirmation email, you can <a href="@Url.Action("ResendConfirmationEmail", "Authentication")">request a new one</a>.</p>
+    </div>
+</div>

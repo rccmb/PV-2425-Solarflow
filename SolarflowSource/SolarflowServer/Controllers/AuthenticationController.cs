@@ -84,6 +84,20 @@ namespace SolarflowServer.Controllers
 
             await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Registered", GetClientIPAddress());
 
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var baseUrl = _configuration["BaseUrl"]; // Get the base URL from config
+            var resetLink = $"{baseUrl}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
+
+            var message = new Message(
+                new string[] { model.Email },
+                "Password Reset Link",
+                $"Click <a href='{resetLink}'>here</a> to confirm your email."
+            );
+
+            // Send the email
+            await _emailSender.SendEmailAsync(message);
+
             return Ok(new { message = "User registered successfully!" });
         }
 
@@ -100,7 +114,6 @@ namespace SolarflowServer.Controllers
            
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null) return BadRequest("User not found.");
-
         
             if (await _viewUserManager.FindByEmailAsync(user.Email) != null) return BadRequest("A ViewAccount is already registered for this user.");
 
@@ -202,6 +215,27 @@ namespace SolarflowServer.Controllers
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO model)
+        {
+            if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.Token))
+            {
+                return BadRequest(new { message = "Invalid request." });
+            }
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return BadRequest(new { message = "Invalid user." });
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, model.Token);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { message = "Invalid request." });
+            }
+            return Ok(new { message = "Email confirmed successfully!" });
         }
 
         private string GetClientIPAddress()

@@ -165,5 +165,34 @@ public class AuthenticationController : Controller
         return View("ResetPassword", model);
     }
 
+    public IActionResult ConfirmEmail(string token, int userId)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            ModelState.AddModelError("", "Invalid or expired email confirmation link.");
+            return View();
+        }
+        var model = new ConfirmEmailViewModel { Token = token , UserId = userId.ToString()};
+        return View(model);
+    }
 
+    public async Task<IActionResult> SubmitConfirmEmail(ConfirmEmailViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+        var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("confirm-email", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            TempData["SuccessMessage"] = "Your email has been successfully confirmed!";
+            return RedirectToAction("Login");
+        }
+
+        var errorMessage = await response.Content.ReadAsStringAsync();
+        ModelState.AddModelError(string.Empty, errorMessage);
+        return View("ConfirmEmail", model);
+    }
 }
