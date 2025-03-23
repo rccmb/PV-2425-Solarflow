@@ -80,7 +80,7 @@
                 @if (Model.HasViewAccount)
                 {
                     <p>You already have a view account</p>
-                    <form asp-controller="Home" asp-action="DeleteViewAccount" method="post">
+                    <form asp-controller="Settings" asp-action="DeleteUserViewAccount" method="post">
                         <button type="submit" class="btn btn-danger">Delete View Account</button>
                     </form>
                 }

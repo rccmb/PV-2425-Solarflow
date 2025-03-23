@@ -284,6 +284,34 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "User updated successfully!" });
         }
 
+        [HttpPost("delete-user-view-model")]
+        public async Task<IActionResult> DeleteUserViewModel()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+                return Unauthorized(new { error = "User not authenticated." });
+
+            if (!int.TryParse(userId, out var parsedUserId))
+                return BadRequest(new { error = "Invalid user ID" });
+
+            var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
+
+            if (user == null)
+                return NotFound(new { error = "User not found." });
+
+            var viewAccount = await _viewUserManager.FindByEmailAsync(user.Email);
+
+            if (viewAccount == null)
+                return NotFound(new { error = "View Account not found." });
+
+            var result = await _viewUserManager.DeleteAsync(viewAccount);
+
+            if (!result.Succeeded)
+                return BadRequest(new { error = "An error occurred while deleting the View Account." });
+
+            return Ok(new { message = "View Account deleted successfully!" });
+        }
     }
 }
 

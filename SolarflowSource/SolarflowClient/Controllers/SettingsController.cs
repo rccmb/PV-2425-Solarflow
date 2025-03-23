@@ -109,5 +109,39 @@ namespace SolarflowClient.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteUserViewAccount()
+        {
+            var token = Request.Cookies["AuthToken"];
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["ErrorMessage"] = "You must be logged in to delete your account.";
+                return RedirectToAction("Login", "Authentication");
+            }
+            if (!token.StartsWith("Bearer "))
+            {
+                token = "Bearer " + token;
+            }
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "delete-user-view-model"); // FIXED URL
+            requestMessage.Headers.Add("Authorization", token);
+            var response = await _httpClient.SendAsync(requestMessage);
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "User view account deleted successfully!";
+                return RedirectToAction("Index");
+            }
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var errorObj = JsonConvert.DeserializeObject<dynamic>(errorResponse);
+                TempData["ErrorMessage"] = errorObj?.error?.ToString() ?? "An unknown error occurred.";
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "An error occurred, but the response could not be parsed.";
+            }
+            return RedirectToAction("Index");
+        }
+
     }
 }
