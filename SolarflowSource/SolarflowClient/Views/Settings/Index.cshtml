@@ -69,6 +69,8 @@
                 </div>
             </form>
 
+            <br />
+
             <a class="login-form-forgot-password" asp-controller="Authentication" asp-action="AccountRecovery">Forgot Password?</a>
         
         </div>
@@ -81,7 +83,9 @@
                 {
                     <p>You already have a view account</p>
                     <form asp-controller="Settings" asp-action="DeleteUserViewAccount" method="post">
-                        <button type="submit" class="btn btn-danger">Delete View Account</button>
+                        <div class="settings-button-group">
+                            <button type="submit" class="settings-button cancel-button">Delete View Account</button>
+                        </div>
                     </form>
                 }
                 else
