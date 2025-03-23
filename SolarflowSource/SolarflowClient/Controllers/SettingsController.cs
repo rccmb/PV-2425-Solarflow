@@ -65,7 +65,7 @@ namespace SolarflowClient.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateUserAsync(ChangeUserModelView model)
+        public async Task<IActionResult> UpdateUser(ChangeUserModelView model)
         {
             var token = Request.Cookies["AuthToken"];
             if (string.IsNullOrEmpty(token))
@@ -79,13 +79,12 @@ namespace SolarflowClient.Controllers
                 return View("Index", model);
             }
 
-            // Ensure the token has "Bearer " prefix
-            if (!string.IsNullOrEmpty(token) && !token.StartsWith("Bearer "))
+            if (!token.StartsWith("Bearer "))
             {
                 token = "Bearer " + token;
             }
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/auth/update-user");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "update-user"); // FIXED URL
             requestMessage.Headers.Add("Authorization", token);
             requestMessage.Content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
 
@@ -100,14 +99,7 @@ namespace SolarflowClient.Controllers
             try
             {
                 var errorObj = JsonConvert.DeserializeObject<dynamic>(errorResponse);
-                if (errorObj != null && errorObj.error != null)
-                {
-                    TempData["ErrorMessage"] = errorObj.error.ToString();
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "An unknown error occurred.";
-                }
+                TempData["ErrorMessage"] = errorObj?.error?.ToString() ?? "An unknown error occurred.";
             }
             catch
             {
@@ -116,8 +108,6 @@ namespace SolarflowClient.Controllers
 
             return RedirectToAction("Index");
         }
-
-
 
     }
 }
