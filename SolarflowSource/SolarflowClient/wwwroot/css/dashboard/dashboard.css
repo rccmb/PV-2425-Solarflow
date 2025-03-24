@@ -1,123 +1,109 @@
-﻿body {
-    background-color: #e7e5df;
-}
+﻿body { background-color: #e7e5df; }
 
 #dashboard {
-    box-sizing:border-box;
+    align-content: stretch;
+    align-items: stretch;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    align-items: stretch;
-    align-content: stretch;
 }
 
-#dashboard > div {
-    margin: 10px 10px;
-}
+#dashboard > div { margin: 10px 10px; }
 
 #dashboard-header {
+    align-content: stretch;
+    align-items: stretch;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-between;
-    align-items: stretch;
-    align-content: stretch;
 }
 
 #dashboard-filters {
+    align-content: stretch;
+    align-items: center;
+    background-color: #393e41;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-between;
-    align-items: center;
-    align-content: stretch;
     padding: 20px 50px;
-    border-radius: 10px;
-    background-color: #393e41;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .dashboard-filter-item {
+    align-content: center;
+    align-items: stretch;
+    color: white;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: space-between;
-    align-items: stretch;
-    align-content: center;
-    color: white;
 }
 
 
 #dashboard-charts {
+    align-content: stretch;
+    align-items: stretch;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-around;
-    align-items: stretch;
-    align-content: stretch;
 }
 
 #dashboard-charts-energy {
+    align-content: stretch;
+    align-items: stretch;
     display: flex;
+    flex: 3;
     flex-direction: row;
     flex-wrap: wrap;
+
     justify-content: space-between;
-    align-items: stretch;
-    align-content: stretch;
-
-    flex: 3;
 }
 
 
-#dashboard-charts-energy > div:nth-child(1){
-    flex: 2;
-}
+#dashboard-charts-energy > div:nth-child(1) { flex: 2; }
 
-#dashboard-charts-energy > div:nth-child(2) {
-    flex: 8;
-}
+#dashboard-charts-energy > div:nth-child(2) { flex: 8; }
 
-#dashboard-charts-energy > div:nth-child(3) {
-    flex-basis: 100%;
-}
+#dashboard-charts-energy > div:nth-child(3) { flex-basis: 100%; }
 
 
 #dashboard-charts-battery {
+    align-content: stretch;
+    align-items: stretch;
     display: flex;
+    flex: 2;
     flex-direction: column;
     flex-wrap: wrap;
     justify-content: flex-start;
-    align-items: stretch;
-    align-content: stretch;
-    flex: 2;
 }
 
-#dashboard-charts-battery > div:nth-child(1) {
-    flex-basis: 100%;
-}
+#dashboard-charts-battery > div:nth-child(1) { flex-basis: 100%; }
 
 .chart-item {
+    align-content: stretch;
+    align-items: stretch;
+    background-color: #d3d0cb;
+    border: 1px solid #808080;
+    border-radius: 10px;
     display: flex;
+    
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    align-items: stretch;
-    align-content: stretch;
-    
-    padding: 20px;
+
     margin: 10px;
-    border-radius: 10px;
-
-    background-color: #d3d0cb;
-    border: 1px solid #808080;
+    padding: 20px;
 }
 
-.chart-item > h2{
-    margin-bottom: 10px;
-}
+.chart-item > h2 { margin-bottom: 10px; }
 
 canvas {
-    width: 100% !important;
     height: 100% !important;
+    width: 100% !important;
 }
