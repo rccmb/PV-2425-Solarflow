@@ -6,8 +6,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Services;
+using Microsoft.Extensions.Options;
+using SolarflowServer.Models;
+using SolarflowServer.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Email Configuration settings
+var emailConfig = builder.Configuration
+    .GetSection("EmailConfiguration")
+    .Get<EmailConfiguration>();
+
+builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
+builder.Services.AddSingleton<EmailConfiguration>(sp => sp.GetRequiredService<IOptions<EmailConfiguration>>().Value);
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
 
 // DATABASE CONNECTION
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -67,6 +80,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpClient<WindyApiClient>(); 
 builder.Services.AddScoped<WeatherProcessingService>(); 
 builder.Services.AddScoped<ForecastService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+
 
 builder.Services.AddControllers();
 

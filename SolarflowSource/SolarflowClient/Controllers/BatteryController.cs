@@ -14,8 +14,8 @@ namespace SolarflowClient.Controllers
         public BatteryController(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            // _httpClient.BaseAddress = new Uri("https://localhost:7280/api/battery/");
-            _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/battery/");
+            _httpClient.BaseAddress = new Uri("https://localhost:7280/api/battery/");
+            // _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/battery/"); // CHANGE PRODUCTION.
         }
 
         public async Task<IActionResult> Index()
@@ -38,16 +38,26 @@ namespace SolarflowClient.Controllers
             }
             else
             {
-                // Try to extract the error from JSON
                 var errorResponse = await response.Content.ReadAsStringAsync();
                 try
                 {
                     var errorObj = JsonConvert.DeserializeObject<dynamic>(errorResponse);
-                    TempData["ErrorMessage"] = errorObj.error != null ? errorObj.error.ToString() : errorResponse;
+                    if (errorObj != null && errorObj.message != null)
+                    {
+                        TempData["ErrorMessage"] = errorObj.message.ToString();
+                    }
+                    else if (errorObj != null && errorObj.error != null)
+                    {
+                        TempData["ErrorMessage"] = errorObj.error.ToString();
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "An unknown error occurred.";
+                    }
                 }
                 catch
                 {
-                    TempData["ErrorMessage"] = errorResponse;
+                    TempData["ErrorMessage"] = "An error occurred, but the response could not be parsed.";
                 }
                 return View();
             }
@@ -78,10 +88,31 @@ namespace SolarflowClient.Controllers
             {
                 TempData["SuccessMessage"] = "Battery settings updated successfully!";
                 return RedirectToAction("Index");
+            } 
+            else
+            {
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var errorObj = JsonConvert.DeserializeObject<dynamic>(errorResponse);
+                    if (errorObj != null && errorObj.message != null)
+                    {
+                        TempData["ErrorMessage"] = errorObj.message.ToString();
+                    }
+                    else if (errorObj != null && errorObj.error != null)
+                    {
+                        TempData["ErrorMessage"] = errorObj.error.ToString();
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "An unknown error occurred.";
+                    }
+                }
+                catch
+                {
+                    TempData["ErrorMessage"] = "An error occurred, but the response could not be parsed.";
+                }
             }
-
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            TempData["ErrorMessage"] = errorMessage;
             return RedirectToAction("Index");
         }
     }

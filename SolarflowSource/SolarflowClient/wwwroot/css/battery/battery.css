@@ -111,3 +111,20 @@
     align-items: center;
     margin-left: 5px;
 }
+
+.battery-error-container {
+    background-color: darkred;
+    width: 445px;
+    flex-direction: column;
+    display: flex;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid black;
+    margin-top: 20px;
+}
+
+.battery-error-message {
+    color: white;
+    font-size: 12px;
+    margin: 10px 0;
+}

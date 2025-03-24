@@ -1,11 +1,74 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model List<SolarflowClient.Models.ViewModels.Notifications.GetNotificationsViewModel>
+
 @{
     ViewData["Title"] = "Notifications Page";
-    var authToken = Context.Request.Cookies["AuthToken"];
 }
 
-<link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/notifications/notifications.css" rel="stylesheet" asp-append-version="true" />
 
-<h1 class="page-title">Notifications</h1>
+<h1 class="page-title mb-4">📬 Notifications</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        You have no notifications.
+    </div>
+}
+else
+{
+    <div class="inbox-header">
+        
+        <form method="post" asp-action="DeleteAll">
+            <button type="submit" class="btn btn-danger btn-sm" title="Delete all notifications">
+                🗑️ Delete All
+            </button>
+        </form>
+    </div>
+
+    <div class="inbox-container">
+        @foreach (var notification in Model)
+        {
+            var isUnread = notification.Status == "Unread";
+
+            <div class="notification-card @(isUnread ? "unread" : "")">
+                <div class="notification-content">
+                    <div class="notification-icon">📬</div>
+
+                    <div class="notification-text">
+                        <div class="notification-title">@notification.Title</div>
+                        <div class="notification-description">@notification.Description</div>
+                        <div class="notification-meta">
+                            <span class="notification-date">
+                                @notification.TimeSent.ToLocalTime().ToString("g")
+                            </span>
+                            <span class="badge @(isUnread ? "badge-warning" : "badge-success")">
+                                @notification.Status
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notification-actions">
+                    @if (isUnread)
+                    {
+                        <form method="post" asp-action="MarkAsRead" asp-route-id="@notification.Id">
+                            <button type="submit" class="btn btn-success" title="Mark as Read">
+                                ✔ Mark as Read
+                            </button>
+                        </form>
+                    }
+                    <form method="post" asp-action="Delete" asp-route-id="@notification.Id">
+                        <button type="submit" class="btn btn-danger" title="Delete">
+                            🗑️ Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}
