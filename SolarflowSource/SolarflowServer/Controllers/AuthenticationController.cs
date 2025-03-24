@@ -179,7 +179,7 @@ namespace SolarflowServer.Controllers
                     
                     Response.Cookies.Append("AuthToken", token, cookieOptions);
                     await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
-                    return Ok(new { token });
+                    return Ok(new { token, isAdmin = true });
                 }
             }
 
@@ -210,7 +210,7 @@ namespace SolarflowServer.Controllers
             };
             Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
             await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
-            return Ok(new { token = viewToken });
+            return Ok(new { token = viewToken , isAdmin = false});
         }
 
         [HttpPost("logout")]

@@ -82,6 +82,9 @@ public class AuthenticationController : Controller
             var jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic tokenResponse = JsonConvert.DeserializeObject(jsonResponse);
             string token = tokenResponse.token;
+            bool isAdmin = tokenResponse.isAdmin;
+
+            model.IsAdmin = isAdmin;
 
             var cookieOptions = new CookieOptions
             {
@@ -93,6 +96,8 @@ public class AuthenticationController : Controller
             Response.Cookies.Append("AuthToken", token, cookieOptions);
 
             Response.Cookies.Append("UserEmail", model.Email, cookieOptions);
+
+            Response.Cookies.Append("IsAdmin", model.IsAdmin.ToString(), cookieOptions);
 
             return RedirectToAction("Index", "Home");
         }
