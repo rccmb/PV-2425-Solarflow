@@ -163,7 +163,7 @@ namespace SolarflowServer.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDTO model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user != null)
+            if (user != null && user.EmailConfirmed == true)
             {
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
                 if (result.Succeeded)
@@ -181,6 +181,11 @@ namespace SolarflowServer.Controllers
                     await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
                     return Ok(new { token });
                 }
+            }
+
+            if(user != null && user.EmailConfirmed == false)
+            {
+                return Unauthorized("Email not confirmed.");
             }
 
             var viewUser = await _viewUserManager.FindByEmailAsync(model.Email);
