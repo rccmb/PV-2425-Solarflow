@@ -195,4 +195,27 @@ public class AuthenticationController : Controller
         ModelState.AddModelError(string.Empty, errorMessage);
         return View("ConfirmEmail", model);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> ResendEmailConfirmation(ConfirmEmailViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("resend-email-confirmation", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            TempData["SuccessMessage"] = "It's been sended a new confirmation email!";
+            return RedirectToAction("Login");
+        }
+
+        var errorMessage = await response.Content.ReadAsStringAsync();
+        ModelState.AddModelError(string.Empty, errorMessage);
+
+        return View("ConfirmEmail", model);
+    }
 }

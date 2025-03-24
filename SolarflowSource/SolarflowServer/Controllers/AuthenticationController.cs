@@ -101,6 +101,31 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "User registered successfully!" });
         }
 
+        [HttpPost("resend-email-confirmation")]
+        public async Task<IActionResult> ResendEmailConfirmation([FromBody] ConfirmEmailDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return BadRequest(new { message = "Invalid email." });
+            }
+            if (user.ConfirmedEmail)
+            {
+                return BadRequest(new { message = "Email already confirmed." });
+            }
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var baseUrl = _configuration["BaseUrl"]; // Get the base URL from config
+            var resetLink = $"{baseUrl}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
+            var message = new Message(
+                new string[] { user.Email },
+                "Password Reset Link",
+                $"Click <a href='{resetLink}'>here</a> to confirm your email."
+            );
+            // Send the email
+            await _emailSender.SendEmailAsync(message);
+            return Ok(new { message = "Email confirmation link sent successfully!" });
+        }
+
         [HttpPost("register-view")]
         public async Task<IActionResult> RegisterViewAccount([FromBody] RegisterViewDTO model)
         {

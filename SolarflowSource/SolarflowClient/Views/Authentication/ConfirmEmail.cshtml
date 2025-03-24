@@ -3,11 +3,16 @@
     ViewData["Title"] = "Solarflow - Email Confirmation";
 }
 
+<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/authentication/authentication-login.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+
 @model SolarflowClient.Models.ViewModels.Authentication.ConfirmEmailViewModel
 
-<div class="email-confirmation">
-    <h2>Email Confirmation</h2>
-
+<body class="authentication-body">
+        
     @if (ViewBag.Message != null)
     {
         <div class="alert alert-success">@ViewBag.Message</div>
@@ -20,10 +25,18 @@
         </div>
     }
 
-    <p>Click the button below to confirm your email address. If you haven't received the confirmation email, please check your spam folder or request a new one.</p>
+    <div style="margin-top: 30px">
+        <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
+        <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
+        <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
+    </div>
 
-    
-    <form asp-action="SubmitConfirmEmail" method="post">
+    <h1 class="authentication-form-title" style="text-align: center">Email Confirmation</h1>
+
+    <p style="color: white">Click the button below to confirm your email address. If you haven't received the confirmation email, please check your spam folder or request a new one.</p>
+
+
+    <form class="authentication-form" asp-action="SubmitConfirmEmail" method="post">
 
         <div class="authentication-input-div">
             <input type="hidden" asp-for="Token" />
@@ -33,7 +46,14 @@
         <button type="submit" class="authentication-form-button background-blue">Confirm Email</button>
     </form>
 
-    <div class="resend-link">
-        <p>If you haven't received the confirmation email, you can <a href="@Url.Action("ResendConfirmationEmail", "Authentication")">request a new one</a>.</p>
-    </div>
-</div>
+    <form class="authentication-form" asp-action="ResendEmailConfirmation" method="post">
+
+        <div class="authentication-input-div">
+            <input type="hidden" asp-for="Token" />
+            <input type="hidden" asp-for="UserId" />
+        </div>
+
+        <button type="submit" class="authentication-form-button background-blue">Resend Email Confirmation</button>
+    </form>
+
+</body>
