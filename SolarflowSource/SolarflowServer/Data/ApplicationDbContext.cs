@@ -9,7 +9,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<ApplicationUser> Users { get; set; }
     public DbSet<Battery> Batteries { get; set; }
-
+    public DbSet<Notification> Notifications { get; set; }
     public DbSet<Forecast> Forecasts { get; set; }
     public DbSet<ViewAccount> ViewAccounts { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
@@ -84,6 +84,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // MAPPING THE Forecast.
         builder.Entity<Forecast>(entity =>
         {
             entity.ToTable("Forecasts");
@@ -96,6 +97,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasForeignKey(f => f.BatteryID)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        builder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany() 
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 

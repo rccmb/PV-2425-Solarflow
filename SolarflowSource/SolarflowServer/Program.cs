@@ -80,6 +80,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpClient<WindyApiClient>(); 
 builder.Services.AddScoped<WeatherProcessingService>(); 
 builder.Services.AddScoped<ForecastService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+
 
 builder.Services.AddControllers();
 
