@@ -1,19 +1,170 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
-    var authToken = Context.Request.Cookies["AuthToken"];
+    ViewData["Title"] = "Dashboard";
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="~/css/dashboard/dashboard.css" asp-append-version="true">
+</head>
+<body>
+    <div id="dashboard">
+        <!-- Dashboard Header -->
+        <div id="dashboard-header">
+            <div>
+                <h1>@ViewData["Title"]</h1>
+                <small>Last Update: 23/03/2025 15:22</small>
+            </div>
+            <div>
+                <a href="#" id="refresh-icon" title="Refresh Data">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
+                <a href="#" id="filter-icon" title="Filter Options">
+                    <i class="fas fa-filter"></i>
+                </a>
+                <a href="@Url.Action("ExportCSV", "Home")" id="settings-icon" title="Export CSV">
+                    <i class="fas fa-cog"></i>
+                </a>
+            </div>
+        </div>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    
-    @if (!string.IsNullOrEmpty(authToken))
-    {
-        <a asp-controller="Home" asp-action="RegisterViewAccount" class="btn btn-primary">Register View Account</a>
-        <form asp-action="Logout" asp-controller="Home" method="post">
-            <button type="submit" class="btn btn-danger">Logout</button>
-        </form>
+        <!-- Dashboard Filters -->
+        <div id="dashboard-filters">
+            <div class="dashboard-filter-item">
+                <label>Start Date</label>
+                <input type="date" value="2024-12-01">
+            </div>
+            <div class="dashboard-filter-item">
+                <label>End Date</label>
+                <input type="date" value="2024-12-31">
+            </div>
+            <div class="dashboard-filter-item">
+                <label>Time Measurement</label>
+                <select>
+                    <option>Days</option>
+                    <option>Weeks</option>
+                </select>
+            </div>
+            <div class="dashboard-filter-item">
+                <label>Source</label>
+                <select>
+                    <option>All</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button id="apply-filters">✔</button>
+            </div>
+        </div>
 
-        
+        <!-- Dashboard Charts -->
+        <div id="dashboard-charts">
+            <div id="dashboard-charts-energy">
+                <div class="chart-item">
+                    <h2>Energy Usage</h2>
+                    <p>5.175 Kwh</p>
+                </div>
+                <div class="chart-item">
+                    <h2>Solar Prevision</h2>
+                    <div>
+                        <canvas id="previsionChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-item">
+                    <h2>Gains vs. Consumption</h2>
+                    <div>
+                        <canvas id="consumptionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div id="dashboard-charts-battery">
+                <div class="chart-item">
+                    <h2>Battery Status</h2>
+                    <div>
+                        <canvas id="batteryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    }
-</div>
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadPrevisionChart();
+            loadConsumptionChart();
+            loadBatteryChart();
+
+            // On window resize, let Chart.js handle resizing.
+            window.addEventListener("resize", function () {
+                // Iterate over each canvas in case Chart.js instances need to recalc.
+                document.querySelectorAll("canvas").forEach(canvas => {
+                    const chartInstance = Chart.getChart(canvas);
+                    if (chartInstance) {
+                        chartInstance.resize();
+                    }
+                });
+            });
+
+            // Optional: refresh charts on clicking the refresh icon.
+            document.getElementById("refresh-icon").addEventListener("click", function (event) {
+                event.preventDefault();
+                loadPrevisionChart();
+                loadConsumptionChart();
+                loadBatteryChart();
+            });
+        });
+
+        function loadPrevisionChart() {
+            fetch('/Home/GetPrevisionChartData')
+                .then(response => response.json())
+                .then(chartData => {
+                    var ctx = document.getElementById("previsionChart").getContext('2d');
+                    if (window.previsionChartInstance) {
+                        window.previsionChartInstance.destroy();
+                    }
+                    window.previsionChartInstance = new Chart(ctx, {
+                        type: chartData.type,
+                        data: chartData.data,
+                        options: chartData.options
+                    });
+                })
+                .catch(error => console.error("Error loading Prevision Chart:", error));
+        }
+
+        function loadConsumptionChart() {
+            fetch('/Home/GetConsumptionChartData')
+                .then(response => response.json())
+                .then(chartData => {
+                    var ctx = document.getElementById("consumptionChart").getContext('2d');
+                    if (window.consumptionChartInstance) {
+                        window.consumptionChartInstance.destroy();
+                    }
+                    window.consumptionChartInstance = new Chart(ctx, {
+                        type: chartData.type,
+                        data: chartData.data,
+                        options: chartData.options
+                    });
+                })
+                .catch(error => console.error("Error loading Consumption Chart:", error));
+        }
+
+        function loadBatteryChart() {
+            fetch('/Home/GetBatteryChartData')
+                .then(response => response.json())
+                .then(chartData => {
+                    var ctx = document.getElementById("batteryChart").getContext('2d');
+                    if (window.batteryChartInstance) {
+                        window.batteryChartInstance.destroy();
+                    }
+                    window.batteryChartInstance = new Chart(ctx, {
+                        type: chartData.type,
+                        data: chartData.data,
+                        options: chartData.options
+                    });
+                })
+                .catch(error => console.error("Error loading Battery Chart:", error));
+        }
+    </script>
+</body>
+</html>
