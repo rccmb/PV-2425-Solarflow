@@ -48,8 +48,6 @@ public class ForecastController : ControllerBase
          if (battery == null)
              return NotFound();
 
-    
-
         var forecasts = await _context.Forecasts
             .Where(f => f.BatteryID == battery.ID)
             .OrderBy(f => f.ForecastDate)

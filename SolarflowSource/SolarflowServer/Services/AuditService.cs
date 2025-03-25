@@ -11,6 +11,7 @@ namespace SolarflowServer.Services
             _context = context;
         }
 
+
         public async Task LogAsync(string userId, string email, string action, string ipAddress)
         {
             var auditLog = new AuditLog
