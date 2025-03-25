@@ -15,6 +15,9 @@ namespace SolarflowServer.Models
         public int ChargeLevel { get; set; }
 
         [Required]
+        public int MaxKW { get; set; }
+
+        [Required]
         public string ChargingSource { get; set; }
 
         [Required]
@@ -33,9 +36,6 @@ namespace SolarflowServer.Models
 
         [Required]
         public string SpendingEndTime { get; set; }
-
-        [Required]
-        public int MaxKW { get; set; }
 
         public string? LastUpdate { get; set; }
 

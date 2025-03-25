@@ -70,6 +70,7 @@ namespace SolarflowServer.Controllers
             {
                 User = user, 
                 ChargeLevel = 40,
+                MaxKW = 180,
                 ChargingSource = "Solar",
                 BatteryMode = "Personalized",
                 MinimalTreshold = 0,
