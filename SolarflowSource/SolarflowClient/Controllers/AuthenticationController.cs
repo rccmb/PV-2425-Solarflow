@@ -16,8 +16,8 @@ public class AuthenticationController : Controller
     public AuthenticationController(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        // _httpClient.BaseAddress = new Uri("https://localhost:7280/api/auth/"); 
-        _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/auth/"); // CHANGE PRODUCTION.
+        _httpClient.BaseAddress = new Uri("https://localhost:7280/api/auth/"); 
+        // _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/auth/"); // CHANGE PRODUCTION.
     }
 
     public IActionResult Register()
