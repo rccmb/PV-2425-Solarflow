@@ -1,11 +1,108 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model SolarflowClient.Models.ViewModels.Authentication.GetUserViewModel
+
 @{
     ViewData["Title"] = "Settings Page";
     var authToken = Context.Request.Cookies["AuthToken"];
 }
 
+<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/settings/settings.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 <h1 class="page-title">Settings</h1>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="settings-error-container">
+            <p class="settings-error-message">@TempData["ErrorMessage"]</p>
+        </div>
+    }
+}
+
+
+<div class="settings-container">
+    <div class="settings-content">
+        <div class="settings-profile-picture">
+            <img src="~/images/icons/profile.png" alt="User Avatar" class="avatar">
+        </div>
+
+        <div class="settings-user-information">
+            <p class="settings-form-title">User Information</p>
+        
+            <div class="settings-input-group">
+                <label class="settings-input-label">Email:</label>
+                <div class="readonly-text">@Model.Email</div>
+                <span class="text-danger"></span>
+            </div>
+
+            <div class="settings-input-group">
+                <label class="settings-input-label">Created At:</label>
+                <div class="readonly-text">@Model.CreatedAt</div>
+                <span class="text-danger"></span>
+            </div>
+
+            <form method="post" action="/Settings/UpdateUser">
+                <div class="settings-input-group">
+                    <label class="settings-input-label">Full Name:</label>
+                    <input class="settings-input" type="text" name="Fullname" value="@Model.Fullname" required />
+                    <span asp-validation-for="Fullname" class="text-danger"></span>
+
+                    <div class="settings-button-group">
+                        <button class="settings-button cancel-button" type="reset">Cancel</button>
+                        <button class="settings-button save-button" type="submit">Save</button>
+                    </div>
+                </div>
+            </form>
+
+            <br />
+
+            <a class="login-form-forgot-password" asp-controller="Authentication" asp-action="AccountRecovery">Forgot Password?</a>
+        
+        </div>
+
+        <div class="settings-view-account">
+            <p class="settings-form-title">View Account</p>
+
+            <div class="settings-input-group">
+                @if (Model.HasViewAccount)
+                {
+                    <p>You already have a view account</p>
+                    <form asp-controller="Settings" asp-action="DeleteUserViewAccount" method="post">
+                        <div class="settings-button-group">
+                            <button type="submit" class="settings-button cancel-button">Delete View Account</button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <p>At the moment you don't have a view account</p>
+                    <a asp-controller="Home" asp-action="RegisterViewAccount" class="btn btn-primary">Register View Account</a>
+                }
+            </div>
+
+        </div>
+
+        <div class="settings-logout">
+            <form action="@Url.Action("Logout", "Home")" method="post">
+                <button type="submit" class="nav-link logout">
+                    <img src="~/images/icons/logout.png" alt="Logout" class="sidebar-icon">
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

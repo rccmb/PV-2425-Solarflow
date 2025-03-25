@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using MimeKit;
+using SolarflowServer.Models;
+using SolarflowServer.Services;
 
-namespace SolarflowServer
+namespace SolarflowServer.Controllers
 {
     public class EmailSender : IEmailSender
     {

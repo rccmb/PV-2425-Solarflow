@@ -1,6 +1,6 @@
 ﻿using MimeKit;
 
-namespace SolarflowServer
+namespace SolarflowServer.Models
 {
     public class Message
     {

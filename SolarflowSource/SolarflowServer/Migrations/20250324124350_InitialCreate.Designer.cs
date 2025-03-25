@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250322164315_InitialCreate")]
+    [Migration("20250324124350_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

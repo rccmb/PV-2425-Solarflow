@@ -1,4 +1,6 @@
-﻿namespace SolarflowServer
+﻿using SolarflowServer.Models;
+
+namespace SolarflowServer.Services
 {
     public interface IEmailSender
     {
