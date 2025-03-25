@@ -34,6 +34,9 @@ namespace SolarflowServer.Models
         [Required]
         public string SpendingEndTime { get; set; }
 
+        [Required]
+        public int MaxKW { get; set; }
+
         public string? LastUpdate { get; set; }
 
         [ForeignKey("ApplicationUser")]
