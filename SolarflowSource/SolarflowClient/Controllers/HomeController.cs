@@ -2,7 +2,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace SolarflowClient.Controllers;
 
@@ -26,63 +25,104 @@ public class HomeController : Controller
         return View();
     }
 
-
-    public ActionResult ExportCSV()
+    [HttpGet]
+    public async Task<ActionResult> GetDashboardData()
     {
-        // JSON Data
-        const string json = @"
-        [
-            { ""Date"": ""2025-03-16"", ""Value"": -23, ""Source"": ""Gains"" },
-            { ""Date"": ""2025-03-16"", ""Value"": -47, ""Source"": ""Consumption"" },
-            { ""Date"": ""2025-03-16"", ""Value"": 12, ""Source"": ""Gains"" },
-            { ""Date"": ""2025-03-15"", ""Value"": -56, ""Source"": ""Consumption"" },
-            { ""Date"": ""2025-03-15"", ""Value"": -5, ""Source"": ""Gains"" },
-            { ""Date"": ""2025-03-15"", ""Value"": 20, ""Source"": ""Consumption"" }
-        ]";
+        // Receive json from server
+        var response = await _httpClient.GetAsync("home/latest");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+        var json = await response.Content.ReadAsStringAsync();
 
-        // Deserialize JSON to dynamic list
-        var records = JsonConvert.DeserializeObject<List<JObject>>(json);
+        // Convert json to data
+        var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(json);
 
-        // Convert to CSV
+        var dashboardData = new
+        {
+            lastUpdate = data[0].Date,
+            energyUsage = data[0].Consumption
+        };
+
+
+        return Json(dashboardData);
+    }
+
+
+    [HttpGet]
+    public async Task<ActionResult> GetWeatherImage()
+    {
+        // Fetch the forecast data from the API
+        var response = await _httpClient.GetAsync("home/prevision");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+
+        var json = await response.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
+
+        // Determine the image based on weather condition
+        var weatherCondition = data[0].WeatherCondition.ToLower();
+        var imageUrl = weatherCondition switch
+        {
+            "partly cloudy" => "/images/weather/partly_cloudy.png",
+            "cloudy" => "/images/weather/cloudy.png",
+            "very cloudy" => "/images/weather/very_cloudy.png",
+            _ => "/images/weather/clear.png"
+        };
+
+        return Json(new { imageUrl });
+    }
+
+    public async Task<ActionResult> ExportCSV()
+    {
+        // Receive json from server
+        var response = await _httpClient.GetAsync("home/consumption");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+        var json = await response.Content.ReadAsStringAsync();
+
+        // Convert json to data
+        var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(json);
+
+        // Prepare CSV using data
         var csvData = new StringBuilder();
-        csvData.AppendLine("Date,Value,Source"); // Header
-        foreach (var record in records) csvData.AppendLine($"{record["Date"]},{record["Value"]},{record["Source"]}");
-
-        // Convert CSV data to a byte array
+        csvData.AppendLine("Date,Gain,Consumption"); // Header
+        foreach (var item in data) csvData.AppendLine($"{item.Date},{item.Gain},{item.Consumption}");
         var fileBytes = Encoding.UTF8.GetBytes(csvData.ToString());
 
-        // Return CSV file as a download
         return File(fileBytes, "text/csv", "data.csv");
     }
 
 
     [HttpGet]
-    public IActionResult GetPrevisionChartData()
+    public async Task<ActionResult> GetPrevisionChartData()
     {
-        // TODO: Get Prevision Data
-        const int days = 8;
-        var startDate = DateTime.Today;
-        var labelDates = Enumerable.Range(0, days)
-            .Select(i => startDate.AddDays(i).ToString("dd/MM"))
-            .ToArray();
-        var random = new Random();
-        var valuesPrevision = Enumerable.Range(0, days)
-            .Select(_ => random.Next(0, 50))
-            .ToArray();
+        // Receive json from server
+        var response = await _httpClient.GetAsync("home/prevision");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+        var json = await response.Content.ReadAsStringAsync();
 
+        // Convert json to data
+        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
 
+        var forecastDate = new List<string>();
+        var solarHours = new List<int>();
+
+        foreach (var item in data)
+        {
+            forecastDate.Add(item.ForecastDate);
+            solarHours.Add(item.SolarHoursExpected);
+        }
+
+        // Prepare chart using data
         var chart = new
         {
             type = "line",
             data = new
             {
-                labels = labelDates,
+                labels = forecastDate,
                 datasets = new[]
                 {
                     new
                     {
                         label = "Prevision",
-                        data = valuesPrevision,
+                        data = solarHours,
                         fill = true,
                         backgroundColor = "rgba(231,187,65, 0.6)",
                         borderColor = "rgba(231,187,65, 1)",
@@ -102,35 +142,40 @@ public class HomeController : Controller
     }
 
     [HttpGet]
-    public IActionResult GetConsumptionChartData()
+    public async Task<ActionResult> GetConsumptionChartData()
     {
-        // TODO: Get Consumption Data
-        const int days = 8;
-        var startDate = DateTime.Today;
-        var labelDates = Enumerable.Range(0, days)
-            .Select(i => startDate.AddDays(-i).ToString("dd/MM"))
-            .Reverse()
-            .ToArray();
-        var random = new Random();
-        var valuesGain = Enumerable.Range(0, days)
-            .Select(_ => random.Next(0, 50))
-            .ToArray();
-        var valuesConsumption = Enumerable.Range(0, days)
-            .Select(_ => random.Next(-100, 0))
-            .ToArray();
+        // Receive json from server
+        var response = await _httpClient.GetAsync("home/consumption");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+        var jsonString = await response.Content.ReadAsStringAsync();
 
+        // Convert json to data
+        var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(jsonString);
+
+        var date = new List<string>();
+        var consumption = new List<int>();
+        var gain = new List<int>();
+
+        foreach (var item in data)
+        {
+            date.Add(item.Date);
+            consumption.Add(item.Consumption);
+            gain.Add(item.Gain);
+        }
+
+        // Prepare chart using data
         var chart = new
         {
             type = "line",
             data = new
             {
-                labels = labelDates,
+                labels = date,
                 datasets = new[]
                 {
                     new
                     {
                         label = "Gains",
-                        data = valuesGain,
+                        data = gain,
                         fill = true,
                         backgroundColor = "rgba(231,187,65, 0.6)",
                         borderColor = "rgba(231,187,65, 1)",
@@ -139,7 +184,7 @@ public class HomeController : Controller
                     new
                     {
                         label = "Consumption",
-                        data = valuesConsumption,
+                        data = consumption,
                         fill = true,
                         backgroundColor = "rgba(57,62,65, 0.6)",
                         borderColor = "rgba(57,62,65, 1)",
@@ -266,5 +311,23 @@ public class HomeController : Controller
 
         ViewBag.ErrorMessage = "Error registering the View Account.";
         return View("Index");
+    }
+
+    public class ForecastData
+    {
+        public string ForecastDate { get; set; }
+
+        public int SolarHoursExpected { get; set; }
+
+        public string WeatherCondition { get; set; }
+    }
+
+    public class ConsumptionData
+    {
+        public string Date { get; set; }
+
+        public int Consumption { get; set; }
+
+        public int Gain { get; set; }
     }
 }
