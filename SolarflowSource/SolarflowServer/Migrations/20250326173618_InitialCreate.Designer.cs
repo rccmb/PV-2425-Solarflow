@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250324124350_InitialCreate")]
+    [Migration("20250326173618_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -310,6 +310,9 @@ namespace SolarflowServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("");
+
+                    b.Property<int>("MaxKW")
+                        .HasColumnType("int");
 
                     b.Property<int>("MaximumTreshold")
                         .ValueGeneratedOnAdd()
