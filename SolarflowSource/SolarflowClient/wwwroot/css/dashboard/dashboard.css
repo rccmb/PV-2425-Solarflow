@@ -1,0 +1,112 @@
+﻿body { background-color: #e7e5df; }
+
+#dashboard {
+    align-content: stretch;
+    align-items: stretch;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+}
+
+#dashboard > div { margin: 10px 10px; }
+
+#dashboard-header {
+    align-content: stretch;
+    align-items: stretch;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+#dashboard-filters {
+    align-content: stretch;
+    align-items: center;
+    background-color: #393e41;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding: 20px 50px;
+}
+
+.dashboard-filter-item {
+    align-content: center;
+    align-items: stretch;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+
+#dashboard-charts {
+    align-content: stretch;
+    align-items: stretch;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+}
+
+#dashboard-charts-energy {
+    align-content: stretch;
+    align-items: stretch;
+    display: flex;
+    flex: 3;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    justify-content: space-between;
+}
+
+
+#dashboard-charts-energy > div:nth-child(1), #dashboard-charts-energy > div:nth-child(2), #dashboard-charts-energy > div:nth-child(3) { flex: 2; }
+
+
+
+#dashboard-charts-energy > div:nth-child(4), #dashboard-charts-energy > div:nth-child(5) { flex-basis: 100%; }
+
+
+#dashboard-charts-battery {
+    align-content: stretch;
+    align-items: stretch;
+    display: flex;
+    flex: 2;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.chart-item {
+    align-content: stretch;
+    align-items: stretch;
+    background-color: #d3d0cb;
+    border: 1px solid #808080;
+    border-radius: 10px;
+    display: flex;
+    
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+
+    margin: 10px;
+    padding: 20px;
+}
+
+.chart-item > h2 { margin-bottom: 10px; }
+
+canvas {
+    height: 200px !important;
+    width: 100% !important;
+}
+
+#weather-image {
+    height: 150px;
+    width: 150px;
+}
