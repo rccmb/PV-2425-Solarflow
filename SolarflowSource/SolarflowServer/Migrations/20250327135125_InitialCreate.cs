@@ -34,7 +34,7 @@ namespace SolarflowServer.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Action = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Brief = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     IPAddress = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()")
                 },
