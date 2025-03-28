@@ -38,11 +38,19 @@ jobs:
         run: dotnet build SolarflowSource/SolarflowServer/SolarflowServer.csproj --no-restore -c Release
           # FIX THIS LATER: dotnet test SolarflowSource/SolarflowServer.Tests/SolarflowServer.Tests.csproj --no-build
 
-      # 7) Publish FrontEnd to a folder
+      # 7) Install dotnet
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef
+      
+      # 8) Update the database
+      - name: Update Database
+        run: dotnet ef database update --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
+
+      # 9) Publish FrontEnd to a folder
       - name: Publish FrontEnd
         run: dotnet publish SolarflowSource/SolarflowClient/SolarflowClient.csproj -c Release -o ./publish/frontend
 
-      # 8) Deploy FrontEnd to Azure Web App
+      # 10) Deploy FrontEnd to Azure Web App
       - name: Deploy FrontEnd
         uses: azure/webapps-deploy@v2
         with:
@@ -50,11 +58,11 @@ jobs:
           package: './publish/frontend'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FRONTEND }}
 
-      # 9) Publish BackEnd to a folder
+      # 11) Publish BackEnd to a folder
       - name: Publish BackEnd
         run: dotnet publish SolarflowSource/SolarflowServer/SolarflowServer.csproj -c Release -o ./publish/backend
 
-      # 10) Deploy BackEnd to Azure Web App
+      # 12) Deploy BackEnd to Azure Web App
       - name: Deploy BackEnd
         uses: azure/webapps-deploy@v2
         with:

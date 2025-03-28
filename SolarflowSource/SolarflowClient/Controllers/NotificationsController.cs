@@ -14,8 +14,8 @@ namespace SolarflowClient.Controllers
         public NotificationsController(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://localhost:7280/api/notifications/");
-            // _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/notifications/"); // CHANGE PRODUCTION.
+            // _httpClient.BaseAddress = new Uri("https://localhost:7280/api/notifications/");
+            _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/notifications/"); // CHANGE PRODUCTION.
         }
 
         public async Task<IActionResult> Index()
