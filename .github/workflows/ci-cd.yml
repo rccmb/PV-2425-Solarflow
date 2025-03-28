@@ -22,27 +22,27 @@ jobs:
 
       # 3) Restore dependencies (front-end)
       - name: Restore FrontEnd
-        run: dotnet restore ../../SolarflowSource/SolarflowClient/SolarflowClient.csproj
+        run: dotnet restore SolarflowSource/SolarflowClient/SolarflowClient.csproj
 
       # 4) Build & test (front-end)
       - name: Build & Test FrontEnd
         run: |
-          dotnet build ../../SolarflowSource/SolarflowClient/SolarflowClient.csproj --no-restore -c Release
-          dotnet test ../../SolarflowSource/SolarflowClient.Tests/SolarflowClient.Tests.csproj --no-build
+          dotnet build SolarflowSource/SolarflowClient/SolarflowClient.csproj --no-restore -c Release
+          dotnet test SolarflowSource/SolarflowClient.Tests/SolarflowClient.Tests.csproj --no-build
 
       # 5) Restore dependencies (back-end)
       - name: Restore BackEnd
-        run: dotnet restore ../../SolarflowSource/SolarflowServer/SolarflowServer.csproj
+        run: dotnet restore SolarflowSource/SolarflowServer/SolarflowServer.csproj
 
       # 6) Build & test (back-end)
       - name: Build & Test BackEnd
         run: |
-          dotnet build ../../SolarflowSource/SolarflowServer/SolarflowServer.csproj --no-restore -c Release
-          dotnet test ../../SolarflowSource/SolarflowServer.Tests/SolarflowServer.Tests.csproj --no-build
+          dotnet build SolarflowSource/SolarflowServer/SolarflowServer.csproj --no-restore -c Release
+          dotnet test SolarflowSource/SolarflowServer.Tests/SolarflowServer.Tests.csproj --no-build
 
       # 7) Publish FrontEnd to a folder
       - name: Publish FrontEnd
-        run: dotnet publish ../../SolarflowSource/SolarflowClient/SolarflowClient.csproj -c Release -o ./publish/frontend
+        run: dotnet publish SolarflowSource/SolarflowClient/SolarflowClient.csproj -c Release -o ./publish/frontend
 
       # 8) Deploy FrontEnd to Azure Web App
       - name: Deploy FrontEnd
@@ -54,7 +54,7 @@ jobs:
 
       # 9) Publish BackEnd to a folder
       - name: Publish BackEnd
-        run: dotnet publish ../../SolarflowSource/SolarflowServer/SolarflowServer.csproj -c Release -o ./publish/backend
+        run: dotnet publish SolarflowSource/SolarflowServer/SolarflowServer.csproj -c Release -o ./publish/backend
 
       # 10) Deploy BackEnd to Azure Web App
       - name: Deploy BackEnd
