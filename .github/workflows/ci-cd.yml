@@ -39,16 +39,14 @@ jobs:
           # FIX THIS LATER: dotnet test SolarflowSource/SolarflowServer.Tests/SolarflowServer.Tests.csproj --no-build
 
       # 7) Install dotnet
-      # - name: Install dotnet-ef
-      #  run: dotnet tool install --global dotnet-ef
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef
       
       # 8) Update the database
-      # - name: Update Database
-      #  run: dotnet ef database update --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
-      
       - name: Update Database
         run: dotnet ef database update --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
-        env: ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
 
       # 9) Publish FrontEnd to a folder
       - name: Publish FrontEnd
