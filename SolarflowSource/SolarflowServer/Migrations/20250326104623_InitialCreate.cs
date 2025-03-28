@@ -186,6 +186,7 @@ namespace SolarflowServer.Migrations
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ChargeLevel = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    MaxKW = table.Column<int>(type: "int", nullable: false),
                     ChargingSource = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: ""),
                     BatteryMode = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: ""),
                     MinimalTreshold = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
@@ -272,6 +273,7 @@ namespace SolarflowServer.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BatteryID = table.Column<int>(type: "int", nullable: false),
                     ForecastDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    kwh = table.Column<double>(type: "float", nullable: false),
                     SolarHoursExpected = table.Column<double>(type: "float", nullable: false),
                     WeatherCondition = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },

@@ -23,11 +23,11 @@ public class ForecastController : ControllerBase
     [HttpPost("update")]
     public async Task<IActionResult> UpdateForecast([FromQuery] double lat, [FromQuery] double lon, [FromQuery] int days)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null || !int.TryParse(userId, out var parsedUserId))
-           return Unauthorized();
+        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //if (userId == null || !int.TryParse(userId, out var parsedUserId))
+        //   return Unauthorized();
 
-        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == parsedUserId);
+        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == 1);
         if (battery == null)
             return NotFound();
 
@@ -40,11 +40,11 @@ public class ForecastController : ControllerBase
     [HttpGet("get")]
     public async Task<IActionResult> GetSavedForecasts()
     {
-         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-         if (userId == null || !int.TryParse(userId, out var parsedUserId))
-             return Unauthorized();
+         // var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+         // if (userId == null || !int.TryParse(userId, out var parsedUserId))
+         //    return Unauthorized();
 
-         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == parsedUserId);
+         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == 1);
          if (battery == null)
              return NotFound();
 

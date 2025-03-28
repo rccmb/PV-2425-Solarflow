@@ -41,19 +41,20 @@ namespace SolarflowServer.Services
 
             if (totalSolarHours > 0)
             {
+                var energy = _weatherProcessor.CalculateEnergyGenerated(forecasts);
                 DateTime forecastDay = DateTime.Parse(forecasts.First().DateTime).Date;
                 string mostCommonCondition = weatherConditions.GroupBy(x => x)
                     .OrderByDescending(g => g.Count())
                     .First()
                     .Key;
 
-                await SaveOrUpdateForecast(batteryID, forecastDay, totalSolarHours, mostCommonCondition);
+                await SaveOrUpdateForecast(batteryID, forecastDay, totalSolarHours, mostCommonCondition, energy);
             }
         }
 
 
 
-        private async Task SaveOrUpdateForecast(int batteryID, DateTime forecastDate, double solarHours, string weatherCondition)
+        private async Task SaveOrUpdateForecast(int batteryID, DateTime forecastDate, double solarHours, string weatherCondition, double energy)
         {
             var existingForecast = await _context.Forecasts.FirstOrDefaultAsync(f => f.BatteryID == batteryID && f.ForecastDate == forecastDate);
 
@@ -64,6 +65,7 @@ namespace SolarflowServer.Services
                     BatteryID = batteryID,
                     ForecastDate = forecastDate,
                     SolarHoursExpected = solarHours,
+                    kwh = energy,
                     WeatherCondition = weatherCondition
                 });
             }
