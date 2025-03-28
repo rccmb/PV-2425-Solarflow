@@ -22,7 +22,7 @@ jobs:
 
       # 3) Restore dependencies (front-end)
       - name: Restore FrontEnd
-        run: dotnet restore SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj
+        run: dotnet restore ../../SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj
 
       # 4) Build & test (front-end)
       - name: Build & Test FrontEnd
@@ -32,7 +32,7 @@ jobs:
 
       # 5) Restore dependencies (back-end)
       - name: Restore BackEnd
-        run: dotnet restore SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj
+        run: dotnet restore ../../SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj
 
       # 6) Build & test (back-end)
       - name: Build & Test BackEnd
@@ -42,7 +42,7 @@ jobs:
 
       # 7) Publish FrontEnd to a folder
       - name: Publish FrontEnd
-        run: dotnet publish SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj -c Release -o ./publish/frontend
+        run: dotnet publish ../../SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj -c Release -o ./publish/frontend
 
       # 8) Deploy FrontEnd to Azure Web App
       - name: Deploy FrontEnd
@@ -54,7 +54,7 @@ jobs:
 
       # 9) Publish BackEnd to a folder
       - name: Publish BackEnd
-        run: dotnet publish SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj -c Release -o ./publish/backend
+        run: dotnet publish ../../SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj -c Release -o ./publish/backend
 
       # 10) Deploy BackEnd to Azure Web App
       - name: Deploy BackEnd
