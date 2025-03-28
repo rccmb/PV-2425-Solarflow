@@ -1,0 +1,65 @@
+name: CI-CD for SolarFlow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1) Check out the code
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2) Set up .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      # 3) Restore dependencies (front-end)
+      - name: Restore FrontEnd
+        run: dotnet restore SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj
+
+      # 4) Build & test (front-end)
+      - name: Build & Test FrontEnd
+        run: |
+          dotnet build SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj --no-restore -c Release
+          dotnet test SolarFlowSource/SolarFlowClient.Tests/SolarFlowClient.Tests.csproj --no-build
+
+      # 5) Restore dependencies (back-end)
+      - name: Restore BackEnd
+        run: dotnet restore SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj
+
+      # 6) Build & test (back-end)
+      - name: Build & Test BackEnd
+        run: |
+          dotnet build SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj --no-restore -c Release
+          dotnet test SolarFlowSource/SolarFlowServer.Tests/SolarFlowServer.Tests.csproj --no-build
+
+      # 7) Publish FrontEnd to a folder
+      - name: Publish FrontEnd
+        run: dotnet publish SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj -c Release -o ./publish/frontend
+
+      # 8) Deploy FrontEnd to Azure Web App
+      - name: Deploy FrontEnd
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'solarflow'
+          package: './publish/frontend'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FRONTEND }}
+
+      # 9) Publish BackEnd to a folder
+      - name: Publish BackEnd
+        run: dotnet publish SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj -c Release -o ./publish/backend
+
+      # 10) Deploy BackEnd to Azure Web App
+      - name: Deploy BackEnd
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'SolarFlowAPI' # Name of the Azure App Service for back-end
+          package: './publish/backend'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_BACKEND }}
