@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250328131241_InitialCreate")]
+    [Migration("20250328133019_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -257,7 +257,7 @@ namespace SolarflowServer.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Brief")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");

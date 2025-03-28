@@ -177,45 +177,47 @@ namespace SolarflowServer.Controllers
                         HttpOnly = true,
                         Expires = DateTime.UtcNow.AddHours(1),
                         Secure = true,
-                        SameSite = SameSiteMode.Strict 
+                        SameSite = SameSiteMode.Strict
                     };
-                    
+
                     Response.Cookies.Append("AuthToken", token, cookieOptions);
 
                     await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
-                    return Ok(new { token});
+                    return Ok(new { token });
+                }
+
+                if (user != null && user.EmailConfirmed == false)
+                {
+                    return Unauthorized("Email not confirmed.");
+                }
+
+                var viewUser = await _viewUserManager.FindByEmailAsync(model.Email);
+                if (viewUser == null)
+                {
+                    return Unauthorized("Invalid credentials.");
+                }
+
+                var viewResult = await _viewSignInManager.PasswordSignInAsync(viewUser, model.Password, false, false);
+                if (!viewResult.Succeeded)
+                {
+                    return Unauthorized("Invalid credentials.");
+                }
+
+                var viewToken = GenerateJWTToken(viewUser, "View");
+                var viewCookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict
+                };
+                Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
+
+                await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
+                return Ok(new { token = viewToken });
+
             }
-
-            if(user != null && user.EmailConfirmed == false)
-            {
-                return Unauthorized("Email not confirmed.");
-            }
-
-            var viewUser = await _viewUserManager.FindByEmailAsync(model.Email);
-            if (viewUser == null)
-            {
-                return Unauthorized("Invalid credentials.");
-            }
-
-            var viewResult = await _viewSignInManager.PasswordSignInAsync(viewUser, model.Password, false, false);
-            if (!viewResult.Succeeded)
-            {
-                return Unauthorized("Invalid credentials.");
-            }
-
-            var viewToken = GenerateJWTToken(viewUser, "View");
-            var viewCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Expires = DateTime.UtcNow.AddHours(1),
-                Secure = true,
-                SameSite = SameSiteMode.Strict
-            };
-            Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
-
-            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
-            return Ok(new { token = viewToken});
-
+            return Unauthorized("Confirm Email.");
         }
 
         [HttpPost("logout")]
