@@ -27,8 +27,8 @@ jobs:
       # 4) Build & test (front-end)
       - name: Build & Test FrontEnd
         run: |
-          dotnet build SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj --no-restore -c Release
-          dotnet test SolarFlowSource/SolarFlowClient.Tests/SolarFlowClient.Tests.csproj --no-build
+          dotnet build ../../SolarFlowSource/SolarFlowClient/SolarFlowClient.csproj --no-restore -c Release
+          dotnet test ../../SolarFlowSource/SolarFlowClient.Tests/SolarFlowClient.Tests.csproj --no-build
 
       # 5) Restore dependencies (back-end)
       - name: Restore BackEnd
@@ -37,8 +37,8 @@ jobs:
       # 6) Build & test (back-end)
       - name: Build & Test BackEnd
         run: |
-          dotnet build SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj --no-restore -c Release
-          dotnet test SolarFlowSource/SolarFlowServer.Tests/SolarFlowServer.Tests.csproj --no-build
+          dotnet build ../../SolarFlowSource/SolarFlowServer/SolarFlowServer.csproj --no-restore -c Release
+          dotnet test ../../SolarFlowSource/SolarFlowServer.Tests/SolarFlowServer.Tests.csproj --no-build
 
       # 7) Publish FrontEnd to a folder
       - name: Publish FrontEnd
