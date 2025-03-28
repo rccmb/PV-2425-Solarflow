@@ -13,7 +13,5 @@ namespace SolarflowClient.Models.ViewModels.Authentication
         public string Password { get; set; }
 
         public bool RememberMe { get; set; } = false;
-
-        public bool IsAdmin { get; set; } = false;
     }
 }
