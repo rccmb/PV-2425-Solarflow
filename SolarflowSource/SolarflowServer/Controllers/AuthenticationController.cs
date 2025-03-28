@@ -83,8 +83,6 @@ namespace SolarflowServer.Controllers
             _context.Batteries.Add(battery);
             await _context.SaveChangesAsync(); 
 
-            await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Registered", GetClientIPAddress());
-
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
             var baseUrl = _configuration["BaseUrl"]; // Get the base URL from config
@@ -99,6 +97,7 @@ namespace SolarflowServer.Controllers
             // Send the email
             await _emailSender.SendEmailAsync(message);
 
+            await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered", GetClientIPAddress());
             return Ok(new { message = "User registered successfully!" });
         }
 
@@ -124,6 +123,8 @@ namespace SolarflowServer.Controllers
             );
             // Send the email
             await _emailSender.SendEmailAsync(message);
+
+            await _auditService.LogAsync(user.Id.ToString(), "Email Confirmation", "Resent Email Confirmation", GetClientIPAddress());
             return Ok(new { message = "Email confirmation link sent successfully!" });
         }
 
@@ -156,7 +157,8 @@ namespace SolarflowServer.Controllers
             if (!viewResult.Succeeded) return BadRequest(viewResult.Errors);
 
             user.ViewAccount = viewAccount;
-            await _auditService.LogAsync(viewAccount.Id.ToString(), user.Email, "View user Registered", GetClientIPAddress());
+
+            await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered", GetClientIPAddress());
             return Ok(new { message = "ViewAccount registered successfully!" });
         }
 
@@ -179,9 +181,9 @@ namespace SolarflowServer.Controllers
                     };
                     
                     Response.Cookies.Append("AuthToken", token, cookieOptions);
+
                     await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
                     return Ok(new { token});
-                }
             }
 
             if(user != null && user.EmailConfirmed == false)
@@ -210,8 +212,10 @@ namespace SolarflowServer.Controllers
                 SameSite = SameSiteMode.Strict
             };
             Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
+
             await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
             return Ok(new { token = viewToken});
+
         }
 
         [HttpPost("logout")]
@@ -223,7 +227,7 @@ namespace SolarflowServer.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
 
             if (userId != null)
-                await _auditService.LogAsync(userId, email, "User Logged Out", GetClientIPAddress());
+                await _auditService.LogAsync(userId, "Authentication", "User Logged Out", GetClientIPAddress());
 
             return Ok(new { message = "User logged out successfully!" });
         }
@@ -274,17 +278,9 @@ namespace SolarflowServer.Controllers
             {
                 return BadRequest(new { message = "Invalid request." });
             }
+
+            await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Email Confirmed", GetClientIPAddress());
             return Ok(new { message = "Email confirmed successfully!" });
-        }
-
-        private string GetClientIPAddress()
-        {
-            if (HttpContext?.Connection?.RemoteIpAddress == null)
-            {
-                return "127.0.0.1"; // Valor para testes
-            }
-
-            return HttpContext.Connection.RemoteIpAddress.ToString();
         }
 
         [HttpPost("forgotpassword")]
@@ -317,6 +313,7 @@ namespace SolarflowServer.Controllers
             await _emailSender.SendEmailAsync(message);
 
             // Return success response
+            await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Forgot Password Requested", GetClientIPAddress());
             return Ok(new { message = "If the email exists, a reset link has been sent." });
         }
 
@@ -340,10 +337,9 @@ namespace SolarflowServer.Controllers
                 return BadRequest(result.Errors);
             }
 
+            await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Password Reset", GetClientIPAddress());
             return Ok(new { message = "Password reset successfully!" });
         }
-
-
 
         [HttpGet("get-user")]
         public async Task<IActionResult> GetUser()
@@ -372,6 +368,7 @@ namespace SolarflowServer.Controllers
                 HasViewAccount = viewAccount != null
             };
 
+            await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Retrieved", GetClientIPAddress());
             return Ok(userDTO);
         }
 
@@ -394,6 +391,7 @@ namespace SolarflowServer.Controllers
 
             await _userManager.UpdateAsync(user);
 
+            await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
             return Ok(new { message = "User updated successfully!" });
         }
 
@@ -423,7 +421,18 @@ namespace SolarflowServer.Controllers
             if (!result.Succeeded)
                 return BadRequest(new { error = "An error occurred while deleting the View Account." });
 
+            await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
             return Ok(new { message = "View Account deleted successfully!" });
+        }
+
+        private string GetClientIPAddress()
+        {
+            if (HttpContext?.Connection?.RemoteIpAddress == null)
+            {
+                return "127.0.0.1"; // Valor para testes
+            }
+
+            return HttpContext.Connection.RemoteIpAddress.ToString();
         }
     }
 }
