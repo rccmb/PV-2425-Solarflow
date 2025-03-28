@@ -169,7 +169,7 @@ namespace SolarflowServer.Controllers
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
                 if (result.Succeeded)
                 {
-                    var token = GenerateJWTToken(user);
+                    var token = GenerateJWTToken(user, "Admin");
                     var cookieOptions = new CookieOptions
                     {
                         HttpOnly = true,
@@ -201,7 +201,7 @@ namespace SolarflowServer.Controllers
                 return Unauthorized("Invalid credentials.");
             }
 
-            var viewToken = GenerateJWTToken(viewUser);
+            var viewToken = GenerateJWTToken(viewUser, "View");
             var viewCookieOptions = new CookieOptions
             {
                 HttpOnly = true,
@@ -228,25 +228,33 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "User logged out successfully!" });
         }
 
-        private string GenerateJWTToken(IdentityUser<int> user)
+        private string GenerateJWTToken(IdentityUser<int> user, string role)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, role), // ? Role claim is correct
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
+                new Claim(JwtRegisteredClaimNames.Exp,
+                    ((DateTimeOffset)DateTime.UtcNow.AddHours(1)).ToUnixTimeSeconds().ToString()) 
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"], 
+                audience: _configuration["Jwt:Audience"], 
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
 
         [HttpPost("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO model)

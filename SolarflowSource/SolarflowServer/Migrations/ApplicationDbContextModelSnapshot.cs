@@ -308,6 +308,9 @@ namespace SolarflowServer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("");
 
+                    b.Property<int>("MaxKW")
+                        .HasColumnType("int");
+
                     b.Property<int>("MaximumTreshold")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")

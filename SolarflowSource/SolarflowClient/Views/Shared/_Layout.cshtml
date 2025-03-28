@@ -1,6 +1,15 @@
-﻿@{
+﻿@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@{
     ViewData["Title"] = "Layout";
-    var isAdmin = Context.Request.Cookies["isAdmin"];
+
+    var token = Context.Request.Cookies["AuthToken"];
+
+    var handler = new JwtSecurityTokenHandler();
+    var jwtToken = handler.ReadJwtToken(token);
+
+    var role = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 }
 
 <!DOCTYPE html>
@@ -27,8 +36,7 @@
                         <img src="~/images/icons/dashboard.png" alt="Home" class="sidebar-icon">
                     </a>
                 </li>
-
-                @if (@isAdmin == "True") // Allow access only if isAdmin is "true"
+                @if (role.ToString() == "Admin")
                 {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Battery" asp-action="Index">
@@ -51,6 +59,9 @@
                         </a>
                     </li>
                 }
+
+                    
+                
             </ul>
 
             <div class="logout-section">
