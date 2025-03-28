@@ -52,17 +52,9 @@ public class BatteryController : ControllerBase
             return NotFound(new { error = "Battery not found" });
         }
 
-        await _auditService.LogAsync(userId, "Battery Access", "Success", GetClientIPAddress());
+        await _auditService.LogAsync(userId, "Battery Access", "Battery Data Retrieved", GetClientIPAddress());
         return Ok(battery);
     }
-
-    //[AllowAnonymous]
-    //[HttpGet("get-all-batteries")]
-    //public async Task<IActionResult> GetBatteryList()
-    //{
-    //    var batteries = await _context.Batteries.ToListAsync();
-    //    return Ok(batteries);
-    //}
 
     [HttpPost("update-battery")]
     public async Task<IActionResult> UpdateBattery([FromBody] BatteryDTO model)
@@ -102,7 +94,7 @@ public class BatteryController : ControllerBase
         _context.Batteries.Update(battery);
         await _context.SaveChangesAsync();
 
-        await _auditService.LogAsync(userId, "Battery Update", "Success", GetClientIPAddress());
+        await _auditService.LogAsync(userId, "Battery Update", "Battery Successfully Updated", GetClientIPAddress());
         return Ok(new { message = "Battery settings updated successfully!" });
     }
 

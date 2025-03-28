@@ -2,6 +2,6 @@
 {
     public interface IAuditService
     {
-        Task LogAsync(string userId, string email, string action, string ipAddress);
+        Task LogAsync(string userId, string brief, string description, string ipAddress);
     }
 }

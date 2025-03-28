@@ -12,12 +12,12 @@ namespace SolarflowServer.Services
         }
 
 
-        public async Task LogAsync(string userId, string email, string action, string ipAddress)
+        public async Task LogAsync(string userId, string brief, string action, string ipAddress)
         {
             var auditLog = new AuditLog
             {
                 UserId = userId,
-                Email = email,
+                Brief = brief,
                 Action = action,
                 IPAddress = ipAddress
             };

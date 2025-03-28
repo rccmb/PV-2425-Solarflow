@@ -83,8 +83,6 @@ namespace SolarflowServer.Controllers
             _context.Batteries.Add(battery);
             await _context.SaveChangesAsync(); 
 
-            await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Registered", GetClientIPAddress());
-
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
             var baseUrl = _configuration["BaseUrl"]; // Get the base URL from config
@@ -99,6 +97,7 @@ namespace SolarflowServer.Controllers
             // Send the email
             await _emailSender.SendEmailAsync(message);
 
+            await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered", GetClientIPAddress());
             return Ok(new { message = "User registered successfully!" });
         }
 
@@ -124,6 +123,8 @@ namespace SolarflowServer.Controllers
             );
             // Send the email
             await _emailSender.SendEmailAsync(message);
+
+            await _auditService.LogAsync(user.Id.ToString(), "Email Confirmation", "Resent Email Confirmation", GetClientIPAddress());
             return Ok(new { message = "Email confirmation link sent successfully!" });
         }
 
@@ -156,7 +157,8 @@ namespace SolarflowServer.Controllers
             if (!viewResult.Succeeded) return BadRequest(viewResult.Errors);
 
             user.ViewAccount = viewAccount;
-            await _auditService.LogAsync(viewAccount.Id.ToString(), user.Email, "View user Registered", GetClientIPAddress());
+
+            await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered", GetClientIPAddress());
             return Ok(new { message = "ViewAccount registered successfully!" });
         }
 
@@ -169,49 +171,53 @@ namespace SolarflowServer.Controllers
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
                 if (result.Succeeded)
                 {
-                    var token = GenerateJWTToken(user);
+                    var token = GenerateJWTToken(user, "Admin");
                     var cookieOptions = new CookieOptions
                     {
                         HttpOnly = true,
                         Expires = DateTime.UtcNow.AddHours(1),
                         Secure = true,
-                        SameSite = SameSiteMode.Strict 
+                        SameSite = SameSiteMode.Strict
                     };
-                    
+
                     Response.Cookies.Append("AuthToken", token, cookieOptions);
+
                     await _auditService.LogAsync(user.Id.ToString(), user.Email, "User Logged In", GetClientIPAddress());
                     return Ok(new { token });
                 }
-            }
 
-            if(user != null && user.EmailConfirmed == false)
-            {
-                return Unauthorized("Email not confirmed.");
-            }
+                if (user != null && user.EmailConfirmed == false)
+                {
+                    return Unauthorized("Email not confirmed.");
+                }
 
-            var viewUser = await _viewUserManager.FindByEmailAsync(model.Email);
-            if (viewUser == null)
-            {
-                return Unauthorized("Invalid credentials.");
-            }
+                var viewUser = await _viewUserManager.FindByEmailAsync(model.Email);
+                if (viewUser == null)
+                {
+                    return Unauthorized("Invalid credentials.");
+                }
 
-            var viewResult = await _viewSignInManager.PasswordSignInAsync(viewUser, model.Password, false, false);
-            if (!viewResult.Succeeded)
-            {
-                return Unauthorized("Invalid credentials.");
-            }
+                var viewResult = await _viewSignInManager.PasswordSignInAsync(viewUser, model.Password, false, false);
+                if (!viewResult.Succeeded)
+                {
+                    return Unauthorized("Invalid credentials.");
+                }
 
-            var viewToken = GenerateJWTToken(viewUser);
-            var viewCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Expires = DateTime.UtcNow.AddHours(1),
-                Secure = true,
-                SameSite = SameSiteMode.Strict
-            };
-            Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
-            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
-            return Ok(new { token = viewToken });
+                var viewToken = GenerateJWTToken(viewUser, "View");
+                var viewCookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict
+                };
+                Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
+
+                await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
+                return Ok(new { token = viewToken });
+
+            }
+            return Unauthorized("Confirm Email.");
         }
 
         [HttpPost("logout")]
@@ -223,30 +229,38 @@ namespace SolarflowServer.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
 
             if (userId != null)
-                await _auditService.LogAsync(userId, email, "User Logged Out", GetClientIPAddress());
+                await _auditService.LogAsync(userId, "Authentication", "User Logged Out", GetClientIPAddress());
 
             return Ok(new { message = "User logged out successfully!" });
         }
 
-        private string GenerateJWTToken(IdentityUser<int> user)
+        private string GenerateJWTToken(IdentityUser<int> user, string role)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, role), // ? Role claim is correct
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
+                new Claim(JwtRegisteredClaimNames.Exp,
+                    ((DateTimeOffset)DateTime.UtcNow.AddHours(1)).ToUnixTimeSeconds().ToString()) 
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"], 
+                audience: _configuration["Jwt:Audience"], 
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
 
         [HttpPost("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO model)
@@ -266,17 +280,9 @@ namespace SolarflowServer.Controllers
             {
                 return BadRequest(new { message = "Invalid request." });
             }
+
+            await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Email Confirmed", GetClientIPAddress());
             return Ok(new { message = "Email confirmed successfully!" });
-        }
-
-        private string GetClientIPAddress()
-        {
-            if (HttpContext?.Connection?.RemoteIpAddress == null)
-            {
-                return "127.0.0.1"; // Valor para testes
-            }
-
-            return HttpContext.Connection.RemoteIpAddress.ToString();
         }
 
         [HttpPost("forgotpassword")]
@@ -309,6 +315,7 @@ namespace SolarflowServer.Controllers
             await _emailSender.SendEmailAsync(message);
 
             // Return success response
+            await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Forgot Password Requested", GetClientIPAddress());
             return Ok(new { message = "If the email exists, a reset link has been sent." });
         }
 
@@ -332,10 +339,9 @@ namespace SolarflowServer.Controllers
                 return BadRequest(result.Errors);
             }
 
+            await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Password Reset", GetClientIPAddress());
             return Ok(new { message = "Password reset successfully!" });
         }
-
-
 
         [HttpGet("get-user")]
         public async Task<IActionResult> GetUser()
@@ -364,6 +370,7 @@ namespace SolarflowServer.Controllers
                 HasViewAccount = viewAccount != null
             };
 
+            await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Retrieved", GetClientIPAddress());
             return Ok(userDTO);
         }
 
@@ -386,6 +393,7 @@ namespace SolarflowServer.Controllers
 
             await _userManager.UpdateAsync(user);
 
+            await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
             return Ok(new { message = "User updated successfully!" });
         }
 
@@ -415,7 +423,18 @@ namespace SolarflowServer.Controllers
             if (!result.Succeeded)
                 return BadRequest(new { error = "An error occurred while deleting the View Account." });
 
+            await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
             return Ok(new { message = "View Account deleted successfully!" });
+        }
+
+        private string GetClientIPAddress()
+        {
+            if (HttpContext?.Connection?.RemoteIpAddress == null)
+            {
+                return "127.0.0.1"; // Valor para testes
+            }
+
+            return HttpContext.Connection.RemoteIpAddress.ToString();
         }
     }
 }

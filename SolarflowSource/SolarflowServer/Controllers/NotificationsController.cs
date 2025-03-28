@@ -15,12 +15,13 @@ namespace SolarflowServer.Controllers
     {
         private readonly INotificationService _notificationService;
         private readonly ApplicationDbContext _context;
+        private readonly IAuditService _auditService;
 
-
-        public NotificationsController(INotificationService notificationService, ApplicationDbContext context)
+        public NotificationsController(INotificationService notificationService, ApplicationDbContext context, IAuditService auditService)
         {
             _notificationService = notificationService;
             _context = context;
+            _auditService = auditService;
         }
 
         // GET: api/notifications
@@ -29,6 +30,8 @@ namespace SolarflowServer.Controllers
         {
             var userId = GetUserId();
             var notifications = await _notificationService.GetNotificationsAsync(userId);
+
+            await _auditService.LogAsync(userId.ToString(), "Notifications", "All Notifications Successfully Retrieved", GetClientIPAddress());
             return Ok(notifications);
         }
 
@@ -39,6 +42,8 @@ namespace SolarflowServer.Controllers
             var userId = GetUserId();
             var notification = await _notificationService.GetNotificationByIdAsync(id, userId);
             if (notification == null) return NotFound();
+
+            await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Retrieved", GetClientIPAddress());
             return Ok(notification);
         }
 
@@ -48,6 +53,8 @@ namespace SolarflowServer.Controllers
         {
             var userId = GetUserId();
             await _notificationService.CreateNotificationAsync(userId, dto);
+
+            await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Created", GetClientIPAddress());
             return CreatedAtAction(nameof(GetAll), null);
         }
 
@@ -57,6 +64,8 @@ namespace SolarflowServer.Controllers
         {
             var userId = GetUserId();
             await _notificationService.MarkAsReadAsync(id, userId);
+
+            await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Marked as Read", GetClientIPAddress());
             return NoContent();
         }
 
@@ -66,6 +75,8 @@ namespace SolarflowServer.Controllers
         {
             var userId = GetUserId();
             await _notificationService.DeleteNotificationAsync(id, userId);
+
+            await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Deleted", GetClientIPAddress());
             return NoContent();
         }
 
@@ -75,6 +86,8 @@ namespace SolarflowServer.Controllers
         {
             var userId = GetUserId();
             await _notificationService.DeleteAllNotificationsAsync(userId);
+
+            await _auditService.LogAsync(userId.ToString(), "Notifications", "All Notifications Successfully Deleted", GetClientIPAddress());
             return NoContent();
         }
         [HttpPost("generate-test")]
@@ -101,6 +114,14 @@ namespace SolarflowServer.Controllers
             return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         }
 
+        private string GetClientIPAddress()
+        {
+            if (HttpContext?.Connection?.RemoteIpAddress == null)
+            {
+                return "127.0.0.1"; // Valor para testes
+            }
 
+            return HttpContext.Connection.RemoteIpAddress.ToString();
+        }
     }
 }

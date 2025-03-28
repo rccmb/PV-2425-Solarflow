@@ -8,7 +8,7 @@
 
         public string Action { get; set; } 
 
-        public string Email { get; set; }
+        public string Brief { get; set; }
 
         public string IPAddress { get; set; }
 

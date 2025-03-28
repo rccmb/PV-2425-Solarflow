@@ -27,7 +27,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
 // IDENTITY CONFIGURATION USER
 builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole<int>>()
+    .AddIdentity<ApplicationUser, IdentityRole<int>>() // Add Roles
+    .AddRoles<IdentityRole<int>>()  // Ensure Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
