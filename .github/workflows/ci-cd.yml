@@ -1,0 +1,79 @@
+name: CI-CD for Solarflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the code
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Set up .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      # Restore dependencies (front-end)
+      - name: Restore FrontEnd
+        run: dotnet restore SolarflowSource/SolarflowClient/SolarflowClient.csproj
+
+      # Build & test (front-end)
+      - name: Build & Test FrontEnd
+        run: dotnet build SolarflowSource/SolarflowClient/SolarflowClient.csproj --no-restore -c Release
+          # FIX THIS LATER: dotnet test SolarflowSource/SolarflowClient.Tests/SolarflowClient.Tests.csproj --no-build
+
+      # Restore dependencies (back-end)
+      - name: Restore BackEnd
+        run: dotnet restore SolarflowSource/SolarflowServer/SolarflowServer.csproj
+
+      # Build & test (back-end)
+      - name: Build & Test BackEnd
+        run: dotnet build SolarflowSource/SolarflowServer/SolarflowServer.csproj --no-restore -c Release
+          # FIX THIS LATER: dotnet test SolarflowSource/SolarflowServer.Tests/SolarflowServer.Tests.csproj --no-build
+
+      # Publish FrontEnd to a folder
+      - name: Publish FrontEnd
+        run: dotnet publish SolarflowSource/SolarflowClient/SolarflowClient.csproj -c Release -o ./publish/frontend
+
+      # Deploy FrontEnd to Azure Web App
+      - name: Deploy FrontEnd
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'solarflow'
+          package: './publish/frontend'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FRONTEND }}
+
+      # Publish BackEnd to a folder
+      - name: Publish BackEnd
+        run: dotnet publish SolarflowSource/SolarflowServer/SolarflowServer.csproj -c Release -o ./publish/backend
+
+      # Deploy BackEnd to Azure Web App
+      - name: Deploy BackEnd
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'SolarFlowAPI' # Name of the Azure App Service for back-end
+          package: './publish/backend'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_BACKEND }}
+      
+      # Install dotnet
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef
+      
+      # THIS NEEDS TO BE REMOVED LATER: Drops the database
+      - name: Drop Database
+        run: dotnet ef database drop --force --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+      
+      # Update the database
+      - name: Update Database
+        run: dotnet ef database update --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
