@@ -80,10 +80,10 @@ public class AuthenticationController : ControllerBase
         await _context.SaveChangesAsync();
 
         // Confirmation Link
-        var baseUrl = _configuration["BaseUrl"];
+        var baseUrlClient = _configuration["BaseUrlClient"];
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var confirmationLink =
-            $"{baseUrl}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
+            $"{baseUrlClient}/Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
 
         // Create & Send Email
         const string subject = "Confirmation Link";
@@ -106,10 +106,10 @@ public class AuthenticationController : ControllerBase
         if (user.ConfirmedEmail) return BadRequest(new { message = "Email already confirmed." });
 
         // Confirmation Link
-        var baseUrl = _configuration["BaseUrl"];
+        var baseUrlClient = _configuration["BaseUrlClient"];
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var confirmationLink =
-            $"{baseUrl}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
+            $"{baseUrlClient}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
 
         // Create & Send Email
         const string subject = "Confirmation Link";
@@ -275,9 +275,9 @@ public class AuthenticationController : ControllerBase
         if (user == null) return Ok(new { message = "If the email exists, a reset link has been sent." });
 
         // Confirmation Link
-        var baseUrl = _configuration["BaseUrl"];
+        var baseUrlClient = _configuration["BaseUrlClient"];
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var resetLink = $"{baseUrl}Authentication/ResetPassword?token={Uri.EscapeDataString(token)}";
+        var resetLink = $"{baseUrlClient}Authentication/ResetPassword?token={Uri.EscapeDataString(token)}";
 
         // Create & Send Email
         const string subject = "Password Reset Link";
