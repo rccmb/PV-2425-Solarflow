@@ -4,9 +4,14 @@ using SolarflowClient.Models.ViewModels.Battery;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace SolarflowClient.Controllers
 {
+    //[Authorize(Roles = "Admin")]
+
     public class BatteryController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -21,6 +26,17 @@ namespace SolarflowClient.Controllers
         public async Task<IActionResult> Index()
         {
             var token = Request.Cookies["AuthToken"];
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var role = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (role.ToString() != "Admin")
+            {
+                return RedirectToAction("Login", "Authentication");
+            }
+
             if (!string.IsNullOrEmpty(token) && token.StartsWith("Bearer "))
             {
                 token = token.Substring("Bearer ".Length);

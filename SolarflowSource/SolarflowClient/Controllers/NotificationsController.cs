@@ -2,7 +2,9 @@
 using Newtonsoft.Json;
 using SolarflowClient.Models.ViewModels.Notifications;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SolarflowClient.Controllers
@@ -20,7 +22,19 @@ namespace SolarflowClient.Controllers
 
         public async Task<IActionResult> Index()
         {
+
             var token = Request.Cookies["AuthToken"];
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var role = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (role.ToString() != "Admin")
+            {
+                return RedirectToAction("Login", "Authentication");
+            }
+
             if (!string.IsNullOrEmpty(token) && token.StartsWith("Bearer "))
                 token = token.Substring("Bearer ".Length);
 

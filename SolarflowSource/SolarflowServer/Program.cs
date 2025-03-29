@@ -19,7 +19,7 @@ var emailConfig = builder.Configuration
 
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
 builder.Services.AddSingleton<EmailConfiguration>(sp => sp.GetRequiredService<IOptions<EmailConfiguration>>().Value);
-builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<EmailSender>();
 
 
 // DATABASE CONNECTION
@@ -27,7 +27,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
 // IDENTITY CONFIGURATION USER
 builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole<int>>()
+    .AddIdentity<ApplicationUser, IdentityRole<int>>() // Add Roles
+    .AddRoles<IdentityRole<int>>()  // Ensure Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 

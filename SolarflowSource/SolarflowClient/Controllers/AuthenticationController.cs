@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using SolarflowClient.Models.ViewModels.Authentication;
 using SolarflowClient.Models;
 using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace SolarflowClient.Controllers;
 
