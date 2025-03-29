@@ -13,7 +13,7 @@ public class HomeController : Controller
     {
         _httpClient = httpClient;
         // _httpClient.BaseAddress = new Uri("https://localhost:7280/api/");
-        _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/auth/"); // CHANGE PRODUCTION.
+        _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/"); // CHANGE PRODUCTION.
     }
 
     public IActionResult Index()
