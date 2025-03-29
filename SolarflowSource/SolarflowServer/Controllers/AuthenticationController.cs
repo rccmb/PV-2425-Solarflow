@@ -83,7 +83,7 @@ public class AuthenticationController : ControllerBase
         var baseUrlClient = _configuration["BaseUrlClient"];
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var confirmationLink =
-            $"{baseUrlClient}/Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
+            $"{baseUrlClient}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
 
         // Create & Send Email
         const string subject = "Confirmation Link";
