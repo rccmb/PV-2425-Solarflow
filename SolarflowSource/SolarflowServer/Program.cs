@@ -19,7 +19,7 @@ var emailConfig = builder.Configuration
 
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
 builder.Services.AddSingleton<EmailConfiguration>(sp => sp.GetRequiredService<IOptions<EmailConfiguration>>().Value);
-builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<EmailSender>();
 
 
 // DATABASE CONNECTION

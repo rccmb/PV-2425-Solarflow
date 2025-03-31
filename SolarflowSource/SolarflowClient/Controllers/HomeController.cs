@@ -8,12 +8,21 @@ namespace SolarflowClient.Controllers;
 public class HomeController : Controller
 {
     private readonly HttpClient _httpClient;
+    private readonly IConfiguration _configuration;
 
-    public HomeController(HttpClient httpClient)
+    public HomeController(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://localhost:7280/api/");
-        // _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/auth/"); // CHANGE PRODUCTION.
+        _configuration = configuration;
+
+        if (_configuration["Environment"].Equals("Development"))
+        {
+            _httpClient.BaseAddress = new Uri("https://localhost:7280/api/");
+        }
+        else
+        {
+            _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/");
+        }
     }
 
     public IActionResult Index()

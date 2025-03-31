@@ -15,12 +15,21 @@ namespace SolarflowClient.Controllers
     public class BatteryController : Controller
     {
         private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
 
-        public BatteryController(HttpClient httpClient)
+        public BatteryController(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://localhost:7280/api/battery/");
-            // _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/battery/"); // CHANGE PRODUCTION.
+            _configuration = configuration;
+
+            if (_configuration["Environment"].Equals("Development"))
+            {
+                _httpClient.BaseAddress = new Uri("https://localhost:7280/api/battery/");
+            }
+            else
+            {
+                _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/battery/");
+            }
         }
 
         public async Task<IActionResult> Index()
