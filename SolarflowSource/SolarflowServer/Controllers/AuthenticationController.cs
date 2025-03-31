@@ -86,20 +86,6 @@ public class AuthenticationController : ControllerBase
             $"{baseUrlClient}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
 
 
-            var battery = new Battery
-            {
-                User = user, 
-                ChargeLevel = 40,
-                MaxKW = 20,
-                ChargingSource = "Solar",
-                BatteryMode = "Personalized",
-                MinimalTreshold = 0,
-                MaximumTreshold = 100,
-                SpendingStartTime = "00:00",
-                SpendingEndTime = "09:00",
-                LastUpdate = DateTime.UtcNow.ToString()
-            };
-
         // Create & Send Email
         const string subject = "Confirmation Link";
         var body = $"Click <a href='{confirmationLink}'>here</a> to confirm your email.";

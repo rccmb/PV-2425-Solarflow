@@ -58,4 +58,15 @@ public class ForecastController : ControllerBase
 
         return Ok(forecasts);
     }
+
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentForecast([FromQuery] double lat, [FromQuery] double lon)
+    {
+        var result = await _forecastService.GetCurrentForecastAsync(lat, lon);
+        if (result == null)
+            return NotFound(new { error = "No forecast data found for current time slot." });
+
+        return Ok(result);
+    }
+
 }
