@@ -5,59 +5,70 @@
 
 <link href="~/css/settings/settings.css" rel="stylesheet" asp-append-version="true" />
 
-<!-- Título da página com ícone -->
-<h2 class="settings-page-title">👤 User Information</h2>
-<div class="settings-card">
+<div class="inbox-container">
+    <h2 class="page-title">👤 User Information</h2>
 
-    <div class="settings-profile-picture">
-        <img src="~/images/icons/profile.png" alt="User Avatar" class="settings-avatar" />
+    <div class="notification-card">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <img src="~/images/icons/profile.png" alt="Avatar" width="60" height="60" style="border-radius: 50%;">
+            </div>
+            <div class="notification-text">
+                <form method="post" action="/Settings/UpdateUser">
+                    <div class="settings-input-group">
+                        <label>Email:</label>
+                        <input type="text" value="@Model.Email" readonly class="readonly-input" />
+                    </div>
+
+                    <div class="settings-input-group">
+                        <label>Created At:</label>
+                        <input type="text" value="@Model.CreatedAt" readonly class="readonly-input" />
+                    </div>
+
+                    <div class="settings-input-group">
+                        <label>Full Name:</label>
+                        <input type="text" name="Fullname" value="@Model.Fullname" required />
+                    </div>
+
+                    <div class="settings-buttons">
+                        <button type="reset" class="btn btn-danger">❌ Cancel</button>
+                        <button type="submit" class="btn btn-success">💾 Save</button>
+                    </div>
+                </form>
+
+                <a class="forgot-password-link" asp-controller="Authentication" asp-action="AccountRecovery">Forgot Password?</a>
+            </div>
+        </div>
     </div>
 
-    <!-- Formulário de atualização -->
-    <form method="post" action="/Settings/UpdateUser" class="settings-form">
-        <div class="settings-input-group">
-            <label>Email:</label>
-            <input type="text" value="@Model.Email" readonly class="readonly-input" />
-        </div>
-
-        <div class="settings-input-group">
-            <label>Created At:</label>
-            <input type="text" value="@Model.CreatedAt" readonly class="readonly-input" />
-        </div>
-
-        <div class="settings-input-group">
-            <label>Full Name:</label>
-            <input type="text" name="Fullname" value="@Model.Fullname" required />
-        </div>
-
-        <div class="settings-button-group">
-            <button type="reset" class="btn cancel">Cancel</button>
-            <button type="submit" class="btn save">Save</button>
-        </div>
-    </form>
-
-    <a class="forgot-password-link" asp-controller="Authentication" asp-action="AccountRecovery">Forgot Password?</a>
-
-    <hr class="settings-divider" />
-
-    <h3 class="settings-subtitle">🔐 View Account</h3>
-
-    @if (Model.HasViewAccount)
-    {
-        <p class="settings-subtext">You have an active View Account. You can manage or delete it here.</p>
-        <form asp-controller="Settings" asp-action="DeleteUserViewAccount" method="post">
-            <button type="submit" class="btn danger full-width">Delete View Account</button>
-        </form>
-    }
-    else
-    {
-        <p class="settings-subtext">You don’t have a View Account. Create one below:</p>
-        <form asp-controller="Home" asp-action="RegisterViewAccount" method="post">
-            <div class="settings-input-group">
-                <label>View Account Password:</label>
-                <input type="password" name="Password" required />
+    <div class="notification-card">
+        <div class="notification-content">
+            <div class="notification-icon">🔐</div>
+            <div class="notification-text">
+                <h4 class="notification-title">View Account</h4>
+                @if (Model.HasViewAccount)
+                {
+                    <p class="notification-description">You have an active View Account. You can delete it here.</p>
+                    <form asp-controller="Settings" asp-action="DeleteUserViewAccount" method="post">
+                        <div class="settings-buttons">
+                            <button type="submit" class="btn btn-danger">🗑️ Delete View Account</button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <p class="notification-description">You don’t have a View Account. Create one below:</p>
+                    <form asp-controller="Home" asp-action="RegisterViewAccount" method="post">
+                        <div class="settings-input-group">
+                            <label>View Account Password:</label>
+                            <input type="password" name="Password" required />
+                        </div>
+                        <div class="settings-buttons">
+                            <button type="submit" class="btn btn-success">➕ Create View Account</button>
+                        </div>
+                    </form>
+                }
             </div>
-            <button type="submit" class="btn save full-width">Create View Account</button>
-        </form>
-    }
+        </div>
+    </div>
 </div>
