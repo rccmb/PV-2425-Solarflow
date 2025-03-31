@@ -1,108 +1,63 @@
 ﻿@model SolarflowClient.Models.ViewModels.Authentication.GetUserViewModel
-
 @{
     ViewData["Title"] = "Settings Page";
-    var authToken = Context.Request.Cookies["AuthToken"];
 }
 
-<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/settings/settings.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/settings/settings.css" rel="stylesheet" asp-append-version="true" />
 
-<h1 class="page-title">Settings</h1>
+<!-- Título da página com ícone -->
+<h2 class="settings-page-title">👤 User Information</h2>
+<div class="settings-card">
 
-<div asp-validation-summary="All" class="text-danger"></div>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="settings-error-container">
-            <p class="settings-error-message">@TempData["ErrorMessage"]</p>
-        </div>
-    }
-}
-
-
-<div class="settings-container">
-    <div class="settings-content">
-        <div class="settings-profile-picture">
-            <img src="~/images/icons/profile.png" alt="User Avatar" class="settings-avatar">
-        </div>
-
-        <div class="settings-user-information">
-            <p class="settings-form-title">User Information</p>
-        
-            <div class="settings-input-group">
-                <label class="settings-input-label">Email:</label>
-                <div class="readonly-text">@Model.Email</div>
-                <span class="text-danger"></span>
-            </div>
-
-            <div class="settings-input-group">
-                <label class="settings-input-label">Created At:</label>
-                <div class="readonly-text">@Model.CreatedAt</div>
-                <span class="text-danger"></span>
-            </div>
-
-            <form method="post" action="/Settings/UpdateUser">
-                <div class="settings-input-group">
-                    <label class="settings-input-label">Full Name:</label>
-                    <input class="settings-input" type="text" name="Fullname" value="@Model.Fullname" required />
-                    <span asp-validation-for="Fullname" class="text-danger"></span>
-
-                    <div class="settings-button-group">
-                        <button class="settings-button cancel-button" type="reset">Cancel</button>
-                        <button class="settings-button save-button" type="submit">Save</button>
-                    </div>
-                </div>
-            </form>
-
-            <br />
-
-            <a class="login-form-forgot-password" asp-controller="Authentication" asp-action="AccountRecovery">Forgot Password?</a>
-        
-        </div>
-
-        <div class="settings-view-account">
-            <p class="settings-form-title">View Account</p>
-
-            <div class="settings-input-group">
-                @if (Model.HasViewAccount)
-                {
-                    <p>You already have a view account</p>
-                    <form asp-controller="Settings" asp-action="DeleteUserViewAccount" method="post">
-                        <div class="settings-button-group">
-                            <button type="submit" class="settings-button cancel-button">Delete View Account</button>
-                        </div>
-                    </form>
-                }
-                else
-                {
-                    <p>At the moment you don't have a view account</p>
-                    <a asp-controller="Home" asp-action="RegisterViewAccount" class="btn btn-primary">Register View Account</a>
-                }
-            </div>
-
-        </div>
-
-        <div class="settings-logout">
-            <form action="@Url.Action("Logout", "Home")" method="post">
-                <button type="submit" class="nav-link logout">
-                    <img src="~/images/icons/logout.png" alt="Logout" class="sidebar-icon">
-                </button>
-            </form>
-        </div>
+    <div class="settings-profile-picture">
+        <img src="~/images/icons/profile.png" alt="User Avatar" class="settings-avatar" />
     </div>
+
+    <!-- Formulário de atualização -->
+    <form method="post" action="/Settings/UpdateUser" class="settings-form">
+        <div class="settings-input-group">
+            <label>Email:</label>
+            <input type="text" value="@Model.Email" readonly class="readonly-input" />
+        </div>
+
+        <div class="settings-input-group">
+            <label>Created At:</label>
+            <input type="text" value="@Model.CreatedAt" readonly class="readonly-input" />
+        </div>
+
+        <div class="settings-input-group">
+            <label>Full Name:</label>
+            <input type="text" name="Fullname" value="@Model.Fullname" required />
+        </div>
+
+        <div class="settings-button-group">
+            <button type="reset" class="btn cancel">Cancel</button>
+            <button type="submit" class="btn save">Save</button>
+        </div>
+    </form>
+
+    <a class="forgot-password-link" asp-controller="Authentication" asp-action="AccountRecovery">Forgot Password?</a>
+
+    <hr class="settings-divider" />
+
+    <h3 class="settings-subtitle">🔐 View Account</h3>
+
+    @if (Model.HasViewAccount)
+    {
+        <p class="settings-subtext">You have an active View Account. You can manage or delete it here.</p>
+        <form asp-controller="Settings" asp-action="DeleteUserViewAccount" method="post">
+            <button type="submit" class="btn danger full-width">Delete View Account</button>
+        </form>
+    }
+    else
+    {
+        <p class="settings-subtext">You don’t have a View Account. Create one below:</p>
+        <form asp-controller="Home" asp-action="RegisterViewAccount" method="post">
+            <div class="settings-input-group">
+                <label>View Account Password:</label>
+                <input type="password" name="Password" required />
+            </div>
+            <button type="submit" class="btn save full-width">Create View Account</button>
+        </form>
+    }
 </div>

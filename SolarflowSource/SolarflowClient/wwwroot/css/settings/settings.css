@@ -1,165 +1,150 @@
-﻿
-body {
-    background-color: #f8f9fa;
+﻿.settings-card {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    max-width: 600px;
+    margin: 2rem auto;
 }
 
 .settings-profile-picture {
     display: flex;
-    justify-content: center; /* Centers horizontally */
-    align-items: center; /* Centers vertically (if parent has height) */
-    height: 150px; /* Adjust based on your design */
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .settings-avatar {
-    width: 100px; /* Adjust size as needed */
+    width: 100px;
     height: 100px;
-    border-radius: 50%; /* Makes it circular */
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
 }
 
-.settings-container {
+
+
+/* Título principal com ícone */
+.settings-page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
     display: flex;
-    justify-content: center; /* Centers horizontally */
-    align-items: center; /* Centers vertically */
-    height: 100vh; /* Full viewport height */
-    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.settings-content {
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    align-items: center; /* Center-align content */
-    text-align: center;
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    width: 100%;
-}
-
-.settings-form-group {
+/* Form principal */
+.settings-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
+/* Grupo de inputs */
 .settings-input-group {
     display: flex;
-    align-items: center; /* Keep items in one line */
-    gap: 10px; /* Space between label and text */
-    width: 100%;
-    flex-wrap: nowrap; /* Prevent line breaks */
-}
-
-.settings-input-label {
-    white-space: nowrap; /* Prevent label from breaking into two lines */
-    font-weight: bold;
-    text-align: start;
-    font-size: 14px;
-    margin-top: 10px;
-    margin-bottom: 5px;
-    margin-left: 5px;
-}
-
-
-.settings-input {
-    border-bottom: 2px solid #007bff;
-    outline: none;
-    background: transparent;
-    font-size: 16px;
-    padding: 5px 10px;
-    width: 100%;
-    transition: border-color 0.3s ease-in-out;
-
-    border: none;
-    border: solid 1px #2C2F33;
-    border-radius: 10px;
-    padding-block: 10px;
-    box-shadow: rgba(0, 0, 0, 0.10) 0px 5px 5px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-    .settings-input:focus {
-        border-bottom: 2px solid #0056b3; /* Darker underline on focus */
-    }
-
-
-.settings-button-group {
-    display: flex;
-    gap: 10px;
-}
-
-.save-button {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-    .save-button:hover {
-        background-color: #218838;
-    }
-
-.cancel-button {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-    .cancel-button:hover {
-        background-color: #c82333;
-    }
-
-.settings-button {
-    padding: 10px 20px;
-    border: none;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.settings-form-title {
-    font-weight: bolder;
-    font-size: 28px;
-    margin-bottom: 10px;
-    margin-top: 20px;
-}
-
-.settings-error-container {
-    background-color: darkred;
-    width: 445px;
     flex-direction: column;
-    display: flex;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid black;
-    margin-top: 20px;
+    gap: 0.3rem;
 }
 
-.settings-error-message {
-    color: white;
-    font-size: 12px;
-    margin: 10px 0;
-}
+    .settings-input-group input {
+        padding: 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 0.95rem;
+    }
 
 .readonly-input {
-    background-color: #e9ecef;
-    color: #6c757d;
-    border: 1px solid #ced4da;
-    pointer-events: none;
+    background-color: #f1f1f1;
+    cursor: not-allowed;
 }
 
-
-.settings-logout button {
-    background-color: transparent; /* Transparent button */
-    border: none; /* Removes button border */
-    cursor: pointer; /* Ensures it looks clickable */
+/* Botões alinhados */
+.settings-button-group {
+    display: flex;
+    gap: 1rem;
 }
 
-.settings-logout button:hover {
-    background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background on hover */
-    border-radius: 5px; /* Optional: Adds rounded corners */
+    .settings-button-group .btn {
+        flex: 1;
+        padding: 0.6rem;
+        font-size: 0.95rem;
+    }
+
+/* Botões base */
+.btn {
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    font-weight: 600;
 }
 
-        
+    /* Botão Cancel */
+    .btn.cancel {
+        background-color: #f8d7da;
+        color: #842029;
+    }
 
+        .btn.cancel:hover {
+            background-color: #f1b0b7;
+        }
 
+    /* Botão Save */
+    .btn.save {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+        .btn.save:hover {
+            background-color: #bcd0c7;
+        }
+
+    /* Botão Delete */
+    .btn.danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+        .btn.danger:hover {
+            background-color: #bb2d3b;
+        }
+
+/* Para botões full width */
+.full-width {
+    width: 100%;
+    padding: 0.7rem;
+}
+
+/* Subtítulos */
+.settings-subtitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Texto auxiliar */
+.settings-subtext {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+/* Separador visual */
+.settings-divider {
+    margin: 2rem 0;
+    border: none;
+    border-top: 1px solid #ddd;
+}
+
+/* Link de recuperação */
+.forgot-password-link {
+    font-size: 0.9rem;
+    color: #007bff;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+}
