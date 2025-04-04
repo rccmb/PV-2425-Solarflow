@@ -17,6 +17,9 @@ namespace SolarflowServer.Models
         public DateTime ForecastDate { get; set; }
 
         [Required]
+        public double kwh { get; set; }
+
+        [Required]
         public double SolarHoursExpected { get; set; }
 
         [Required]

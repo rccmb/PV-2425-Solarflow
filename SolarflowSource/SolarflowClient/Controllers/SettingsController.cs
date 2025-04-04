@@ -165,5 +165,51 @@ namespace SolarflowClient.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateViewAccount(string Password)
+        {
+            var token = Request.Cookies["AuthToken"];
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["ErrorMessage"] = "You must be logged in to register a view account.";
+                return RedirectToAction("Login", "Authentication");
+            }
+
+            if (!token.StartsWith("Bearer "))
+            {
+                token = "Bearer " + token;
+            }
+
+            var requestData = new { Password };
+            var jsonContent = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "register-view")
+            {
+                Content = jsonContent
+            };
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "View account created successfully!";
+                return RedirectToAction("Index");
+            }
+
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var errorObj = JsonConvert.DeserializeObject<dynamic>(errorResponse);
+                TempData["ErrorMessage"] = errorObj?.error?.ToString() ?? "An unknown error occurred.";
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "An error occurred, but the response could not be parsed.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+
     }
 }

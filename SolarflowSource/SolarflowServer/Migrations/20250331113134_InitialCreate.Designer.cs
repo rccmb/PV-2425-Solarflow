@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250329122110_InitialCreate")]
+    [Migration("20250331113134_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -368,6 +368,9 @@ namespace SolarflowServer.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<double>("kwh")
+                        .HasColumnType("float");
 
                     b.HasKey("ID");
 

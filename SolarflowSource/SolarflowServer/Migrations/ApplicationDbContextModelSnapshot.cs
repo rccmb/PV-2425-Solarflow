@@ -366,6 +366,9 @@ namespace SolarflowServer.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<double>("kwh")
+                        .HasColumnType("float");
+
                     b.HasKey("ID");
 
                     b.HasIndex("BatteryID");

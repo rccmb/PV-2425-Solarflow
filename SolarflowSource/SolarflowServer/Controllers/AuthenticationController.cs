@@ -85,11 +85,13 @@ public class AuthenticationController : ControllerBase
         var confirmationLink =
             $"{baseUrlClient}Authentication/ConfirmEmail?token={Uri.EscapeDataString(token)}&userId={Uri.EscapeDataString(user.Id.ToString())}";
 
+
         // Create & Send Email
         const string subject = "Confirmation Link";
         var body = $"Click <a href='{confirmationLink}'>here</a> to confirm your email.";
         var message = _emailSender.CreateMessage([model.Email], subject, body, true);
         await _emailSender.SendMessage(message);
+
 
         // Add Log Entry
         await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered", GetClientIPAddress());
