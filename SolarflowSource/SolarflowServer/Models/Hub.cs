@@ -3,17 +3,21 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SolarflowServer.Models;
 
-public class Hub(ApplicationDbContext context)
+public class Hub
 {
-    [Key] [ForeignKey("User")] public int ApplicationUserId { get; set; }
+    [Key] public int Id { get; set; }
 
-    public ApplicationUser User { get; set; }
+    [Required] public int UserId { get; set; }
 
-    [Required] public float GridKW { get; set; }
+    [ForeignKey(nameof(UserId))] public virtual ApplicationUser User { get; set; }
 
-    [Required] public float SolarArea { get; set; }
+    [Required] public float GridKWh { get; set; }
 
-    [Required] public Battery Battery { get; set; }
+    [Required] public float SolarKWh { get; set; }
 
-    public ICollection<EnergyRecord> EnergyRecords { get; set; } = new List<EnergyRecord>();
+    [Required] public int BatteryId { get; set; }
+
+    [ForeignKey(nameof(BatteryId))] public virtual Battery Battery { get; set; }
+
+    public virtual ICollection<EnergyRecord> EnergyRecords { get; set; }
 }

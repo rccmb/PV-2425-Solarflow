@@ -5,7 +5,9 @@ using SolarflowServer.Models;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
 
     public DbSet<ApplicationUser> Users { get; set; }
     public DbSet<Battery> Batteries { get; set; }
@@ -13,6 +15,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Forecast> Forecasts { get; set; }
     public DbSet<ViewAccount> ViewAccounts { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<Hub> Hubs { get; set; }
+    public DbSet<EnergyRecord> EnergyRecords { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -33,9 +38,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasForeignKey<Battery>(b => b.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(u => u.ViewAccount) 
+            entity.HasOne(u => u.ViewAccount)
                 .WithOne(v => v.User)
-                .HasForeignKey<ViewAccount>(v => v.UserId) 
+                .HasForeignKey<ViewAccount>(v => v.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -44,7 +49,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("ViewAccounts");
 
-            entity.HasOne(v => v.User) 
+            entity.HasOne(v => v.User)
                 .WithOne(u => u.ViewAccount)
                 .HasForeignKey<ViewAccount>(v => v.UserId)
                 .IsRequired();
@@ -59,7 +64,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(a => a.Brief).HasMaxLength(255).IsRequired();
             entity.Property(a => a.IPAddress).HasMaxLength(50);
             entity.Property(a => a.Timestamp).HasDefaultValueSql("GETDATE()");
-
         });
 
         // MAPPING THE BATTERY.
@@ -79,9 +83,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(b => b.LastUpdate).HasDefaultValue("");
 
             entity.HasOne(b => b.User)
-                  .WithOne(u => u.Battery)
-                  .HasForeignKey<Battery>(b => b.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(u => u.Battery)
+                .HasForeignKey<Battery>(b => b.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // MAPPING THE Forecast.
@@ -93,16 +97,51 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(f => f.SolarHoursExpected).IsRequired();
             entity.Property(f => f.WeatherCondition).HasMaxLength(100).IsRequired();
             entity.HasOne<Battery>()
-                .WithMany()  
+                .WithMany()
                 .HasForeignKey(f => f.BatteryID)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Notification>()
             .HasOne(n => n.User)
-            .WithMany() 
+            .WithMany()
             .HasForeignKey(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+
+        // MAPPING THE HUB.
+        builder.Entity<Hub>(entity =>
+        {
+            entity.HasKey(h => h.Id);
+
+            entity.HasOne(h => h.User)
+                .WithMany(u => u.Hubs)
+                .HasForeignKey(h => h.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // okay
+
+            entity.HasOne(h => h.Battery)
+                .WithOne()
+                .HasForeignKey<Hub>(h => h.BatteryId)
+                .OnDelete(DeleteBehavior.Restrict); // to prevent multiple cascade paths
+        });
+
+        // MAPPING THE ENERGY RECORD.
+        builder.Entity<EnergyRecord>(entity =>
+        {
+            entity.ToTable("EnergyRecords");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Timestamp).IsRequired();
+            entity.Property(e => e.Consumption).IsRequired();
+            entity.Property(e => e.Grid).IsRequired();
+            entity.Property(e => e.Solar).IsRequired();
+            entity.Property(e => e.Battery).IsRequired();
+
+            entity.HasOne(e => e.Hub)
+                .WithMany(h => h.EnergyRecords)
+                .HasForeignKey(e => e.HubId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }
-

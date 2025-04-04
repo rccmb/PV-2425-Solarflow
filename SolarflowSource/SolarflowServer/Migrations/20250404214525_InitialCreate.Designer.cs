@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250331113134_InitialCreate")]
+    [Migration("20250404214525_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -347,6 +347,39 @@ namespace SolarflowServer.Migrations
                     b.ToTable("Batteries", (string)null);
                 });
 
+            modelBuilder.Entity("SolarflowServer.Models.EnergyRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<float>("Battery")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Consumption")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Grid")
+                        .HasColumnType("real");
+
+                    b.Property<int>("HubId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Solar")
+                        .HasColumnType("real");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HubId");
+
+                    b.ToTable("EnergyRecords", (string)null);
+                });
+
             modelBuilder.Entity("SolarflowServer.Models.Forecast", b =>
                 {
                     b.Property<int>("ID")
@@ -377,6 +410,36 @@ namespace SolarflowServer.Migrations
                     b.HasIndex("BatteryID");
 
                     b.ToTable("Forecasts", (string)null);
+                });
+
+            modelBuilder.Entity("SolarflowServer.Models.Hub", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatteryId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("GridKWh")
+                        .HasColumnType("real");
+
+                    b.Property<float>("SolarKWh")
+                        .HasColumnType("real");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BatteryId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Hubs");
                 });
 
             modelBuilder.Entity("SolarflowServer.Models.Notification", b =>
@@ -543,6 +606,17 @@ namespace SolarflowServer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SolarflowServer.Models.EnergyRecord", b =>
+                {
+                    b.HasOne("SolarflowServer.Models.Hub", "Hub")
+                        .WithMany("EnergyRecords")
+                        .HasForeignKey("HubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hub");
+                });
+
             modelBuilder.Entity("SolarflowServer.Models.Forecast", b =>
                 {
                     b.HasOne("SolarflowServer.Models.Battery", null)
@@ -550,6 +624,25 @@ namespace SolarflowServer.Migrations
                         .HasForeignKey("BatteryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SolarflowServer.Models.Hub", b =>
+                {
+                    b.HasOne("SolarflowServer.Models.Battery", "Battery")
+                        .WithOne()
+                        .HasForeignKey("SolarflowServer.Models.Hub", "BatteryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ApplicationUser", "User")
+                        .WithMany("Hubs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Battery");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SolarflowServer.Models.Notification", b =>
@@ -579,8 +672,15 @@ namespace SolarflowServer.Migrations
                     b.Navigation("Battery")
                         .IsRequired();
 
+                    b.Navigation("Hubs");
+
                     b.Navigation("ViewAccount")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SolarflowServer.Models.Hub", b =>
+                {
+                    b.Navigation("EnergyRecords");
                 });
 #pragma warning restore 612, 618
         }

@@ -288,6 +288,58 @@ namespace SolarflowServer.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Hubs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    GridKWh = table.Column<float>(type: "real", nullable: false),
+                    SolarKWh = table.Column<float>(type: "real", nullable: false),
+                    BatteryId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Hubs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Hubs_Batteries_BatteryId",
+                        column: x => x.BatteryId,
+                        principalTable: "Batteries",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Hubs_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EnergyRecords",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HubId = table.Column<int>(type: "int", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Consumption = table.Column<float>(type: "real", nullable: false),
+                    Grid = table.Column<float>(type: "real", nullable: false),
+                    Solar = table.Column<float>(type: "real", nullable: false),
+                    Battery = table.Column<float>(type: "real", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EnergyRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EnergyRecords_Hubs_HubId",
+                        column: x => x.HubId,
+                        principalTable: "Hubs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -322,9 +374,25 @@ namespace SolarflowServer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_EnergyRecords_HubId",
+                table: "EnergyRecords",
+                column: "HubId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Forecasts_BatteryID",
                 table: "Forecasts",
                 column: "BatteryID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Hubs_BatteryId",
+                table: "Hubs",
+                column: "BatteryId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Hubs_UserId",
+                table: "Hubs",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_UserId",
@@ -372,6 +440,9 @@ namespace SolarflowServer.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
+                name: "EnergyRecords");
+
+            migrationBuilder.DropTable(
                 name: "Forecasts");
 
             migrationBuilder.DropTable(
@@ -382,6 +453,9 @@ namespace SolarflowServer.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Hubs");
 
             migrationBuilder.DropTable(
                 name: "Batteries");
