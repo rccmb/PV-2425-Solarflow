@@ -1,14 +1,13 @@
-using Microsoft.AspNetCore.Authentication;
+using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using SolarflowServer.Services;
 using Microsoft.Extensions.Options;
-using SolarflowServer.Models;
+using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.Controllers;
+using SolarflowServer.Models;
+using SolarflowServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,20 +22,18 @@ builder.Services.AddScoped<EmailSender>();
 
 
 // DATABASE CONNECTION
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // IDENTITY CONFIGURATION USER
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole<int>>() // Add Roles
-    .AddRoles<IdentityRole<int>>()  // Ensure Role Support
+    .AddRoles<IdentityRole<int>>() // Ensure Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
 builder.Services
-    .AddIdentityCore<ViewAccount>(options =>
-    {
-        options.User.RequireUniqueEmail = false; 
-    })
+    .AddIdentityCore<ViewAccount>(options => { options.User.RequireUniqueEmail = false; })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -44,49 +41,51 @@ builder.Services.AddScoped<SignInManager<ViewAccount>>();
 
 // JWT AUTHENTICATION
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])),
-        ValidateIssuer = false,
-        ValidateAudience = false
-    };
-    options.Events = new JwtBearerEvents
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
     {
-        OnAuthenticationFailed = context =>
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            Console.WriteLine("JWT Authentication failed: " + context.Exception.Message);
-            return Task.CompletedTask;
-        },
-        OnTokenValidated = context =>
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+        options.Events = new JwtBearerEvents
         {
-            Console.WriteLine("JWT Token validated successfully.");
-            return Task.CompletedTask;
-        }
-    };
-});
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("JWT Authentication failed: " + context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("JWT Token validated successfully.");
+                return Task.CompletedTask;
+            }
+        };
+    });
 
 builder.Services.AddScoped<IAuditService, AuditService>();
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddHttpClient<WindyApiClient>(); 
-builder.Services.AddScoped<WeatherProcessingService>(); 
+builder.Services.AddHttpClient<WindyApiClient>();
+builder.Services.AddScoped<WeatherProcessingService>();
 builder.Services.AddScoped<ForecastService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 
-
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 
 // SWAGGER
