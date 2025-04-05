@@ -13,6 +13,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Forecast> Forecasts { get; set; }
     public DbSet<ViewAccount> ViewAccounts { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<Suggestion> Suggestions { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -103,6 +105,27 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .WithMany() 
             .HasForeignKey(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Suggestion>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+
+            entity.Property(s => s.Title).IsRequired().HasMaxLength(100);
+
+            entity.Property(s => s.Description).IsRequired().HasMaxLength(300);
+
+            entity.Property(s => s.Type).IsRequired();
+
+            entity.Property(s => s.Status).IsRequired();
+
+            entity.Property(s => s.TimeSent).IsRequired();
+
+            entity.HasOne(s => s.Battery)
+                .WithMany()
+                .HasForeignKey(s => s.BatteryId)
+                .OnDelete(DeleteBehavior.Cascade); 
+        });
+
     }
 }
 

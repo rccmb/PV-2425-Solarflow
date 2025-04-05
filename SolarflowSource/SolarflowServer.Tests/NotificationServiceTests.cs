@@ -5,6 +5,7 @@ using SolarflowServer.Services;
 using SolarflowServer.DTOs.Notification;
 using SolarflowServer.Models;
 using System.Collections.Generic;
+using SolarflowServer.Models.Enums;
 
 namespace SolarflowServer.Tests.Services
 {
@@ -23,7 +24,7 @@ namespace SolarflowServer.Tests.Services
         public async Task CreateNotificationAsync_Should_Call_Add_And_Save()
         {
             // Arrange
-            var userId = "user-123";
+            int userId = 45;
             var dto = new NotificationCreateDto
             {
                 Title = "Test",
@@ -42,7 +43,7 @@ namespace SolarflowServer.Tests.Services
         public async Task GetNotificationsAsync_Should_Return_Notifications_For_User()
         {
             // Arrange
-            var userId = "user-123";
+            int userId = 99;
             _repositoryMock.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(new List<Notification>
             {
                 new Notification { Id = 1, Title = "Test", Description = "Desc", UserId = userId, Status = NotificationStatus.Unread }
@@ -60,7 +61,7 @@ namespace SolarflowServer.Tests.Services
         public async Task MarkAsReadAsync_Should_Update_Status_If_Notification_Owned_By_User()
         {
             // Arrange
-            var userId = "user-123";
+            int userId = 99;
             var notification = new Notification
             {
                 Id = 1,
@@ -82,7 +83,7 @@ namespace SolarflowServer.Tests.Services
         public async Task DeleteNotificationAsync_Should_Remove_Notification_If_Owned_By_User()
         {
             // Arrange
-            var userId = "user-123";
+            int userId = 99;
             var notification = new Notification { Id = 1, UserId = userId };
             _repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(notification);
 
@@ -98,7 +99,7 @@ namespace SolarflowServer.Tests.Services
         public async Task DeleteAllNotificationsAsync_Should_Call_DeleteAll_And_Save()
         {
             // Arrange
-            var userId = "user-123";
+            int userId = 99;
 
             // Act
             await _service.DeleteAllNotificationsAsync(userId);

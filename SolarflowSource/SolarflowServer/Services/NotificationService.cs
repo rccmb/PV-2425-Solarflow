@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SolarflowServer.DTOs.Notification;
 using SolarflowServer.Models;
+using SolarflowServer.Models.Enums;
 
 namespace SolarflowServer.Services
 {

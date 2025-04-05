@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SolarflowServer.Models.Enums;
 
 namespace SolarflowServer.Models
 {

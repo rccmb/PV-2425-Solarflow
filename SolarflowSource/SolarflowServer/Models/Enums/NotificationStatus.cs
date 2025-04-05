@@ -1,4 +1,4 @@
-﻿namespace SolarflowServer.Models
+﻿namespace SolarflowServer.Models.Enums
 {
     public enum NotificationStatus
     {

@@ -5,6 +5,7 @@ using SolarflowServer.Models;
 using SolarflowServer.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using SolarflowServer.Models.Enums;
 
 namespace SolarflowServer.Controllers
 {
