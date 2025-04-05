@@ -12,60 +12,74 @@ using Xunit;
 
 namespace SolarflowServer.Tests.Services
 {
-    public class SuggestionServiceTests
+    public class SuggestionServiceTests : IDisposable
     {
         private readonly Mock<INotificationService> _mockNotificationService;
         private readonly ApplicationDbContext _context;
         private readonly SuggestionService _suggestionService;
+        private Battery _battery;
 
         public SuggestionServiceTests()
         {
-            // Configurar um banco de dados em memória para testes
+           
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: "SolarflowTestDb")
                 .Options;
 
             _context = new ApplicationDbContext(options);
 
-            // Mockar o serviço de notificação
+            
             _mockNotificationService = new Mock<INotificationService>();
 
-            // Inicializar o serviço de sugestões
+          
             _suggestionService = new SuggestionService(_context, _mockNotificationService.Object);
+
+           
+            _battery = new Battery
+            {
+                ChargeLevel = 50,
+                ChargingSource = "Grid",
+                BatteryMode = "Normal",
+                MinimalTreshold = 20,
+                MaximumTreshold = 100,
+                SpendingStartTime = "00:00",
+                SpendingEndTime = "06:00",
+                UserId = 1
+            };
+            _battery.ID = 1;
+
+            
+            if (!_context.Batteries.Any(b => b.ID == _battery.ID))
+            {
+                _context.Batteries.Add(_battery);
+                _context.SaveChanges();
+            }
+        }
+
+        public void Dispose()
+        {
+            _context.Database.EnsureDeleted(); 
+            _context.Database.EnsureCreated(); 
         }
 
         [Fact]
         public async Task GenerateSuggestionsAsync_ShouldCreateSuggestions_WhenValidForecast()
         {
             // Arrange
-            var battery = new Battery
-            {
-                ChargeLevel = 50,
-                ChargingSource = "Grid", 
-                BatteryMode = "Normal",
-                MinimalTreshold = 20,
-                MaximumTreshold = 100,
-                SpendingStartTime = "00:00",
-                SpendingEndTime = "06:00", 
-                UserId = 1
-            };
-            battery.ID = 1;
-
             var forecast = new Forecast
             {
-                BatteryID = 1,
-                kwh = 4, // Simulando baixo valor de produção solar
+                BatteryID = _battery.ID,
+                kwh = 4,
                 SolarHoursExpected = 3,
                 WeatherCondition = "Partly Cloudy",
                 ForecastDate = DateTime.UtcNow
             };
 
-            await _context.Batteries.AddAsync(battery);
             await _context.Forecasts.AddAsync(forecast);
             await _context.SaveChangesAsync();
 
             // Act
-            await _suggestionService.GenerateSuggestionsAsync(1);
+            await _suggestionService.GenerateSuggestionsAsync(_battery.ID);
 
             // Assert
             var suggestions = await _context.Suggestions.ToListAsync();
@@ -78,21 +92,9 @@ namespace SolarflowServer.Tests.Services
         public async Task ApplySuggestionAsync_ShouldApplySuggestion_WhenValid()
         {
             // Arrange
-            var battery = new Battery
-            {
-                ChargeLevel = 50,
-                ChargingSource = "Grid", 
-                BatteryMode = "Normal",
-                MinimalTreshold = 20,
-                MaximumTreshold = 100,
-                SpendingStartTime = "00:00", 
-                SpendingEndTime = "06:00",
-                UserId = 1
-            };
-
             var suggestion = new Suggestion
             {
-                BatteryId = 1,
+                BatteryId = _battery.ID,
                 Title = "Charge Battery at Night",
                 Description = "Low solar forecast. Consider charging your battery using the grid during off-peak hours.",
                 Status = SuggestionStatus.Pending,
@@ -100,7 +102,6 @@ namespace SolarflowServer.Tests.Services
                 TimeSent = DateTime.UtcNow
             };
 
-            await _context.Batteries.AddAsync(battery);
             await _context.Suggestions.AddAsync(suggestion);
             await _context.SaveChangesAsync();
 
@@ -110,29 +111,17 @@ namespace SolarflowServer.Tests.Services
             // Assert
             var updatedSuggestion = await _context.Suggestions.FindAsync(suggestion.Id);
             Assert.Equal(SuggestionStatus.Applied, updatedSuggestion.Status);
-            Assert.Equal("00:00", battery.SpendingStartTime);
-            Assert.Equal("06:00", battery.SpendingEndTime);
+            Assert.Equal("00:00", _battery.SpendingStartTime);
+            Assert.Equal("06:00", _battery.SpendingEndTime);
         }
 
         [Fact]
         public async Task IgnoreSuggestionAsync_ShouldIgnoreSuggestion_WhenValid()
         {
             // Arrange
-            var battery = new Battery
-            {
-                ChargeLevel = 50,
-                ChargingSource = "Grid", 
-                BatteryMode = "Normal",
-                MinimalTreshold = 20,
-                MaximumTreshold = 100,
-                SpendingStartTime = "00:00", 
-                SpendingEndTime = "06:00", 
-                UserId = 1
-            };
-
             var suggestion = new Suggestion
             {
-                BatteryId = 1,
+                BatteryId = _battery.ID,
                 Title = "Enable Emergency Mode",
                 Description = "Very low solar production forecast. Enable emergency mode to preserve energy.",
                 Status = SuggestionStatus.Pending,
@@ -140,7 +129,6 @@ namespace SolarflowServer.Tests.Services
                 TimeSent = DateTime.UtcNow
             };
 
-            await _context.Batteries.AddAsync(battery);
             await _context.Suggestions.AddAsync(suggestion);
             await _context.SaveChangesAsync();
 
@@ -158,7 +146,7 @@ namespace SolarflowServer.Tests.Services
             // Arrange
             var oldSuggestion = new Suggestion
             {
-                BatteryId = 1,
+                BatteryId = _battery.ID,
                 Title = "Charge Battery at Night",
                 Description = "Old suggestion for testing.",
                 Status = SuggestionStatus.Pending,
@@ -168,7 +156,7 @@ namespace SolarflowServer.Tests.Services
 
             var recentSuggestion = new Suggestion
             {
-                BatteryId = 1,
+                BatteryId = _battery.ID,
                 Title = "Enable Emergency Mode",
                 Description = "Current suggestion.",
                 Status = SuggestionStatus.Pending,
@@ -187,6 +175,44 @@ namespace SolarflowServer.Tests.Services
             var suggestions = await _context.Suggestions.ToListAsync();
             Assert.Single(suggestions);
             Assert.Equal(recentSuggestion.Id, suggestions[0].Id);
+        }
+
+        [Fact]
+        public async Task GenerateSuggestionsAsync_ShouldNotCreateDuplicateSuggestion_WhenSuggestionExistsForToday()
+        {
+            // Arrange
+            var forecast = new Forecast
+            {
+                BatteryID = _battery.ID,
+                kwh = 4, 
+                SolarHoursExpected = 3,
+                WeatherCondition = "Partly Cloudy",
+                ForecastDate = DateTime.UtcNow
+            };
+
+            await _context.Forecasts.AddAsync(forecast);
+            await _context.SaveChangesAsync();
+
+          
+            var existingSuggestion = new Suggestion
+            {
+                BatteryId = _battery.ID,
+                Title = "Charge Battery at Night",
+                Description = "Low solar forecast. Consider charging your battery using the grid during off-peak hours.",
+                Status = SuggestionStatus.Pending,
+                Type = SuggestionType.ChargeAtNight,
+                TimeSent = DateTime.UtcNow
+            };
+            await _context.Suggestions.AddAsync(existingSuggestion);
+            await _context.SaveChangesAsync();
+
+            // Act
+            await _suggestionService.GenerateSuggestionsAsync(_battery.ID);
+
+            // Assert
+            var suggestions = await _context.Suggestions.ToListAsync();
+            var suggestionCount = suggestions.Count(s => s.Type == SuggestionType.ChargeAtNight && s.BatteryId == _battery.ID);
+            Assert.Equal(1, suggestionCount); 
         }
     }
 }
