@@ -5,7 +5,6 @@ using SolarflowServer.Models.Enums;
 using SolarflowServer.DTOs.Suggestion;
 using SolarflowServer.Services;
 
-
 public class SuggestionService
 {
     private readonly ApplicationDbContext _context;
@@ -17,11 +16,16 @@ public class SuggestionService
         _notificationService = notificationService;
     }
 
-    // Obter sugestões pendentes de uma bateria
-    public async Task<List<SuggestionDto>> GetPendingSuggestionsAsync(int batteryId)
+    // Get pending suggestions based on user ID
+    public async Task<List<SuggestionDto>> GetPendingSuggestionsAsync(int userId)
     {
+        var battery = await _context.Batteries
+            .FirstOrDefaultAsync(b => b.UserId == userId); // Get battery by userId
+
+        if (battery == null) return new List<SuggestionDto>(); // Return empty if no battery found
+
         var suggestions = await _context.Suggestions
-            .Where(s => s.BatteryId == batteryId && s.Status == SuggestionStatus.Pending)
+            .Where(s => s.BatteryId == battery.ID && s.Status == SuggestionStatus.Pending)
             .OrderBy(s => s.TimeSent)
             .ToListAsync();
 
@@ -36,7 +40,7 @@ public class SuggestionService
         }).ToList();
     }
 
-    // Aplicar sugestão
+    // Apply suggestion for the user
     public async Task ApplySuggestionAsync(int suggestionId)
     {
         var suggestion = await _context.Suggestions
@@ -71,7 +75,7 @@ public class SuggestionService
 
         suggestion.Status = SuggestionStatus.Applied;
         await _notificationService.CreateNotificationAsync(
-            suggestion.Battery.UserId,  // User ID da bateria associada
+            suggestion.Battery.UserId,  
             new NotificationCreateDto
             {
                 Title = "Suggestion Applied",
@@ -80,7 +84,7 @@ public class SuggestionService
         await _context.SaveChangesAsync();
     }
 
-    // Ignorar sugestão
+    // Ignore suggestion
     public async Task IgnoreSuggestionAsync(int suggestionId)
     {
         var suggestion = await _context.Suggestions.FirstOrDefaultAsync(s => s.Id == suggestionId);
@@ -92,14 +96,16 @@ public class SuggestionService
         await _context.SaveChangesAsync();
     }
 
-    // Gerar sugestões de forma simples (mock inicial)
-    public async Task GenerateSuggestionsAsync(int batteryId)
+    // Generate suggestions for the user based on their battery's forecast
+    public async Task GenerateSuggestionsAsync(int userId)
     {
-        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.ID == batteryId);
+        var battery = await _context.Batteries
+            .FirstOrDefaultAsync(b => b.UserId == userId); // Get battery by userId
+
         if (battery == null) return;
 
         var forecast = await _context.Forecasts
-            .Where(f => f.BatteryID == batteryId)
+            .Where(f => f.BatteryID == battery.ID)
             .OrderByDescending(f => f.ForecastDate)
             .FirstOrDefaultAsync();
 
@@ -110,7 +116,7 @@ public class SuggestionService
         async Task AddSuggestionIfNotExists(SuggestionType type, string title, string description)
         {
             var exists = await _context.Suggestions.AnyAsync(s =>
-                s.BatteryId == batteryId &&
+                s.BatteryId == battery.ID &&
                 s.Type == type &&
                 s.TimeSent.Date == today);
 
@@ -118,7 +124,7 @@ public class SuggestionService
             {
                 var suggestion = new Suggestion
                 {
-                    BatteryId = batteryId,
+                    BatteryId = battery.ID,
                     Title = title,
                     Description = description,
                     Status = SuggestionStatus.Pending,
@@ -168,8 +174,7 @@ public class SuggestionService
         await _context.SaveChangesAsync();
     }
 
-
-    // Limpar sugestões antigas (pendentes e ignoradas)
+    // Clean old suggestions 
     public async Task CleanOldSuggestionsAsync()
     {
         var today = DateTime.UtcNow.Date;
@@ -184,5 +189,4 @@ public class SuggestionService
             await _context.SaveChangesAsync();
         }
     }
-
 }
