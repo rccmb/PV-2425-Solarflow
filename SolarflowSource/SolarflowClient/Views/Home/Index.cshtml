@@ -1,6 +1,9 @@
-﻿@{
+﻿@model SolarflowClient.Models.HomeViewModel;
+
+@{
     ViewData["Title"] = "Dashboard";
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,10 +25,63 @@
             <a href="#" id="filter-icon" title="Filter Options">
                 <i class="fas fa-filter"></i>
             </a>
-            <a href="@Url.Action("ExportCSV", "Home")" id="settings-icon" title="Export CSV">
+            <a href="@Url.Action("Export", "Home")" id="settings-icon" title="Export CSV">
                 <i class="fas fa-cog"></i>
             </a>
         </div>
+    </div>
+    
+    <!-- Battery Info Section -->
+    <div class="dashboard-section">
+        <h2>Battery Status</h2>
+        @if (Model.Battery != null)
+        {
+            <ul>
+                <li><strong>Charging Source:</strong> @Model.Battery.ChargingSource</li>
+                <li><strong>Battery Mode:</strong> @Model.Battery.BatteryMode</li>
+                <li><strong>Min Threshold:</strong> @Model.Battery.MinimalTreshold</li>
+                <li><strong>Max Threshold:</strong> @Model.Battery.MaximumTreshold</li>
+                <li><strong>Spending Start:</strong> @Model.Battery.SpendingStartTime</li>
+                <li><strong>Spending End:</strong> @Model.Battery.SpendingEndTime</li>
+            </ul>
+        }
+        else
+        {
+            <p>No battery data available.</p>
+        }
+    </div>
+
+    <!-- Energy Records Table -->
+    <div class="dashboard-section">
+        <h2>Energy Records</h2>
+        @if (Model.EnergyRecords != null && Model.EnergyRecords.Any())
+        {
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Solar (kWh)</th>
+                    <th>Battery (kWh)</th>
+                    <th>Grid (kWh)</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var record in Model.EnergyRecords)
+                {
+                    <tr>
+                        <td>@record.Timestamp.ToString("g")</td>
+                        <td>@record.Solar</td>
+                        <td>@record.Battery</td>
+                        <td>@record.Grid</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No energy records available.</p>
+        }
     </div>
 
     <!-- Dashboard Filters -->

@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SolarflowClient.Models;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SolarflowClient.Controllers;
 
@@ -17,141 +18,76 @@ public class HomeController : Controller
         _httpClient = httpClient;
         _configuration = configuration;
 
-        if (_configuration["Environment"].Equals("Development"))
-            _httpClient.BaseAddress = new Uri("https://localhost:7280/api/");
-        else
-            _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/");
+        _httpClient.BaseAddress = _configuration["Environment"].Equals("Development")
+            ? new Uri("https://localhost:7280/api/")
+            : new Uri("https://solarflowapi.azurewebsites.net/api/");
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var token = Request.Cookies["AuthToken"];
+        // Fetch energy records
+        var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/consumption");
+        var energyResponse = await _httpClient.SendAsync(energyRequest);
+        if (!energyResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch energy records from the server.");
+        var energyJson = await energyResponse.Content.ReadAsStringAsync();
+        var energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
 
-        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Authentication");
+        // Fetch battery
+        var batteryRequest = CreateAuthorizedRequest(HttpMethod.Get, "Battery/get-battery");
+        var batteryResponse = await _httpClient.SendAsync(batteryRequest);
+        if (!batteryResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch battery from the server.");
+        var batteryJson = await batteryResponse.Content.ReadAsStringAsync();
+        var battery = JsonSerializer.Deserialize<Battery>(batteryJson);
 
-        return View();
-    }
-
-    [HttpGet]
-    public async Task<ActionResult> GetDashboardData()
-    {
-        // Receive json from server
-        var response = await _httpClient.GetAsync("home/latest");
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-        var json = await response.Content.ReadAsStringAsync();
-
-        // Convert json to data
-        var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(json);
-
-        var dashboardData = new
+        // Build the view model
+        var viewModel = new HomeViewModel
         {
-            lastUpdate = data[0].Date,
-            energyUsage = data[0].Consumption
+            EnergyRecords = energyRecords,
+            Battery = battery
         };
 
-
-        return Json(dashboardData);
+        return View(viewModel);
     }
 
-
-    [HttpGet]
-    public async Task<ActionResult> GetWeatherImage()
+    public async Task<ActionResult> Export()
     {
-        // Fetch the forecast data from the API
-        var response = await _httpClient.GetAsync("home/prevision");
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+        // Fetch energy records
+        var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/consumption");
+        var energyResponse = await _httpClient.SendAsync(energyRequest);
+        if (!energyResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch energy records from the server.");
+        var energyJson = await energyResponse.Content.ReadAsStringAsync();
+        var energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
 
-        var json = await response.Content.ReadAsStringAsync();
-        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
-
-        // Determine the image based on weather condition
-        var weatherCondition = data[0].WeatherCondition.ToLower();
-        var imageUrl = weatherCondition switch
-        {
-            "partly cloudy" => "/images/weather/partly_cloudy.png",
-            "cloudy" => "/images/weather/cloudy.png",
-            "very cloudy" => "/images/weather/very_cloudy.png",
-            _ => "/images/weather/clear.png"
-        };
-
-        return Json(new { imageUrl });
-    }
-
-    public async Task<ActionResult> ExportCSV()
-    {
-        // Receive json from server
-        var response = await _httpClient.GetAsync("home/consumption");
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-        var json = await response.Content.ReadAsStringAsync();
-
-        // Convert json to data
-        var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(json);
-
-        // Prepare CSV using data
+        // Prepare CSV
         var csvData = new StringBuilder();
-        csvData.AppendLine("Date,Gain,Consumption"); // Header
-        foreach (var item in data) csvData.AppendLine($"{item.Date},{item.Gain},{item.Consumption}");
+        csvData.AppendLine("ID,HUB_ID,HOUSE,GRID,SOLAR,BATTERY"); // Header
+        foreach (var record in energyRecords)
+            csvData.AppendLine(
+                $"{record.Id},{record.HubId},{record.House}, {record.Grid}, {record.Solar}, {record.Battery}");
         var fileBytes = Encoding.UTF8.GetBytes(csvData.ToString());
 
         return File(fileBytes, "text/csv", "data.csv");
     }
 
 
-    [HttpGet]
-    public async Task<ActionResult> GetPrevisionChartData()
+    private HttpRequestMessage CreateAuthorizedRequest(HttpMethod method, string url)
     {
-        // Receive json from server
-        var response = await _httpClient.GetAsync("home/prevision");
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-        var json = await response.Content.ReadAsStringAsync();
+        var token = Request.Cookies["AuthToken"];
+        if (string.IsNullOrEmpty(token)) throw new Exception("Authorization token is missing.");
 
-        // Convert json to data
-        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
+        // Optionally, validate or inspect the token:
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
 
-        var forecastDate = new List<string>();
-        var solarHours = new List<int>();
-
-        foreach (var item in data)
-        {
-            forecastDate.Add(item.ForecastDate);
-            solarHours.Add(item.SolarHoursExpected);
-        }
-
-        // Prepare chart using data
-        var chart = new
-        {
-            type = "line",
-            data = new
-            {
-                labels = forecastDate,
-                datasets = new[]
-                {
-                    new
-                    {
-                        label = "Prevision",
-                        data = solarHours,
-                        fill = true,
-                        backgroundColor = "rgba(231,187,65, 0.6)",
-                        borderColor = "rgba(231,187,65, 1)",
-                        borderWidth = 1
-                    }
-                }
-            },
-            options = new
-            {
-                responsive = true,
-                maintainAspectRatio = false,
-                plugins = new { legend = new { display = false } }
-            }
-        };
-
-        return Json(chart);
+        var requestMessage = new HttpRequestMessage(method, url);
+        requestMessage.Headers.Add("Authorization", $"Bearer {token}");
+        return requestMessage;
     }
+
 
     [HttpGet]
     public async Task<ActionResult> GetConsumptionChartData()
     {
-
         var token = Request.Cookies["AuthToken"];
 
         var handler = new JwtSecurityTokenHandler();
@@ -279,6 +215,58 @@ public class HomeController : Controller
     }
 
 
+    [HttpGet]
+    public async Task<ActionResult> GetPrevisionChartData()
+    {
+        // Receive json from server
+        var response = await _httpClient.GetAsync("home/prevision");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+        var json = await response.Content.ReadAsStringAsync();
+
+        // Convert json to data
+        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
+
+        var forecastDate = new List<string>();
+        var solarHours = new List<int>();
+
+        foreach (var item in data)
+        {
+            forecastDate.Add(item.ForecastDate);
+            solarHours.Add(item.SolarHoursExpected);
+        }
+
+        // Prepare chart using data
+        var chart = new
+        {
+            type = "line",
+            data = new
+            {
+                labels = forecastDate,
+                datasets = new[]
+                {
+                    new
+                    {
+                        label = "Prevision",
+                        data = solarHours,
+                        fill = true,
+                        backgroundColor = "rgba(231,187,65, 0.6)",
+                        borderColor = "rgba(231,187,65, 1)",
+                        borderWidth = 1
+                    }
+                }
+            },
+            options = new
+            {
+                responsive = true,
+                maintainAspectRatio = false,
+                plugins = new { legend = new { display = false } }
+            }
+        };
+
+        return Json(chart);
+    }
+
+
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
@@ -333,6 +321,30 @@ public class HomeController : Controller
 
         ViewBag.ErrorMessage = "Error registering the View Account.";
         return View("Index");
+    }
+
+
+    [HttpGet]
+    public async Task<ActionResult> GetWeatherImage()
+    {
+        // Fetch the forecast data from the API
+        var response = await _httpClient.GetAsync("home/prevision");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+
+        var json = await response.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
+
+        // Determine the image based on weather condition
+        var weatherCondition = data[0].WeatherCondition.ToLower();
+        var imageUrl = weatherCondition switch
+        {
+            "partly cloudy" => "/images/weather/partly_cloudy.png",
+            "cloudy" => "/images/weather/cloudy.png",
+            "very cloudy" => "/images/weather/very_cloudy.png",
+            _ => "/images/weather/clear.png"
+        };
+
+        return Json(new { imageUrl });
     }
 
     public class ForecastData

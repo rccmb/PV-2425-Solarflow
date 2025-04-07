@@ -57,7 +57,6 @@ public class HomeController(
 
         // Fetch data from the service
         var data = await _energyRecordService.GetEnergyRecords(1, hubId, startDate, endDate);
-        Console.WriteLine("IM SNEINDG");
         return Json(data);
     }
 
