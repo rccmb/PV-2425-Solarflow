@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
-using SolarflowServer.Services;
+using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Controllers;
 
@@ -77,6 +77,27 @@ public class AuthenticationController : ControllerBase
         };
 
         _context.Batteries.Add(battery);
+        await _context.SaveChangesAsync();
+
+        var random = new Random();
+        var hub = new Hub()
+        {
+            UserId = user.Id,
+            // Latitude: 35 to 70 (Europe)
+            Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
+            // Longitude: -10 to 40 (Europe)
+            Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5),
+            GridKWh = 10.35,
+            BatteryId = battery.Id,
+            // DemoSolar: random value between 5 kWh and 100 kWh
+            DemoSolar =  Math.Round(random.NextDouble() * (100 - 5) + 5,2),
+            // DemoConsumption: random value between 5 and 15 kWh
+            DemoConsumption =  Math.Round(random.NextDouble() * 10 + 5,2),
+            // DemoPeople: random integer from 1 to 5
+            DemoPeople = random.Next(1, 6)
+        };
+
+        _context.Hubs.Add(hub);
         await _context.SaveChangesAsync();
 
         // Confirmation Link
@@ -318,7 +339,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
 
         var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
 
@@ -349,7 +370,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
         var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
 
         if (user == null)
@@ -372,7 +393,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
 
         var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
 

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using SolarflowServer.DTOs.SolarflowServer.DTOs;
 using SolarflowServer.Models;
-using SolarflowServer.Services;
+using SolarflowServer.Services.Interfaces;
 using System.Security.Claims;
 
 namespace SolarflowServer.Tests.Controllers
@@ -86,7 +86,7 @@ namespace SolarflowServer.Tests.Controllers
             _context.Batteries.Add(battery);
             await _context.SaveChangesAsync();
 
-            // Simular o usuário autenticado com ID 1
+            // Simular o usuário autenticado com Id 1
             var userClaims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {
         new Claim(ClaimTypes.NameIdentifier, "1")

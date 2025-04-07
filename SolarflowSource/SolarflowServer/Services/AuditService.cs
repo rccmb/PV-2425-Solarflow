@@ -1,4 +1,5 @@
 ﻿using SolarflowServer.Models;
+using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Services
 {

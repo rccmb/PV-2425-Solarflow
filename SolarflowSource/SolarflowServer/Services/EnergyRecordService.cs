@@ -7,33 +7,6 @@ namespace SolarflowServer.Services;
 
 public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordService
 {
-    public async Task<IEnumerable<EnergyRecordDTO>> AddEnergyRecords(object data)
-    {
-        var energyRecords = new List<EnergyRecordDTO>();
-
-        switch (data)
-        {
-            case List<EnergyRecordDTO> recordList:
-            {
-                foreach (var record in recordList)
-                {
-                    var energyRecordDto = await _AddEnergyRecord(record);
-                    energyRecords.Add(energyRecordDto);
-                }
-
-                break;
-            }
-            case EnergyRecordDTO record:
-            {
-                var energyRecordDto = await _AddEnergyRecord(record);
-                energyRecords.Add(energyRecordDto);
-                break;
-            }
-        }
-
-        return energyRecords;
-    }
-
     public async Task<IEnumerable<EnergyRecordDTO>> GetEnergyRecords(int userId, int? hubId, DateTime? startDate,
         DateTime? endDate)
     {
@@ -48,7 +21,26 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
         return await query.Select(er => MapToDto(er)).ToListAsync();
     }
 
-    private async Task<EnergyRecordDTO> _AddEnergyRecord(EnergyRecordDTO data)
+    public async Task<IEnumerable<EnergyRecordDTO>> AddEnergyRecords(object data)
+    {
+        switch (data)
+        {
+            case List<EnergyRecordDTO> recordList:
+            {
+                var tasks = recordList.Select(AddEnergyRecord);
+                return await Task.WhenAll(tasks);
+            }
+            case EnergyRecordDTO record:
+            {
+                var energyRecordDto = await AddEnergyRecord(record);
+                return new[] { energyRecordDto };
+            }
+            default:
+                return Enumerable.Empty<EnergyRecordDTO>();
+        }
+    }
+
+    private async Task<EnergyRecordDTO> AddEnergyRecord(EnergyRecordDTO data)
     {
         var hub = await context.Hubs.FirstOrDefaultAsync(h => h.Id == data.HubId);
         if (hub == null) throw new Exception("Hub not found.");
@@ -66,7 +58,7 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
         {
             HubId = dto.HubId,
             Timestamp = dto.Timestamp,
-            Consumption = dto.Consumption,
+            House = dto.House,
             Grid = dto.Grid,
             Solar = dto.Solar,
             Battery = dto.Battery
@@ -79,7 +71,7 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
         {
             HubId = record.HubId,
             Timestamp = record.Timestamp,
-            Consumption = record.Consumption,
+            House = record.House,
             Grid = record.Grid,
             Solar = record.Solar,
             Battery = record.Battery

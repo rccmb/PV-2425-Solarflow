@@ -71,7 +71,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("Batteries");
 
-            entity.HasKey(b => b.ID);
+            entity.HasKey(b => b.Id);
 
             entity.Property(b => b.ChargeLevel).HasDefaultValue(0);
             entity.Property(b => b.ChargingSource).HasDefaultValue("");
@@ -133,7 +133,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Timestamp).IsRequired();
-            entity.Property(e => e.Consumption).IsRequired();
+            entity.Property(e => e.House).IsRequired();
             entity.Property(e => e.Grid).IsRequired();
             entity.Property(e => e.Solar).IsRequired();
             entity.Property(e => e.Battery).IsRequired();

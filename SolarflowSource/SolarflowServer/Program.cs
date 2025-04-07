@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.Controllers;
 using SolarflowServer.Models;
 using SolarflowServer.Services;
+using SolarflowServer.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,7 @@ var emailConfig = builder.Configuration
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
 builder.Services.AddSingleton<EmailConfiguration>(sp => sp.GetRequiredService<IOptions<EmailConfiguration>>().Value);
 builder.Services.AddScoped<EmailSender>();
-
+builder.Services.AddScoped<DemoService>();
 
 // DATABASE CONNECTION
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -91,6 +92,11 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // SWAGGER
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IEnergyRecordService, EnergyRecordService>();
+
+
+// Register the DemoBackgroundService to run periodically
+builder.Services.AddHostedService<DemoBackgroundService>();
 
 var app = builder.Build();
 

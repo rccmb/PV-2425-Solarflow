@@ -280,11 +280,11 @@ namespace SolarflowServer.Migrations
 
             modelBuilder.Entity("SolarflowServer.Models.Battery", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BatteryMode")
                         .IsRequired()
@@ -336,7 +336,7 @@ namespace SolarflowServer.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -352,20 +352,20 @@ namespace SolarflowServer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<float>("Battery")
-                        .HasColumnType("real");
+                    b.Property<double>("Battery")
+                        .HasColumnType("float");
 
-                    b.Property<float>("Consumption")
-                        .HasColumnType("real");
+                    b.Property<double>("Grid")
+                        .HasColumnType("float");
 
-                    b.Property<float>("Grid")
-                        .HasColumnType("real");
+                    b.Property<double>("House")
+                        .HasColumnType("float");
 
                     b.Property<int>("HubId")
                         .HasColumnType("int");
 
-                    b.Property<float>("Solar")
-                        .HasColumnType("real");
+                    b.Property<double>("Solar")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
@@ -420,11 +420,23 @@ namespace SolarflowServer.Migrations
                     b.Property<int>("BatteryId")
                         .HasColumnType("int");
 
-                    b.Property<float>("GridKWh")
-                        .HasColumnType("real");
+                    b.Property<double>("DemoConsumption")
+                        .HasColumnType("float");
 
-                    b.Property<float>("SolarKWh")
-                        .HasColumnType("real");
+                    b.Property<int>("DemoPeople")
+                        .HasColumnType("int");
+
+                    b.Property<double>("DemoSolar")
+                        .HasColumnType("float");
+
+                    b.Property<double>("GridKWh")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

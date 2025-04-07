@@ -1,14 +1,16 @@
-﻿using System.Net.Http.Headers;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SolarflowClient.Models;
 
 namespace SolarflowClient.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly HttpClient _httpClient;
 
     public HomeController(HttpClient httpClient, IConfiguration configuration)
     {
@@ -16,13 +18,9 @@ public class HomeController : Controller
         _configuration = configuration;
 
         if (_configuration["Environment"].Equals("Development"))
-        {
             _httpClient.BaseAddress = new Uri("https://localhost:7280/api/");
-        }
         else
-        {
             _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/");
-        }
     }
 
     public IActionResult Index()
@@ -153,23 +151,38 @@ public class HomeController : Controller
     [HttpGet]
     public async Task<ActionResult> GetConsumptionChartData()
     {
-        // Receive json from server
-        var response = await _httpClient.GetAsync("home/consumption");
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+
+        var token = Request.Cookies["AuthToken"];
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, "home/consumption");
+        requestMessage.Headers.Add("Authorization", $"Bearer {token}");
+
+
+        // Receive JSON data from server
+        var response = await _httpClient.SendAsync(requestMessage);
+        if (!response.IsSuccessStatusCode)
+            return BadRequest("Failed to fetch data from the server.");
+
         var jsonString = await response.Content.ReadAsStringAsync();
 
-        // Convert json to data
-        var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(jsonString);
+        // Deserialize JSON into a list of EnergyRecord objects
+        var data = JsonConvert.DeserializeObject<List<EnergyRecord>>(jsonString);
 
+        // Prepare lists to hold the chart data
         var date = new List<string>();
         var consumption = new List<int>();
-        var gain = new List<int>();
+        var solarGain = new List<int>(); // Assuming you meant 'Solar' instead of 'gain'
+        Console.WriteLine(consumption);
+        Console.WriteLine(solarGain);
+        Console.WriteLine("AAA");
 
         foreach (var item in data)
         {
-            date.Add(item.Date);
-            consumption.Add(item.Consumption);
-            gain.Add(item.Gain);
+            date.Add(item.Timestamp.ToString("dd/MM")); // Format date
+            consumption.Add((int)item.House); // Assuming 'House' represents consumption
+            solarGain.Add((int)item.Solar); // Solar gain as in the server data
         }
 
         // Prepare chart using data
@@ -184,7 +197,7 @@ public class HomeController : Controller
                     new
                     {
                         label = "Gains",
-                        data = gain,
+                        data = solarGain,
                         fill = true,
                         backgroundColor = "rgba(231,187,65, 0.6)",
                         borderColor = "rgba(231,187,65, 1)",

@@ -183,7 +183,7 @@ namespace SolarflowServer.Migrations
                 name: "Batteries",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ChargeLevel = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     MaxKW = table.Column<int>(type: "int", nullable: false),
@@ -198,7 +198,7 @@ namespace SolarflowServer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Batteries", x => x.ID);
+                    table.PrimaryKey("PK_Batteries", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Batteries_Users_UserId",
                         column: x => x.UserId,
@@ -284,7 +284,7 @@ namespace SolarflowServer.Migrations
                         name: "FK_Forecasts_Batteries_BatteryID",
                         column: x => x.BatteryID,
                         principalTable: "Batteries",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -295,9 +295,13 @@ namespace SolarflowServer.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    GridKWh = table.Column<float>(type: "real", nullable: false),
-                    SolarKWh = table.Column<float>(type: "real", nullable: false),
-                    BatteryId = table.Column<int>(type: "int", nullable: false)
+                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    GridKWh = table.Column<double>(type: "float", nullable: false),
+                    BatteryId = table.Column<int>(type: "int", nullable: false),
+                    DemoSolar = table.Column<double>(type: "float", nullable: false),
+                    DemoConsumption = table.Column<double>(type: "float", nullable: false),
+                    DemoPeople = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -306,7 +310,7 @@ namespace SolarflowServer.Migrations
                         name: "FK_Hubs_Batteries_BatteryId",
                         column: x => x.BatteryId,
                         principalTable: "Batteries",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Hubs_Users_UserId",
@@ -324,10 +328,10 @@ namespace SolarflowServer.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     HubId = table.Column<int>(type: "int", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Consumption = table.Column<float>(type: "real", nullable: false),
-                    Grid = table.Column<float>(type: "real", nullable: false),
-                    Solar = table.Column<float>(type: "real", nullable: false),
-                    Battery = table.Column<float>(type: "real", nullable: false)
+                    House = table.Column<double>(type: "float", nullable: false),
+                    Grid = table.Column<double>(type: "float", nullable: false),
+                    Solar = table.Column<double>(type: "float", nullable: false),
+                    Battery = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {

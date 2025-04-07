@@ -15,11 +15,11 @@ public class EnergyRecord
 
     [Required] public DateTime Timestamp { get; set; }
 
-    [Required] public float Consumption { get; set; }
+    [Required] public double House { get; set; }
 
-    [Required] public float Grid { get; set; }
+    [Required] public double Grid { get; set; }
 
-    [Required] public float Solar { get; set; }
+    [Required] public double Solar { get; set; }
 
-    [Required] public float Battery { get; set; }
+    [Required] public double Battery { get; set; }
 }

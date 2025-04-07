@@ -1,6 +1,6 @@
-﻿namespace SolarflowServer.DTOs.Hub;
+﻿namespace SolarflowClient.Models;
 
-public class EnergyRecordDTO
+public class EnergyRecord
 {
     public int Id { get; set; }
 

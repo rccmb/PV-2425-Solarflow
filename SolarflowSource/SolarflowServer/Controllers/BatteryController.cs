@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.DTOs.SolarflowServer.DTOs;
-using SolarflowServer.Services;
+using SolarflowServer.Services.Interfaces;
 
 [Authorize]
 [ApiController]
@@ -18,7 +18,7 @@ public class BatteryController(ApplicationDbContext context, IAuditService audit
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
 
         var battery = await context.Batteries
             .Where(b => b.UserId == parsedUserId)
@@ -56,7 +56,7 @@ public class BatteryController(ApplicationDbContext context, IAuditService audit
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
 
         var battery = await context.Batteries.FirstOrDefaultAsync(b => b.UserId == parsedUserId);
         if (battery == null)
