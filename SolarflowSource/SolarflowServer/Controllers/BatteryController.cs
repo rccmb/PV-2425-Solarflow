@@ -48,11 +48,9 @@ public class BatteryController : ControllerBase
 
         if (battery == null)
         {
-            await _auditService.LogAsync(userId, "Battery Access", "Failed - Not Found", GetClientIPAddress());
             return NotFound(new { error = "Battery not found" });
         }
 
-        await _auditService.LogAsync(userId, "Battery Access", "Battery Data Retrieved", GetClientIPAddress());
         return Ok(battery);
     }
 
@@ -79,7 +77,7 @@ public class BatteryController : ControllerBase
         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == parsedUserId);
         if (battery == null)
         {
-            await _auditService.LogAsync(userId, "Battery Update", "Failed - Not Found", GetClientIPAddress());
+            // await _auditService.LogAsync(userId, "Battery Update", "Failed - Not Found", GetClientIPAddress());
             return NotFound(new { error = "Battery not found" });
         }
 
@@ -94,7 +92,7 @@ public class BatteryController : ControllerBase
         _context.Batteries.Update(battery);
         await _context.SaveChangesAsync();
 
-        await _auditService.LogAsync(userId, "Battery Update", "Battery Successfully Updated", GetClientIPAddress());
+        // await _auditService.LogAsync(userId, "Battery Update", "Battery Successfully Updated", GetClientIPAddress());
         return Ok(new { message = "Battery settings updated successfully!" });
     }
 

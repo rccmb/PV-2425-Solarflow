@@ -94,8 +94,7 @@ public class AuthenticationController : ControllerBase
 
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered",
-            GetClientIPAddress());
+        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered", GetClientIPAddress());
 
         return Ok(new { message = "User registered successfully!" });
     }
@@ -121,8 +120,7 @@ public class AuthenticationController : ControllerBase
 
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Email Confirmation", "Resent Email Confirmation",
-            GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Email Confirmation", "Resent Email Confirmation", GetClientIPAddress());
 
         return Ok(new { message = "Email confirmation link sent successfully!" });
     }
@@ -155,8 +153,7 @@ public class AuthenticationController : ControllerBase
 
         user.ViewAccount = viewAccount;
 
-        await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered",
-            GetClientIPAddress());
+        // await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered", GetClientIPAddress());
         return Ok(new { message = "ViewAccount registered successfully!" });
     }
 
@@ -202,8 +199,7 @@ public class AuthenticationController : ControllerBase
             };
             Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
 
-            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In",
-                GetClientIPAddress());
+            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
             return Ok(new { token = viewToken });
         }
 
@@ -218,8 +214,7 @@ public class AuthenticationController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var email = User.FindFirstValue(ClaimTypes.Email);
 
-        if (userId != null)
-            await _auditService.LogAsync(userId, "Authentication", "User Logged Out", GetClientIPAddress());
+        // if (userId != null) await _auditService.LogAsync(userId, "Authentication", "User Logged Out", GetClientIPAddress());
 
         return Ok(new { message = "User logged out successfully!" });
     }
@@ -262,7 +257,7 @@ public class AuthenticationController : ControllerBase
         var result = await _userManager.ConfirmEmailAsync(user, model.Token);
         if (!result.Succeeded) return BadRequest(new { message = "Invalid request." });
 
-        await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Email Confirmed", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Email Confirmed", GetClientIPAddress());
         return Ok(new { message = "Email confirmed successfully!" });
     }
 
@@ -288,8 +283,7 @@ public class AuthenticationController : ControllerBase
         await _emailSender.SendMessage(message);
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Forgot Password Requested",
-            GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Forgot Password Requested", GetClientIPAddress());
 
         return Ok(new { message = "If the email exists, a reset link has been sent." });
     }
@@ -305,7 +299,7 @@ public class AuthenticationController : ControllerBase
         var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Password Reset", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Password Reset", GetClientIPAddress());
         return Ok(new { message = "Password reset successfully!" });
     }
 
@@ -336,7 +330,6 @@ public class AuthenticationController : ControllerBase
             HasViewAccount = viewAccount != null
         };
 
-        await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Retrieved", GetClientIPAddress());
         return Ok(userDTO);
     }
 
@@ -359,7 +352,7 @@ public class AuthenticationController : ControllerBase
 
         await _userManager.UpdateAsync(user);
 
-        await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
         return Ok(new { message = "User updated successfully!" });
     }
 
@@ -389,7 +382,7 @@ public class AuthenticationController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(new { error = "An error occurred while deleting the View Account." });
 
-        await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
         return Ok(new { message = "View Account deleted successfully!" });
     }
 
