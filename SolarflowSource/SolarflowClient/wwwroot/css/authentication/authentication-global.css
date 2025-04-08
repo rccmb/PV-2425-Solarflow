@@ -9,6 +9,8 @@
     padding: 0;
     background-color: #393E41;
     font-family: Roboto;
+    min-height: 100vh;
+    overflow-y: auto;
 }
 
 /* Style for the project logo. */

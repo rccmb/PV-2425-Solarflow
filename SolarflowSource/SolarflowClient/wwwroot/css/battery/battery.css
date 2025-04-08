@@ -128,3 +128,22 @@
     font-size: 12px;
     margin: 10px 0;
 }
+
+/* Main Content */
+.main-content {
+    flex-grow: 1;
+    background-color: #F4F4F4;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-title {
+    padding: 10px 20px;
+    margin: 0;
+}
+
+.content {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 20px;
+}
