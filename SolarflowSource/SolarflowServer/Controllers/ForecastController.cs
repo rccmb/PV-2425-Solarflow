@@ -33,7 +33,7 @@ public class ForecastController : ControllerBase
 
        
 
-        await _forecastService.SaveForecastAsync(battery.ID, lat, lon, days);
+        await _forecastService.SaveForecastAsync(battery.Id, lat, lon, days);
         return Ok(new { message = "Updated" });
     }
 
@@ -49,7 +49,7 @@ public class ForecastController : ControllerBase
              return NotFound();
 
         var forecasts = await _context.Forecasts
-            .Where(f => f.BatteryID == battery.ID)
+            .Where(f => f.BatteryID == battery.Id)
             .OrderBy(f => f.ForecastDate)
             .ToListAsync();
 

@@ -8,6 +8,7 @@ using SolarflowServer.Services;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using SolarflowServer.Services.Interfaces;
 
 [Authorize]
 [ApiController]
@@ -35,15 +36,6 @@ public class BatteryController : ControllerBase
 
         var battery = await _context.Batteries
             .Where(b => b.UserId == parsedUserId)
-            .Select(b => new BatteryDTO
-            {
-                ChargingSource = b.ChargingSource,
-                BatteryMode = b.BatteryMode,
-                MinimalTreshold = b.MinimalTreshold,
-                MaximumTreshold = b.MaximumTreshold,
-                SpendingStartTime = b.SpendingStartTime,
-                SpendingEndTime = b.SpendingEndTime
-            })
             .FirstOrDefaultAsync();
 
         if (battery == null)

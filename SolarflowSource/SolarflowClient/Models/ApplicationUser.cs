@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SolarflowServer.Models;
+using SolarflowClient.Models;
 
 public class ApplicationUser : IdentityUser<int>
 {

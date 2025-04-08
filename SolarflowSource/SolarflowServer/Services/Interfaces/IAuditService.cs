@@ -1,4 +1,4 @@
-﻿namespace SolarflowServer.Services
+﻿namespace SolarflowServer.Services.Interfaces
 {
     public interface IAuditService
     {
