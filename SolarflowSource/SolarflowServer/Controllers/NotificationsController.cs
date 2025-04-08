@@ -12,7 +12,7 @@ namespace SolarflowServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize] // Ensures only authenticated users can access this controller
     public class NotificationsController : ControllerBase
     {
         private readonly INotificationService _notificationService;
@@ -27,17 +27,19 @@ namespace SolarflowServer.Controllers
         }
 
         // GET: api/notifications
+        // Retrieves all notifications for the authenticated user
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var userId = GetUserId();
             var notifications = await _notificationService.GetNotificationsAsync(userId);
 
-            // await _auditService.LogAsync(userId.ToString(), "Notifications", "All Notifications Successfully Retrieved", GetClientIPAddress());
+            // Optional audit logging
             return Ok(notifications);
         }
 
         // GET: api/notifications/{id}
+        // Retrieves a specific notification if it belongs to the user
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -45,58 +47,59 @@ namespace SolarflowServer.Controllers
             var notification = await _notificationService.GetNotificationByIdAsync(id, userId);
             if (notification == null) return NotFound();
 
-            // await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Retrieved", GetClientIPAddress());
             return Ok(notification);
         }
 
         // POST: api/notifications
+        // Creates a new notification for the authenticated user
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] NotificationCreateDto dto)
         {
             var userId = GetUserId();
             await _notificationService.CreateNotificationAsync(userId, dto);
 
-            // await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Created", GetClientIPAddress());
             return CreatedAtAction(nameof(GetAll), null);
         }
 
         // PUT: api/notifications/{id}/read
+        // Marks a notification as read if it belongs to the user
         [HttpPut("{id}/read")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
             var userId = GetUserId();
             await _notificationService.MarkAsReadAsync(id, userId);
 
-            // await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Marked as Read", GetClientIPAddress());
             return NoContent();
         }
 
         // DELETE: api/notifications/{id}
+        // Deletes a specific notification if it belongs to the user
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var userId = GetUserId();
             await _notificationService.DeleteNotificationAsync(id, userId);
 
-            // await _auditService.LogAsync(userId.ToString(), "Notifications", "Notification Successfully Deleted", GetClientIPAddress());
             return NoContent();
         }
 
         // DELETE: api/notifications
+        // Deletes all notifications for the user
         [HttpDelete]
         public async Task<IActionResult> DeleteAll()
         {
             var userId = GetUserId();
             await _notificationService.DeleteAllNotificationsAsync(userId);
 
-            // await _auditService.LogAsync(userId.ToString(), "Notifications", "All Notifications Successfully Deleted", GetClientIPAddress());
             return NoContent();
         }
+
+        // POST: api/notifications/generate-test
+        // Generates dummy notifications for testing purposes
         [HttpPost("generate-test")]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         public async Task<IActionResult> GenerateTestNotifications()
         {
-
             var testNotifications = new List<Notification>
             {
                 new Notification { Title = "New Feature!", Description = "Check out the new notification module.", TimeSent = DateTime.UtcNow, UserId = 1 },
@@ -110,17 +113,18 @@ namespace SolarflowServer.Controllers
             return Ok("Test notifications created.");
         }
 
-
+        // Helper method to get the authenticated user's ID from the JWT
         private int GetUserId()
         {
             return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         }
 
+        // Retrieves the client IP address (useful for auditing)
         private string GetClientIPAddress()
         {
             if (HttpContext?.Connection?.RemoteIpAddress == null)
             {
-                return "127.0.0.1"; // Valor para testes
+                return "127.0.0.1"; // Default for testing
             }
 
             return HttpContext.Connection.RemoteIpAddress.ToString();
