@@ -130,12 +130,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasOne(s => s.Battery)
                 .WithMany()
                 .HasForeignKey(s => s.BatteryId)
-                .OnDelete(DeleteBehavior.Cascade); 
+                .OnDelete(DeleteBehavior.Cascade);
         });
-
-    }
-}
-
 
 
         // MAPPING THE HUB.

@@ -22,7 +22,7 @@ public class SuggestionService : ISuggestionService
 
     public async Task<List<SuggestionDto>> GetPendingSuggestionsAsync(int batteryId)
     {
-        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.ID == batteryId);
+        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.Id == batteryId);
         if (battery == null) return new List<SuggestionDto>();
 
         var suggestions = await _context.Suggestions
@@ -97,12 +97,12 @@ public class SuggestionService : ISuggestionService
 
     public async Task GenerateSuggestionsAsync(int batteryId)
     {
-        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.ID == batteryId);
+        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.Id == batteryId);
         if (battery == null) return;
 
 
         var forecast = await _context.Forecasts
-            .Where(f => f.BatteryID == battery.ID)
+            .Where(f => f.BatteryID == battery.Id)
             .OrderByDescending(f => f.ForecastDate)
             .FirstOrDefaultAsync();
 
@@ -113,7 +113,7 @@ public class SuggestionService : ISuggestionService
         async Task AddSuggestionIfNotExists(SuggestionType type, string title, string description)
         {
             var exists = await _context.Suggestions.AnyAsync(s =>
-                s.BatteryId == battery.ID &&
+                s.BatteryId == battery.Id &&
                 s.Type == type &&
                 s.TimeSent.Date == today);
 
@@ -121,7 +121,7 @@ public class SuggestionService : ISuggestionService
             {
                 var suggestion = new Suggestion
                 {
-                    BatteryId = battery.ID,
+                    BatteryId = battery.Id,
                     Title = title,
                     Description = description,
                     Status = SuggestionStatus.Pending,

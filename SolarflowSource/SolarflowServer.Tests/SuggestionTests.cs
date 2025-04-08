@@ -45,10 +45,10 @@ namespace SolarflowServer.Tests.Services
                 SpendingEndTime = "06:00",
                 UserId = 1
             };
-            battery.ID = 1;
+            battery.Id = 1;
 
             // Only add the battery if it doesn't already exist
-            if (!_context.Batteries.Any(b => b.ID == battery.ID))
+            if (!_context.Batteries.Any(b => b.Id == battery.Id))
             {
                 _context.Batteries.Add(battery);
                 _context.SaveChanges();

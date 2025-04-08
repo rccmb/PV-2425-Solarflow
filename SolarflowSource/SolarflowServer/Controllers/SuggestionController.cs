@@ -31,7 +31,7 @@ namespace SolarflowServer.Controllers
                 return NotFound(new { message = "Battery not found for this user." });
             }
 
-            await _suggestionService.GenerateSuggestionsAsync(battery.ID);
+            await _suggestionService.GenerateSuggestionsAsync(battery.Id);
             return Ok(new { message = "Suggestions processed successfully" });
         }
 
@@ -80,7 +80,7 @@ namespace SolarflowServer.Controllers
             // Adiciona a primeira sugestão de teste
             var suggestion1 = new Suggestion
             {
-                BatteryId = battery.ID,
+                BatteryId = 1,
                 Title = "Test Suggestion 1",
                 Description = "This is the first test suggestion.",
                 Status = SuggestionStatus.Pending,
@@ -91,7 +91,7 @@ namespace SolarflowServer.Controllers
             // Adiciona a segunda sugestão de teste
             var suggestion2 = new Suggestion
             {
-                BatteryId = battery.ID,
+                BatteryId = 1,
                 Title = "Test Suggestion 2",
                 Description = "This is the second test suggestion.",
                 Status = SuggestionStatus.Pending,

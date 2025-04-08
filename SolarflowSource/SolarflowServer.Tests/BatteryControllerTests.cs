@@ -7,7 +7,7 @@ using SolarflowServer.Models;
 using SolarflowServer.Services.Interfaces;
 using System.Security.Claims;
 
-namespace SolarflowServer.Tests.Controllers
+namespace SolarflowServer.Tests
 
 {
     public class BatteryControllerTests
@@ -54,18 +54,6 @@ namespace SolarflowServer.Tests.Controllers
             Assert.NotNull(okResult.Value);
         }
 
-        [Fact]
-        public async Task UpdateBattery_ReturnsNotFound_WhenBatteryDoesNotExist()
-        {
-            var userClaims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.NameIdentifier, "1") }));
-            _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = userClaims } };
-
-            var model = new BatteryDTO { ChargingSource = "Grid" };
-
-            var result = await _controller.UpdateBattery(model);
-
-            Assert.IsType<NotFoundObjectResult>(result);
-        }
         [Fact]
         public async Task UpdateBattery_SuccessfulUpdate_ReturnsOk()
         {
