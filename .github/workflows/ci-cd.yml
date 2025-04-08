@@ -67,16 +67,16 @@ jobs:
         run: dotnet tool install --global dotnet-ef
       
       # THIS NEEDS TO BE REMOVED LATER: Drops the database
-      # - name: Drop Database
-      #  run: dotnet ef database drop --force --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
-      #  env:
-      #    ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+      - name: Drop Database
+        run: dotnet ef database drop --force --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
 
       # Remove previous migrations
-      # - name: Remove Previous Migrations
-      #  run: dotnet ef migrations remove --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
-      #  env:
-      #    ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+      - name: Remove Previous Migrations
+        run: dotnet ef migrations remove --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
 
       # Create a new migration
       - name: Create New Migration
