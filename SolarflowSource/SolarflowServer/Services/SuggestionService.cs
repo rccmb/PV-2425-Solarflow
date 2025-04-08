@@ -1,11 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SolarflowServer.DTOs.Notification;
+using SolarflowServer.DTOs.Suggestion;
 using SolarflowServer.Models;
 using SolarflowServer.Models.Enums;
-using SolarflowServer.DTOs.Suggestion;
 using SolarflowServer.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-public class SuggestionService
+public class SuggestionService : ISuggestionService
 {
     private readonly ApplicationDbContext _context;
     private readonly INotificationService _notificationService;
@@ -16,16 +20,13 @@ public class SuggestionService
         _notificationService = notificationService;
     }
 
-    // Get pending suggestions based on user ID
-    public async Task<List<SuggestionDto>> GetPendingSuggestionsAsync(int userId)
+    public async Task<List<SuggestionDto>> GetPendingSuggestionsAsync(int batteryId)
     {
-        var battery = await _context.Batteries
-            .FirstOrDefaultAsync(b => b.UserId == userId); // Get battery by userId
-
-        if (battery == null) return new List<SuggestionDto>(); // Return empty if no battery found
+        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.ID == batteryId);
+        if (battery == null) return new List<SuggestionDto>();
 
         var suggestions = await _context.Suggestions
-            .Where(s => s.BatteryId == battery.ID && s.Status == SuggestionStatus.Pending)
+            .Where(s => s.BatteryId == batteryId && s.Status == SuggestionStatus.Pending)
             .OrderBy(s => s.TimeSent)
             .ToListAsync();
 
@@ -40,7 +41,6 @@ public class SuggestionService
         }).ToList();
     }
 
-    // Apply suggestion for the user
     public async Task ApplySuggestionAsync(int suggestionId)
     {
         var suggestion = await _context.Suggestions
@@ -48,7 +48,7 @@ public class SuggestionService
             .FirstOrDefaultAsync(s => s.Id == suggestionId);
 
         if (suggestion == null || suggestion.Status != SuggestionStatus.Pending)
-            throw new Exception("Suggestion not found or already handled.");
+            throw new InvalidOperationException("Suggestion not found or already handled.");
 
         switch (suggestion.Type)
         {
@@ -88,21 +88,18 @@ public class SuggestionService
     public async Task IgnoreSuggestionAsync(int suggestionId)
     {
         var suggestion = await _context.Suggestions.FirstOrDefaultAsync(s => s.Id == suggestionId);
-
         if (suggestion == null || suggestion.Status != SuggestionStatus.Pending)
-            throw new Exception("Suggestion not found or already handled.");
+            throw new InvalidOperationException("Suggestion not found or already handled.");
 
         suggestion.Status = SuggestionStatus.Ignored;
         await _context.SaveChangesAsync();
     }
 
-    // Generate suggestions for the user based on their battery's forecast
-    public async Task GenerateSuggestionsAsync(int userId)
+    public async Task GenerateSuggestionsAsync(int batteryId)
     {
-        var battery = await _context.Batteries
-            .FirstOrDefaultAsync(b => b.UserId == userId); // Get battery by userId
-
+        var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.ID == batteryId);
         if (battery == null) return;
+
 
         var forecast = await _context.Forecasts
             .Where(f => f.BatteryID == battery.ID)
@@ -178,7 +175,6 @@ public class SuggestionService
     public async Task CleanOldSuggestionsAsync()
     {
         var today = DateTime.UtcNow.Date;
-
         var oldSuggestions = await _context.Suggestions
             .Where(s => s.TimeSent.Date < today)
             .ToListAsync();

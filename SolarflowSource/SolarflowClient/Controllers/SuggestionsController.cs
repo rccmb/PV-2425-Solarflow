@@ -18,73 +18,61 @@ namespace SolarflowClient.Controllers
 
             if (_configuration["Environment"].Equals("Development"))
             {
-                _httpClient.BaseAddress = new Uri("https://localhost:7280/api/suggestions/");
+                _httpClient.BaseAddress = new Uri("https://localhost:7280/api/suggestion/");
             }
             else
             {
-                _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/suggestions/");
+                _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/suggestion/");
             }
         }
 
-        
+        public async Task<IActionResult> Index()
+        {
+            await GenerateSuggestions();
+            return RedirectToAction("GetPendingSuggestions");
+        }
+
         [HttpPost]
         public async Task<IActionResult> GenerateSuggestions()
         {
             var token = Request.Cookies["AuthToken"];
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-
-            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetUserIdFromToken(token);
 
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized();
-            }
 
-           
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "create");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"create/{userId}");
             requestMessage.Headers.Add("Authorization", $"Bearer {token}");
+            await _httpClient.SendAsync(requestMessage);
 
-            var response = await _httpClient.SendAsync(requestMessage);
-            if (!response.IsSuccessStatusCode)
-            {
-                TempData["ErrorMessage"] = "Erro ao gerar as sugestões.";
-                return RedirectToAction("Index", "Home");
-            }
-
-            return RedirectToAction("Index", "Home");
+            return StatusCode(200);
         }
 
-       
         [HttpGet]
         public async Task<IActionResult> GetPendingSuggestions()
         {
             var token = Request.Cookies["AuthToken"];
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-
-            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetUserIdFromToken(token);
 
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized();
-            }
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"get/{userId}");
             requestMessage.Headers.Add("Authorization", $"Bearer {token}");
 
             var response = await _httpClient.SendAsync(requestMessage);
+            var model = new GetSuggestionsViewModel();
+
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var suggestions = JsonConvert.DeserializeObject<List<GetSuggestionsViewModel>>(json);
-                return PartialView("_SuggestionPopup", suggestions);
+                var suggestions = JsonConvert.DeserializeObject<List<SuggestionViewModel>>(json);
+                model.Suggestions = suggestions;
             }
 
-            return PartialView("_SuggestionPopup", new List<GetSuggestionsViewModel>());
+            return View("Index", model); 
         }
 
-    
         [HttpPost]
         public async Task<IActionResult> AcceptSuggestion(int suggestionId)
         {
@@ -93,10 +81,9 @@ namespace SolarflowClient.Controllers
             request.Headers.Add("Authorization", $"Bearer {token}");
 
             await _httpClient.SendAsync(request);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("GetPendingSuggestions");
         }
 
-       
         [HttpPost]
         public async Task<IActionResult> IgnoreSuggestion(int suggestionId)
         {
@@ -105,7 +92,15 @@ namespace SolarflowClient.Controllers
             request.Headers.Add("Authorization", $"Bearer {token}");
 
             await _httpClient.SendAsync(request);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("GetPendingSuggestions");
         }
+
+        private string GetUserIdFromToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            return jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
+
     }
 }

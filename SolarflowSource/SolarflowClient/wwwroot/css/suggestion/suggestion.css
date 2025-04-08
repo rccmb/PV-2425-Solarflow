@@ -1,0 +1,114 @@
+﻿/* Container principal da página */
+.sugestoes-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Caixa de status (verde, amarelo, vermelho) */
+.status-box {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+    .status-box img {
+        width: 40px;
+        height: 40px;
+        margin-right: 20px;
+    }
+
+    .status-box.verde {
+        background-color: #28a745;
+    }
+
+    .status-box.amarelo {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .status-box.vermelho {
+        background-color: #dc3545;
+    }
+
+/* Cartão de sugestão individual */
+.suggestion-card {
+    background-color: #2c2c2c;
+    color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s ease;
+}
+
+    .suggestion-card:hover {
+        background-color: #3a3a3a;
+    }
+
+.suggestion-content {
+    flex: 1;
+    margin-right: 20px;
+}
+
+    .suggestion-content p {
+        margin: 0 0 5px;
+    }
+
+.suggestion-actions form {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.suggestion-actions button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+.btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .suggestion-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .suggestion-actions {
+        margin-top: 15px;
+    }
+}

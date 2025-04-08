@@ -83,6 +83,7 @@ builder.Services.AddScoped<WeatherProcessingService>();
 builder.Services.AddScoped<ForecastService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<ISuggestionService, SuggestionService>();
 
 
 

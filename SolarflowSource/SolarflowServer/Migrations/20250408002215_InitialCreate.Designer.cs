@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250331113134_InitialCreate")]
+    [Migration("20250408002215_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -416,6 +416,43 @@ namespace SolarflowServer.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("SolarflowServer.Models.Suggestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatteryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TimeSent")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BatteryId");
+
+                    b.ToTable("Suggestions");
+                });
+
             modelBuilder.Entity("ViewAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -561,6 +598,17 @@ namespace SolarflowServer.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SolarflowServer.Models.Suggestion", b =>
+                {
+                    b.HasOne("SolarflowServer.Models.Battery", "Battery")
+                        .WithMany()
+                        .HasForeignKey("BatteryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Battery");
                 });
 
             modelBuilder.Entity("ViewAccount", b =>

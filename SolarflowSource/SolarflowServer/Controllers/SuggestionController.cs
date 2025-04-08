@@ -4,6 +4,8 @@ using SolarflowServer.DTOs.Suggestion;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using SolarflowServer.Models.Enums;
+using SolarflowServer.Models;
 
 namespace SolarflowServer.Controllers
 {
@@ -11,49 +13,33 @@ namespace SolarflowServer.Controllers
     [ApiController]
     public class SuggestionController : ControllerBase
     {
-        private readonly SuggestionService _suggestionService;
+        private readonly ISuggestionService _suggestionService;
         private readonly ApplicationDbContext _context;
 
-        public SuggestionController(SuggestionService suggestionService, ApplicationDbContext context)
+        public SuggestionController(ISuggestionService suggestionService, ApplicationDbContext context)
         {
             _suggestionService = suggestionService;
             _context = context;
         }
 
-        // Create suggestions based on userId (now from the URL directly)
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateSuggestions(int userId) // no [FromQuery] needed
+        [HttpPost("create/{userId}")]
+        public async Task<IActionResult> CreateSuggestions(int userId)
         {
-            // Find the battery associated with the user
             var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == userId);
-
             if (battery == null)
             {
                 return NotFound(new { message = "Battery not found for this user." });
             }
 
-            // Generate suggestions for the battery
             await _suggestionService.GenerateSuggestionsAsync(battery.ID);
-
             return Ok(new { message = "Suggestions processed successfully" });
         }
 
-        // Get pending suggestions based on userId
         [HttpGet("get/{userId}")]
         public async Task<IActionResult> GetSuggestions(int userId)
         {
-            // Find the battery associated with the user
-            var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == userId);
-
-            if (battery == null)
-            {
-                return NotFound(new { message = "Battery not found for this user." });
-            }
-
-            // Get pending suggestions for the battery
-            var suggestions = await _suggestionService.GetPendingSuggestionsAsync(battery.ID);
-
-            if (suggestions == null || !suggestions.Any())
+            var suggestions = await _suggestionService.GetPendingSuggestionsAsync(userId);
+            if (!suggestions.Any())
             {
                 return NotFound(new { message = "No suggestions found for this battery." });
             }
@@ -61,7 +47,6 @@ namespace SolarflowServer.Controllers
             return Ok(suggestions);
         }
 
-        // Apply a suggestion
         [HttpPost("apply/{id}")]
         public async Task<IActionResult> ApplySuggestion(int id)
         {
@@ -69,7 +54,6 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion applied successfully." });
         }
 
-        // Ignore a suggestion
         [HttpPost("ignore/{id}")]
         public async Task<IActionResult> IgnoreSuggestion(int id)
         {
@@ -77,12 +61,49 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion ignored successfully." });
         }
 
-        // Clean old suggestions (pending and ignored)
         [HttpPost("clean")]
         public async Task<IActionResult> CleanOldSuggestions()
         {
             await _suggestionService.CleanOldSuggestionsAsync();
             return Ok(new { message = "Old suggestions cleaned successfully." });
+        }
+
+        [HttpPost("add-test-suggestions")]
+        public async Task<IActionResult> AddTestSuggestions()
+        {
+            var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == 1);
+            if (battery == null)
+            {
+                return NotFound(new { message = "Battery not found for this user." });
+            }
+
+            // Adiciona a primeira sugestão de teste
+            var suggestion1 = new Suggestion
+            {
+                BatteryId = battery.ID,
+                Title = "Test Suggestion 1",
+                Description = "This is the first test suggestion.",
+                Status = SuggestionStatus.Pending,
+                Type = SuggestionType.ChargeAtNight,
+                TimeSent = DateTime.UtcNow
+            };
+
+            // Adiciona a segunda sugestão de teste
+            var suggestion2 = new Suggestion
+            {
+                BatteryId = battery.ID,
+                Title = "Test Suggestion 2",
+                Description = "This is the second test suggestion.",
+                Status = SuggestionStatus.Pending,
+                Type = SuggestionType.EnableEmergencyMode,
+                TimeSent = DateTime.UtcNow
+            };
+
+            _context.Suggestions.Add(suggestion1);
+            _context.Suggestions.Add(suggestion2);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Test suggestions added successfully." });
         }
     }
 }
