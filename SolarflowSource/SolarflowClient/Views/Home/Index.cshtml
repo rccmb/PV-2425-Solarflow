@@ -4,6 +4,9 @@
     ViewData["Title"] = "Dashboard";
     ViewData["LastUpdate"] = Model.EnergyRecord?.Timestamp.ToString("yyyy-MM-dd HH:mm") ?? "No data";
 
+
+
+
     // Chart House Consumption 
     var chartHouseConsumption = Model.EnergyRecord?.House;
 
@@ -13,7 +16,7 @@
     var chartConsumptionHouse = Model.EnergyRecords?.Select(record => (int)record.House).ToList() ?? [];
 
     // Chart Battery Level
-    var chartBatteryLevel = Model.Battery != null ? Model.Battery.ChargeLevel / (double)Model.Battery.MaxKW * 100.0 : 0;
+    var chartBatteryLevel = Model.Battery != null ? (double)Model.Battery.ChargeLevel / (double)Model.Battery.MaxKW * 100.0 : 0;
     var (chartBatteryBackgroundColor, chartBatteryBorderColor) = chartBatteryLevel switch
     {
         >= 60.0 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
@@ -104,7 +107,7 @@
             @if (Model.Battery != null)
             {
                 <div class="chart-item">
-                    <h2>Battery Status</h2>
+                        <h2>@Model.Battery.ChargeLevel @Model.Battery.MaxKW Battery @chartBatteryLevel Status</h2>
                     <canvas id="chartBattery"></canvas>
                 </div>
             }

@@ -36,15 +36,6 @@ public class BatteryController : ControllerBase
 
         var battery = await _context.Batteries
             .Where(b => b.UserId == parsedUserId)
-            .Select(b => new BatteryDTO
-            {
-                ChargingSource = b.ChargingSource,
-                BatteryMode = b.BatteryMode,
-                MinimalTreshold = b.MinimalTreshold,
-                MaximumTreshold = b.MaximumTreshold,
-                SpendingStartTime = b.SpendingStartTime,
-                SpendingEndTime = b.SpendingEndTime
-            })
             .FirstOrDefaultAsync();
 
         if (battery == null)

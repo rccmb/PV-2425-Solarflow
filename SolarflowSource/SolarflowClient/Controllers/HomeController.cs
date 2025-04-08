@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
@@ -25,22 +26,37 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Fetch energy records
+        // Energy Records
         var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/consumption");
         var energyResponse = await _httpClient.SendAsync(energyRequest);
-        if (!energyResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch energy records from the server.");
-        var energyJson = await energyResponse.Content.ReadAsStringAsync();
-        var energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
+        List<EnergyRecord> energyRecords = new();
 
-        // Fetch battery
+        if (energyResponse.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return RedirectToAction("Login", "Authentication");
+        }
+        else if (energyResponse.IsSuccessStatusCode)
+        {
+            var energyJson = await energyResponse.Content.ReadAsStringAsync();
+            energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
+        }
+
+        // Battery
         var batteryRequest = CreateAuthorizedRequest(HttpMethod.Get, "Battery/get-battery");
         var batteryResponse = await _httpClient.SendAsync(batteryRequest);
-        if (!batteryResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch battery from the server.");
-        var batteryJson = await batteryResponse.Content.ReadAsStringAsync();
-        Console.WriteLine(batteryJson);
-        var battery = JsonSerializer.Deserialize<Battery>(batteryJson);
+        Battery battery = null;
 
-        // Build the view model
+        if (batteryResponse.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return RedirectToAction("Login", "Authentication");
+        }
+        else if (batteryResponse.IsSuccessStatusCode)
+        {
+            var batteryJson = await batteryResponse.Content.ReadAsStringAsync();
+            Console.Write(batteryJson);
+            battery = JsonSerializer.Deserialize<Battery>(batteryJson);
+        }
+
         var viewModel = new HomeViewModel
         {
             EnergyRecord = energyRecords.LastOrDefault(),
