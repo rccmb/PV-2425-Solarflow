@@ -1,0 +1,1 @@
+c['65']=[['66',"ConsumptionData Class","topic_0000000000000023.html",1],['71',"ForecastData Class","topic_000000000000001F.html",1],['76',"HomeController Constructor","topic_0000000000000013.html",0],['77',"Methods","topic_0000000000000012_methods--.html",1]];

@@ -1,0 +1,1 @@
+c['67']=[['68',"Consumption Property","topic_0000000000000025.html",0],['69',"Date Property","topic_0000000000000024.html",0],['70',"Gain Property","topic_0000000000000026.html",0]];

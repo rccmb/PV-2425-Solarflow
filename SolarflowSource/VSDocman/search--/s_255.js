@@ -1,0 +1,1 @@
+search_result['255']=["topic_0000000000000086.html","HomeController Class","Controller for providing home dashboard-related data such as consumption, gain, and forecast."];

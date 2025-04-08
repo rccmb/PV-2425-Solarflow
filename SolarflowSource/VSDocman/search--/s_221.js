@@ -1,0 +1,1 @@
+search_result['221']=["topic_0000000000000073.html","AuthenticationController.Logout Method","Logs out the currently authenticated user."];

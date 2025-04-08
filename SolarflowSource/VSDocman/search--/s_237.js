@@ -1,0 +1,1 @@
+search_result['237']=["topic_000000000000007E.html","EmailSender Class","Handles email message creation and sending using SMTP."];

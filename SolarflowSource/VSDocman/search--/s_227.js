@@ -1,0 +1,1 @@
+search_result['227']=["topic_0000000000000079.html","AuthenticationController.DeleteUserViewModel Method","Deletes the view account associated with the currently authenticated user."];

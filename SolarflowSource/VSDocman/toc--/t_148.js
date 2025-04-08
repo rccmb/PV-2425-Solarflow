@@ -1,0 +1,1 @@
+c['148']=[['149',"GetBatteryViewModel Class","topic_0000000000000050.html",1]];

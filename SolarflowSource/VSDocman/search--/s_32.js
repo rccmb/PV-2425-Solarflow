@@ -1,0 +1,1 @@
+search_result['32']=["topic_0000000000000012.html","HomeController Class","Controller responsible for handling the homepage and providing dashboard data, weather, charts, and export functionalities."];

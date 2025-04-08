@@ -1,0 +1,1 @@
+c['72']=[['73',"ForecastDate Property","topic_0000000000000020.html",0],['74',"SolarHoursExpected Property","topic_0000000000000021.html",0],['75',"WeatherCondition Property","topic_0000000000000022.html",0]];

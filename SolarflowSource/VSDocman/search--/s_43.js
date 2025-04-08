@@ -1,0 +1,1 @@
+search_result['43']=["topic_0000000000000018.html","HomeController.GetPrevisionChartData Method","Fetches the forecast data and prepares chart data for the prediction of solar energy."];

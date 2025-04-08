@@ -1,0 +1,1 @@
+c['415']=[['416',"GetBattery_ReturnsOkResult_WhenBatteryExists Method","topic_0000000000000159.html",0],['417',"UpdateBattery_ReturnsNotFound_WhenBatteryDoesNotExist Method","topic_000000000000015A.html",0],['418',"UpdateBattery_SuccessfulUpdate_ReturnsOk Method","topic_000000000000015B.html",0]];

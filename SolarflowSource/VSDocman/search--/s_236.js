@@ -1,0 +1,1 @@
+search_result['236']=["topic_000000000000007D.html","BatteryController.UpdateBattery Method","Updates the battery configuration for the authenticated user."];

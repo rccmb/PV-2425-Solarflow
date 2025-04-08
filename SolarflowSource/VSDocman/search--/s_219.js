@@ -1,0 +1,1 @@
+search_result['219']=["topic_0000000000000071.html","AuthenticationController.RegisterViewAccount Method","Registers a new view account linked to the currently logged-in user."];

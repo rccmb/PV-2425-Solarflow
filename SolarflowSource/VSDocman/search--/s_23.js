@@ -1,0 +1,1 @@
+search_result['23']=["topic_000000000000000E.html","BatteryController Class","Controller responsible for managing battery configuration and data.\r\nOnly accessible to Admin users."];

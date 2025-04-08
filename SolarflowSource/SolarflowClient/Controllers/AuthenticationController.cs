@@ -10,11 +10,21 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace SolarflowClient.Controllers;
 
+/// <summary>
+/// Controller responsible for handling user authentication actions, including registration,
+/// login, password recovery/reset, and email confirmation.
+/// </summary>
 public class AuthenticationController : Controller
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthenticationController"/> class.
+    /// Sets the base address for the <see cref="HttpClient"/> depending on the environment.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client used for API requests.</param>
+    /// <param name="configuration">Application configuration to determine the environment.</param>
     public AuthenticationController(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
@@ -30,11 +40,22 @@ public class AuthenticationController : Controller
         }
     }
 
+    /// <summary>
+    /// Displays the registration view.
+    /// </summary>
+    /// <returns>The registration view.</returns>
     public IActionResult Register()
     {
         return View();
     }
 
+    /// <summary>
+    /// Submits the user registration form data to the authentication API.
+    /// </summary>
+    /// <param name="model">The registration data.</param>
+    /// <returns>
+    /// Redirects to login on success, or returns the same view with error messages on failure.
+    /// </returns>
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
@@ -64,6 +85,10 @@ public class AuthenticationController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Displays the login view. Redirects to the home page if the user is already authenticated.
+    /// </summary>
+    /// <returns>The login view or redirect to home.</returns>
     public IActionResult Login()
     {
         var token = Request.Cookies["AuthToken"];
@@ -76,6 +101,13 @@ public class AuthenticationController : Controller
         return View();
     }
 
+    /// <summary>
+    /// Submits the login form data to the authentication API and sets cookies if successful.
+    /// </summary>
+    /// <param name="model">The login credentials.</param>
+    /// <returns>
+    /// Redirects to the home page on success, or returns the login view with error messages.
+    /// </returns>
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
@@ -112,13 +144,22 @@ public class AuthenticationController : Controller
         return View(model);
     }
 
-    // GET: Account Recovery form (to display the page)
+    /// <summary>
+    /// Displays the account recovery (forgot password) form.
+    /// </summary>
+    /// <returns>The account recovery view.</returns>
     public IActionResult AccountRecovery()
     {
         return View();
     }
-    
-    // Controller Method for Forgot Password
+
+    /// <summary>
+    /// Submits the account recovery request to the authentication API.
+    /// </summary>
+    /// <param name="model">The account recovery form data.</param>
+    /// <returns>
+    /// Redirects with success message if the email exists; otherwise, returns view with error.
+    /// </returns>
     [HttpPost]
     public async Task<IActionResult> SubmitAccountRecovery(AccountRecoveryViewModel model)
     {
@@ -141,6 +182,11 @@ public class AuthenticationController : Controller
         return View("AccountRecovery", model);
     }
 
+    /// <summary>
+    /// Displays the reset password view using the provided token.
+    /// </summary>
+    /// <param name="token">The password reset token.</param>
+    /// <returns>The reset password view with token pre-filled.</returns>
     public IActionResult ResetPassword(string token)
     {
         if (string.IsNullOrEmpty(token))
@@ -153,6 +199,13 @@ public class AuthenticationController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Submits the new password along with token to reset the user password.
+    /// </summary>
+    /// <param name="model">The reset password form data.</param>
+    /// <returns>
+    /// Redirects to login on success, or returns view with error messages.
+    /// </returns>
     [HttpPost]
     public async Task<IActionResult> SubmitResetPassword(ResetPasswordViewModel model)
     {
@@ -175,6 +228,12 @@ public class AuthenticationController : Controller
         return View("ResetPassword", model);
     }
 
+    /// <summary>
+    /// Displays the email confirmation page using the token and user ID.
+    /// </summary>
+    /// <param name="token">The email confirmation token.</param>
+    /// <param name="userId">The ID of the user.</param>
+    /// <returns>The confirm email view with token and user ID.</returns>
     public IActionResult ConfirmEmail(string token, int userId)
     {
         if (string.IsNullOrEmpty(token))
@@ -186,6 +245,13 @@ public class AuthenticationController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Submits the email confirmation token and user ID to the authentication API.
+    /// </summary>
+    /// <param name="model">The email confirmation data.</param>
+    /// <returns>
+    /// Redirects to login on success, or returns the confirm email view with errors.
+    /// </returns>
     public async Task<IActionResult> SubmitConfirmEmail(ConfirmEmailViewModel model)
     {
         if (!ModelState.IsValid)
@@ -206,6 +272,13 @@ public class AuthenticationController : Controller
         return View("ConfirmEmail", model);
     }
 
+    /// <summary>
+    /// Requests a new confirmation email to be sent to the user.
+    /// </summary>
+    /// <param name="model">The email confirmation view model containing user data.</param>
+    /// <returns>
+    /// Redirects to login on success, or returns the confirm email view with error messages.
+    /// </returns>
     [HttpPost]
     public async Task<IActionResult> ResendEmailConfirmation(ConfirmEmailViewModel model)
     {

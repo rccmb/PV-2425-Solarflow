@@ -1,0 +1,1 @@
+search_result['46']=["topic_000000000000001B.html","HomeController.Logout Method","Logs the user out and redirects them to the login page."];

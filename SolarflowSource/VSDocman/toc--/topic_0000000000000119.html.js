@@ -1,0 +1,1 @@
+var breadcrumbs=[['-1',"",""],['2',"SOLUTION-WIDE PROPERTIES Reference","topic_0000000000000170.html"],['273',"SolarflowServer.Models Namespace","topic_00000000000000D3.html"],['335',"WindyForecast Class","topic_0000000000000116.html"],['336',"Properties","topic_0000000000000116_props--.html"],['337',"HighClouds Property","topic_0000000000000119.html"]];

@@ -1,0 +1,1 @@
+search_result['217']=["topic_000000000000006F.html","AuthenticationController.Register Method","Registers a new application user and sends a confirmation email."];

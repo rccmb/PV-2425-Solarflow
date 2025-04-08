@@ -1,0 +1,1 @@
+var breadcrumbs=[['-1',"",""],['2',"SOLUTION-WIDE PROPERTIES Reference","topic_0000000000000170.html"],['241',"SolarflowServer.DTOs.Notification Namespace","topic_00000000000000C0.html"],['246',"NotificationDto Class","topic_00000000000000C4.html"],['247',"Properties","topic_00000000000000C4_props--.html"],['249',"Id Property","topic_00000000000000C5.html"]];

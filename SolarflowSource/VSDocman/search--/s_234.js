@@ -1,0 +1,1 @@
+search_result['234']=["topic_000000000000007B.html","BatteryController Constructor","Initializes a new instance of the BatteryController class."];

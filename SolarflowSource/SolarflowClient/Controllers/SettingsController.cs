@@ -10,11 +10,21 @@ using System.Threading.Tasks;
 
 namespace SolarflowClient.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing user settings, including retrieving, updating,
+    /// creating, and deleting user and view accounts.
+    /// </summary>
     public class SettingsController : Controller
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SettingsController"/> class.
+        /// Sets the API base address depending on the current environment (Development or Production).
+        /// </summary>
+        /// <param name="httpClient">The HTTP client used to communicate with the backend API.</param>
+        /// <param name="configuration">Application configuration settings.</param>
         public SettingsController(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
@@ -29,9 +39,13 @@ namespace SolarflowClient.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves the current authenticated user's data for display on the settings page.
+        /// Redirects to the login page if the user is not an admin or not authenticated.
+        /// </summary>
+        /// <returns>The settings view with user data or an error message.</returns>
         public async Task<IActionResult> Index()
         {
-
             var token = Request.Cookies["AuthToken"];
 
             var handler = new JwtSecurityTokenHandler();
@@ -86,6 +100,15 @@ namespace SolarflowClient.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates the user's account information.
+        /// Requires a valid authentication token and valid model input.
+        /// </summary>
+        /// <param name="model">The new user data to update.</param>
+        /// <returns>
+        /// Redirects to the Index view with a success message on success, or
+        /// re-renders the form with validation errors or an error message on failure.
+        /// </returns>
         [HttpPost]
         public async Task<IActionResult> UpdateUser(ChangeUserModelView model)
         {
@@ -131,6 +154,12 @@ namespace SolarflowClient.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Deletes the associated view-only account for the current user.
+        /// </summary>
+        /// <returns>
+        /// Redirects to the Index view with a success or error message depending on the outcome.
+        /// </returns>
         [HttpPost]
         public async Task<IActionResult> DeleteUserViewAccount()
         {
@@ -165,6 +194,13 @@ namespace SolarflowClient.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Creates a new view-only account for the authenticated user.
+        /// </summary>
+        /// <param name="Password">The password for the new view account.</param>
+        /// <returns>
+        /// Redirects to the Index view with a success or error message depending on the outcome.
+        /// </returns>
         [HttpPost]
         public async Task<IActionResult> CreateViewAccount(string Password)
         {
@@ -209,7 +245,5 @@ namespace SolarflowClient.Controllers
 
             return RedirectToAction("Index");
         }
-
-
     }
 }

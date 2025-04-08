@@ -10,13 +10,21 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace SolarflowClient.Controllers
 {
-    //[Authorize(Roles = "Admin")]
-
+    /// <summary>
+    /// Controller responsible for displaying and updating battery-related settings and data.
+    /// Restricted to users with the Admin role.
+    /// </summary>
     public class BatteryController : Controller
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BatteryController"/> class.
+        /// Sets the API base URL depending on the environment configuration.
+        /// </summary>
+        /// <param name="httpClient">HTTP client used to communicate with the API.</param>
+        /// <param name="configuration">Application configuration provider.</param>
         public BatteryController(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
@@ -32,6 +40,13 @@ namespace SolarflowClient.Controllers
             }
         }
 
+        /// <summary>
+        /// Displays the battery settings view with current configuration data retrieved from the API.
+        /// Only accessible to users with the Admin role.
+        /// </summary>
+        /// <returns>
+        /// The battery settings view populated with current data, or redirects to login if unauthorized.
+        /// </returns>
         public async Task<IActionResult> Index()
         {
             var token = Request.Cookies["AuthToken"];
@@ -88,6 +103,13 @@ namespace SolarflowClient.Controllers
             }
         }
 
+        /// <summary>
+        /// Submits the updated battery configuration to the API.
+        /// </summary>
+        /// <param name="model">The updated battery settings data.</param>
+        /// <returns>
+        /// Redirects to the battery view with a success or error message based on the response.
+        /// </returns>
         [HttpPost]
         public async Task<IActionResult> UpdateBattery(GetBatteryViewModel model)
         {
