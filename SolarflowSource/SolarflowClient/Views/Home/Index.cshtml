@@ -1,87 +1,53 @@
-﻿@model SolarflowClient.Models.HomeViewModel;
+﻿@model HomeViewModel;
 
 @{
     ViewData["Title"] = "Dashboard";
+    ViewData["LastUpdate"] = Model.EnergyRecord?.Timestamp.ToString("yyyy-MM-dd HH:mm") ?? "No data";
+
+    // Chart House Consumption 
+    var chartHouseConsumption = Model.EnergyRecord?.House;
+
+    // Chart Consumption vs. Production
+    var chartConsumptionDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("hh:mm")).ToList() ?? [];
+    var chartConsumptionSolar = Model.EnergyRecords?.Select(record => (int)record.Solar).ToList() ?? [];
+    var chartConsumptionHouse = Model.EnergyRecords?.Select(record => (int)record.House).ToList() ?? [];
+
+    // Chart Battery Level
+    var chartBatteryLevel = Model.Battery != null ? Model.Battery.ChargeLevel / (double)Model.Battery.MaxKW * 100.0 : 0;
+    var (chartBatteryBackgroundColor, chartBatteryBorderColor) = chartBatteryLevel switch
+    {
+        >= 60.0 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
+        >= 40.0 => ("rgba(243, 146, 55, 0.6)", "rgba(243, 146, 55, 1)"),
+        _ => ("rgba(219, 83, 117, 0.6)", "rgba(219, 83, 117, 1)")
+    };
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Solarflow - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="~/css/dashboard/dashboard.css" asp-append-version="true">
 </head>
 <body>
 <div id="dashboard">
+
     <!-- Dashboard Header -->
     <div id="dashboard-header">
         <div>
             <h1>@ViewData["Title"]</h1>
-            <small>Last Update: <span id="last-update">Loading...</span></small>
+            <small>
+                Last Update:
+                <span id="last-update">
+                    @ViewData["LastUpdate"]
+                </span>
+            </small>
         </div>
         <div>
-            <a href="#" id="refresh-icon" title="Refresh Data">
-                <i class="fas fa-sync-alt"></i>
-            </a>
-            <a href="#" id="filter-icon" title="Filter Options">
-                <i class="fas fa-filter"></i>
-            </a>
-            <a href="@Url.Action("Export", "Home")" id="settings-icon" title="Export CSV">
-                <i class="fas fa-cog"></i>
+            <a href="@Url.Action("Export", "Home")" id="download-icon" title="Download CSV" download>
+                <i class="fas fa-download"></i>
             </a>
         </div>
-    </div>
-    
-    <!-- Battery Info Section -->
-    <div class="dashboard-section">
-        <h2>Battery Status</h2>
-        @if (Model.Battery != null)
-        {
-            <ul>
-                <li><strong>Charging Source:</strong> @Model.Battery.ChargingSource</li>
-                <li><strong>Battery Mode:</strong> @Model.Battery.BatteryMode</li>
-                <li><strong>Min Threshold:</strong> @Model.Battery.MinimalTreshold</li>
-                <li><strong>Max Threshold:</strong> @Model.Battery.MaximumTreshold</li>
-                <li><strong>Spending Start:</strong> @Model.Battery.SpendingStartTime</li>
-                <li><strong>Spending End:</strong> @Model.Battery.SpendingEndTime</li>
-            </ul>
-        }
-        else
-        {
-            <p>No battery data available.</p>
-        }
-    </div>
-
-    <!-- Energy Records Table -->
-    <div class="dashboard-section">
-        <h2>Energy Records</h2>
-        @if (Model.EnergyRecords != null && Model.EnergyRecords.Any())
-        {
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Solar (kWh)</th>
-                    <th>Battery (kWh)</th>
-                    <th>Grid (kWh)</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var record in Model.EnergyRecords)
-                {
-                    <tr>
-                        <td>@record.Timestamp.ToString("g")</td>
-                        <td>@record.Solar</td>
-                        <td>@record.Battery</td>
-                        <td>@record.Grid</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p>No energy records available.</p>
-        }
     </div>
 
     <!-- Dashboard Filters -->
@@ -107,7 +73,7 @@
                 <option>All</option>
             </select>
         </div>
-        <div class="filter-group">
+        <div>
             <button id="apply-filters">✔</button>
         </div>
     </div>
@@ -115,138 +81,165 @@
     <!-- Dashboard Charts -->
     <div id="dashboard-charts">
         <div id="dashboard-charts-energy">
-            <div class="chart-item">
-                <h2>Energy Usage</h2>
-                <p id="energy-usage">Loading...</p>
-            </div>
-            <div class="chart-item">
-                <h2>Weather Prevision</h2>
-                <img id="weather-image" alt="Weather Icon">
-            </div>
-            <div class="chart-item">
-                <h2>Battery Status</h2>
-                <div>
-                    <canvas id="batteryChart"></canvas>
+
+            <!-- Current Consumption -->
+            @if (Model.EnergyRecord != null)
+            {
+                <div class="chart-item">
+                    <h2>Energy Usage</h2>
+                    <p>@chartHouseConsumption kWh</p>
                 </div>
-            </div>
-            <div class="chart-item">
-                <h2>Solar Prevision</h2>
-                <div>
-                    <canvas id="previsionChart"></canvas>
+            }
+
+            <!-- Weather Icon -->
+            @if (Model.Forecast != null)
+            {
+                <div class="chart-item">
+                    <h2>Weather Prevision</h2>
+                    <img id="weather-image" alt="Weather Icon">
                 </div>
-            </div>
-            <div class="chart-item">
-                <h2>Gains vs. Consumption</h2>
-                <div>
-                    <canvas id="consumptionChart"></canvas>
+            }
+
+            <!-- Battery Status (Percentage) -->
+            @if (Model.Battery != null)
+            {
+                <div class="chart-item">
+                    <h2>Battery Status</h2>
+                    <canvas id="chartBattery"></canvas>
                 </div>
-            </div>
+            }
+
+            <!-- Solar Prevision -->
+            @if (Model.Forecast != null)
+            {
+                <div class="chart-item">
+                    <h2>Solar Prevision</h2>
+                    <div>
+                        <canvas id="chartSolarPrevision"></canvas>
+                    </div>
+                </div>
+            }
+
+            <!-- Energy Consumption -->
+            @if (Model.EnergyRecords != null)
+            {
+                <div class="chart-item">
+                    <h2>Consumption vs. Production</h2>
+                    <div>
+                        <canvas id="chartConsumptionProduction"></canvas>
+                    </div>
+                </div>
+            }
+
         </div>
     </div>
 </div>
 
 <!-- Include Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-        document.addEventListener('DOMContentLoaded', function () {
-            loadDashboardData();
-            loadWeatherImage();
-            loadPrevisionChart();
-            loadConsumptionChart();
-            loadBatteryChart();
-
-            // On window resize, let Chart.js handle resizing.
-            window.addEventListener("resize", function () {
-                // Iterate over each canvas in case Chart.js instances need to recalc.
-                document.querySelectorAll("canvas").forEach(canvas => {
-                    const chartInstance = Chart.getChart(canvas);
-                    if (chartInstance) {
-                        chartInstance.resize();
-                    }
-                });
-            });
-
-            // Optional: refresh charts on clicking the refresh icon.
-            document.getElementById("refresh-icon").addEventListener("click", function (event) {
-                event.preventDefault();
-                loadDashboardData();
-                loadWeatherImage();
-                loadPrevisionChart();
-                loadConsumptionChart();
-                loadBatteryChart();
-            });
-        });
-
-
-        function loadDashboardData() {
-            fetch('/Home/GetDashboardData')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("last-update").textContent = data.lastUpdate;
-                    document.getElementById("energy-usage").textContent = data.energyUsage;
-                })
-                .catch(error => console.error("Error loading dashboard data:", error));
-        }
-
-        function loadWeatherImage(){
-            fetch('/Home/GetWeatherImage')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("weather-image").src = data.imageUrl;
-                })
-                .catch(error => console.error("Error loading weather image:", error));
-        }
-
-        function loadPrevisionChart() {
-            fetch('/Home/GetPrevisionChartData')
-                .then(response => response.json())
-                .then(chartData => {
-                    var ctx = document.getElementById("previsionChart").getContext('2d');
-                    if (window.previsionChartInstance) {
-                        window.previsionChartInstance.destroy();
-                    }
-                    window.previsionChartInstance = new Chart(ctx, {
-                        type: chartData.type,
-                        data: chartData.data,
-                        options: chartData.options
-                    });
-                })
-                .catch(error => console.error("Error loading Prevision Chart:", error));
-        }
-
-        function loadConsumptionChart() {
-            fetch('/Home/GetConsumptionChartData')
-                .then(response => response.json())
-                .then(chartData => {
-                    var ctx = document.getElementById("consumptionChart").getContext('2d');
-                    if (window.consumptionChartInstance) {
-                        window.consumptionChartInstance.destroy();
-                    }
-                    window.consumptionChartInstance = new Chart(ctx, {
-                        type: chartData.type,
-                        data: chartData.data,
-                        options: chartData.options
-                    });
-                })
-                .catch(error => console.error("Error loading Consumption Chart:", error));
-        }
-
-        function loadBatteryChart() {
-            fetch('/Home/GetBatteryChartData')
-                .then(response => response.json())
-                .then(chartData => {
-                    var ctx = document.getElementById("batteryChart").getContext('2d');
-                    if (window.batteryChartInstance) {
-                        window.batteryChartInstance.destroy();
-                    }
-                    window.batteryChartInstance = new Chart(ctx, {
-                        type: chartData.type,
-                        data: chartData.data,
-                        options: chartData.options
-                    });
-                })
-                .catch(error => console.error("Error loading Battery Chart:", error));
-        }
-    </script>
 </body>
 </html>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Chart Battery Level
+        @if (Model.Battery != null)
+        {
+            <text>
+                    new Chart(document.getElementById('chartBattery').getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Battery'],
+                            datasets: [{
+                                label: 'Battery Level',
+                                data: [@Html.Raw(Json.Serialize((int)chartBatteryLevel))],
+                                backgroundColor: @Html.Raw(Json.Serialize(chartBatteryBackgroundColor)),
+                                borderColor: @Html.Raw(Json.Serialize(chartBatteryBorderColor)),
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: { stepSize: 10 }
+                                }
+                            }
+                        }
+                    });
+            </text>
+        }
+
+        @if (Model.EnergyRecords != null)
+        {
+            <text>
+            // Chart Consumption vs. Production
+            new Chart(document.getElementById('chartConsumptionProduction').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(chartConsumptionDate)),
+                    datasets: [{
+                        label: 'Gains',
+                        data: @Html.Raw(Json.Serialize(chartConsumptionSolar)),
+                        fill: true,
+                        backgroundColor: "rgba(231,187,65, 0.6)",
+                        borderColor: "rgba(231,187,65, 1)",
+                        borderWidth: 1
+                    }, {
+                        label: 'Consumption',
+                        data: @Html.Raw(Json.Serialize(chartConsumptionHouse)),
+                        fill: true,
+                        backgroundColor: "rgba(57,62,65, 0.6)",
+                        borderColor: "rgba(57,62,65, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        </text>
+        }
+
+        // Chart Solar Prevision
+        new Chart(document.getElementById('chartSolarPrevision').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(chartConsumptionDate)),
+                datasets: [{
+                    label: 'Gains',
+                    data: @Html.Raw(Json.Serialize(chartConsumptionSolar)),
+                    fill: true,
+                    backgroundColor: "rgba(231,187,65, 0.6)",
+                    borderColor: "rgba(231,187,65, 1)",
+                    borderWidth: 1
+                }, {
+                    label: 'Consumption',
+                    data: @Html.Raw(Json.Serialize(chartConsumptionHouse)),
+                    fill: true,
+                    backgroundColor: "rgba(57,62,65, 0.6)",
+                    borderColor: "rgba(57,62,65, 1)",
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+    </script>
+}

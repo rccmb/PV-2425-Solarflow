@@ -2,7 +2,11 @@
 
 public class HomeViewModel
 {
-    public List<EnergyRecord> EnergyRecords { get; set; }
+    public EnergyRecord? EnergyRecord { get; set; }
 
-    public Battery Battery { get; set; }
+    public List<EnergyRecord>? EnergyRecords { get; set; }
+
+    public Battery? Battery { get; set; }
+
+    public Forecast? Forecast { get; set; }
 }

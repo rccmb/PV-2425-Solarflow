@@ -1,44 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Text.Json.Serialization;
 
 namespace SolarflowClient.Models;
 
 public class Battery
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    [JsonPropertyName("id")] public int Id { get; set; }
 
-    [Required] public int ChargeLevel { get; set; }
+    [JsonPropertyName("chargeLevel")] public int ChargeLevel { get; set; }
 
-    [Required] public int MaxKW { get; set; }
+    [JsonPropertyName("maxKW")] public int MaxKW { get; set; }
 
-    [Required] public string ChargingSource { get; set; }
+    [JsonPropertyName("chargingSource")] public string ChargingSource { get; set; }
 
-    [Required] public string BatteryMode { get; set; }
+    [JsonPropertyName("batteryMode")] public string BatteryMode { get; set; }
 
-    [Required]
-    [Range(0, 100, ErrorMessage = "Minimal Threshold must be between 0 and 100.")]
-    public int MinimalTreshold { get; set; }
+    [JsonPropertyName("minimalTreshold")] public int MinimalTreshold { get; set; }
 
-    [Required]
-    [Range(0, 100, ErrorMessage = "Maximum Threshold must be between 0 and 100.")]
-    public int MaximumTreshold { get; set; }
+    [JsonPropertyName("maximumTreshold")] public int MaximumTreshold { get; set; }
 
-    [Required] public string SpendingStartTime { get; set; }
+    [JsonPropertyName("spendingStartTime")]
+    public string SpendingStartTime { get; set; }
 
-    [Required] public string SpendingEndTime { get; set; }
+    [JsonPropertyName("spendingEndTime")] public string SpendingEndTime { get; set; }
 
-    public string? LastUpdate { get; set; }
+    [JsonPropertyName("lastupdate")] public string LastUpdate { get; set; }
 
-    [ForeignKey("ApplicationUser")] public int UserId { get; set; }
-
-    public ApplicationUser User { get; set; }
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (MaximumTreshold < MinimalTreshold)
-            yield return new ValidationResult("Maximum Threshold cannot be lower than Minimal Threshold",
-                new[] { nameof(MaximumTreshold) });
-    }
+    [JsonPropertyName("userid")] public int UserId { get; set; }
+    [JsonPropertyName("user")] public string User { get; set; }
 }

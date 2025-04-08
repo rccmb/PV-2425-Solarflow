@@ -37,13 +37,16 @@ public class HomeController : Controller
         var batteryResponse = await _httpClient.SendAsync(batteryRequest);
         if (!batteryResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch battery from the server.");
         var batteryJson = await batteryResponse.Content.ReadAsStringAsync();
+        Console.WriteLine(batteryJson);
         var battery = JsonSerializer.Deserialize<Battery>(batteryJson);
 
         // Build the view model
         var viewModel = new HomeViewModel
         {
+            EnergyRecord = energyRecords.LastOrDefault(),
             EnergyRecords = energyRecords,
-            Battery = battery
+            Battery = battery,
+            Forecast = null
         };
 
         return View(viewModel);
@@ -84,137 +87,7 @@ public class HomeController : Controller
         return requestMessage;
     }
 
-
-    [HttpGet]
-    public async Task<ActionResult> GetConsumptionChartData()
-    {
-        var token = Request.Cookies["AuthToken"];
-
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, "home/consumption");
-        requestMessage.Headers.Add("Authorization", $"Bearer {token}");
-
-
-        // Receive JSON data from server
-        var response = await _httpClient.SendAsync(requestMessage);
-        if (!response.IsSuccessStatusCode)
-            return BadRequest("Failed to fetch data from the server.");
-
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Deserialize JSON into a list of EnergyRecord objects
-        var data = JsonConvert.DeserializeObject<List<EnergyRecord>>(jsonString);
-
-        // Prepare lists to hold the chart data
-        var date = new List<string>();
-        var consumption = new List<int>();
-        var solarGain = new List<int>(); // Assuming you meant 'Solar' instead of 'gain'
-        Console.WriteLine(consumption);
-        Console.WriteLine(solarGain);
-        Console.WriteLine("AAA");
-
-        foreach (var item in data)
-        {
-            date.Add(item.Timestamp.ToString("dd/MM")); // Format date
-            consumption.Add((int)item.House); // Assuming 'House' represents consumption
-            solarGain.Add((int)item.Solar); // Solar gain as in the server data
-        }
-
-        // Prepare chart using data
-        var chart = new
-        {
-            type = "line",
-            data = new
-            {
-                labels = date,
-                datasets = new[]
-                {
-                    new
-                    {
-                        label = "Gains",
-                        data = solarGain,
-                        fill = true,
-                        backgroundColor = "rgba(231,187,65, 0.6)",
-                        borderColor = "rgba(231,187,65, 1)",
-                        borderWidth = 1
-                    },
-                    new
-                    {
-                        label = "Consumption",
-                        data = consumption,
-                        fill = true,
-                        backgroundColor = "rgba(57,62,65, 0.6)",
-                        borderColor = "rgba(57,62,65, 1)",
-                        borderWidth = 1
-                    }
-                }
-            },
-            options = new
-            {
-                responsive = true,
-                maintainAspectRatio = false,
-                plugins = new { legend = new { display = false } }
-            }
-        };
-
-        return Json(chart);
-    }
-
-    [HttpGet]
-    public IActionResult GetBatteryChartData()
-    {
-        // TODO: Get Battery Data
-        var random = new Random();
-        var valuesBattery = random.Next(0, 101);
-        ;
-
-        var (backgroundColor, borderColor) = valuesBattery switch
-        {
-            >= 60 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
-            >= 40 => ("rgba(243, 146, 55, 0.6)", "rgba(243, 146, 55, 1)"),
-            _ => ("rgba(219, 83, 117, 0.6)", "rgba(219, 83, 117, 1)")
-        };
-
-        var chart = new
-        {
-            type = "bar",
-            data = new
-            {
-                labels = new[] { "" },
-                datasets = new[]
-                {
-                    new
-                    {
-                        label = "Charge",
-                        data = new[] { valuesBattery },
-                        backgroundColor = new[] { backgroundColor },
-                        borderColor = new[] { borderColor },
-                        borderWidth = 1
-                    }
-                }
-            },
-            options = new
-            {
-                responsive = true,
-                maintainAspectRatio = false,
-                plugins = new { legend = new { display = false } },
-                scales = new
-                {
-                    y = new
-                    {
-                        min = 0,
-                        max = 100,
-                        ticks = new { stepSize = 10 }
-                    }
-                }
-            }
-        };
-
-        return Json(chart);
-    }
-
-
+    
     [HttpGet]
     public async Task<ActionResult> GetPrevisionChartData()
     {
