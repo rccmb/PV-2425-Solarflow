@@ -4,22 +4,20 @@ using SolarflowServer.DTOs.Suggestion;
 using SolarflowServer.Models;
 using SolarflowServer.Models.Enums;
 using SolarflowServer.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 public class SuggestionService : ISuggestionService
 {
     private readonly ApplicationDbContext _context;
     private readonly INotificationService _notificationService;
 
+    // Constructor injecting the database context and notification service
     public SuggestionService(ApplicationDbContext context, INotificationService notificationService)
     {
         _context = context;
         _notificationService = notificationService;
     }
 
+    // Retrieves all pending suggestions for a given battery
     public async Task<List<SuggestionDto>> GetPendingSuggestionsAsync(int batteryId)
     {
         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.Id == batteryId);
@@ -30,6 +28,7 @@ public class SuggestionService : ISuggestionService
             .OrderBy(s => s.TimeSent)
             .ToListAsync();
 
+        // Maps each suggestion to a DTO for API use
         return suggestions.Select(s => new SuggestionDto
         {
             Id = s.Id,
@@ -41,6 +40,7 @@ public class SuggestionService : ISuggestionService
         }).ToList();
     }
 
+    // Applies the logic behind a specific suggestion and updates the battery
     public async Task ApplySuggestionAsync(int suggestionId)
     {
         var suggestion = await _context.Suggestions
@@ -50,6 +50,7 @@ public class SuggestionService : ISuggestionService
         if (suggestion == null || suggestion.Status != SuggestionStatus.Pending)
             throw new InvalidOperationException("Suggestion not found or already handled.");
 
+        // Executes the suggestion logic based on its type
         switch (suggestion.Type)
         {
             case SuggestionType.ChargeAtNight:
@@ -73,18 +74,20 @@ public class SuggestionService : ISuggestionService
                 throw new Exception("Unknown suggestion type.");
         }
 
+        // Marks suggestion as applied and logs a notification for the user
         suggestion.Status = SuggestionStatus.Applied;
         await _notificationService.CreateNotificationAsync(
-            suggestion.Battery.UserId,  
+            suggestion.Battery.UserId,
             new NotificationCreateDto
             {
                 Title = "Suggestion Applied",
                 Description = $"Your suggestion '{suggestion.Title}' has been applied successfully."
             });
+
         await _context.SaveChangesAsync();
     }
 
-    // Ignore suggestion
+    // Marks a suggestion as ignored
     public async Task IgnoreSuggestionAsync(int suggestionId)
     {
         var suggestion = await _context.Suggestions.FirstOrDefaultAsync(s => s.Id == suggestionId);
@@ -95,11 +98,11 @@ public class SuggestionService : ISuggestionService
         await _context.SaveChangesAsync();
     }
 
+    // Generates suggestions based on the latest forecast and battery state
     public async Task GenerateSuggestionsAsync(int batteryId)
     {
         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.Id == batteryId);
         if (battery == null) return;
-
 
         var forecast = await _context.Forecasts
             .Where(f => f.BatteryID == battery.Id)
@@ -110,6 +113,7 @@ public class SuggestionService : ISuggestionService
 
         var today = DateTime.UtcNow.Date;
 
+        // Helper function to avoid duplicate suggestions of the same type for today
         async Task AddSuggestionIfNotExists(SuggestionType type, string title, string description)
         {
             var exists = await _context.Suggestions.AnyAsync(s =>
@@ -132,6 +136,7 @@ public class SuggestionService : ISuggestionService
             }
         }
 
+        // Suggest charging at night if solar production is low
         if (forecast.kwh < 5)
         {
             await AddSuggestionIfNotExists(
@@ -141,6 +146,7 @@ public class SuggestionService : ISuggestionService
             );
         }
 
+        // Suggest enabling emergency mode if solar is very low
         if (forecast.kwh < 2 && battery.BatteryMode != "Emergency")
         {
             await AddSuggestionIfNotExists(
@@ -150,6 +156,7 @@ public class SuggestionService : ISuggestionService
             );
         }
 
+        // Suggest lowering the minimum threshold if battery is very full
         if (battery.ChargeLevel > 80 && battery.MinimalTreshold > 30)
         {
             await AddSuggestionIfNotExists(
@@ -159,6 +166,7 @@ public class SuggestionService : ISuggestionService
             );
         }
 
+        // Suggest raising the maximum threshold if battery is too low
         if (battery.ChargeLevel < 20 && battery.MaximumTreshold > 70)
         {
             await AddSuggestionIfNotExists(
@@ -171,7 +179,7 @@ public class SuggestionService : ISuggestionService
         await _context.SaveChangesAsync();
     }
 
-    // Clean old suggestions 
+    // Deletes all suggestions that were created before today
     public async Task CleanOldSuggestionsAsync()
     {
         var today = DateTime.UtcNow.Date;
