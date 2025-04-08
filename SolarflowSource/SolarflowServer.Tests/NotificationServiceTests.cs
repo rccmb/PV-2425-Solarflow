@@ -1,29 +1,34 @@
-﻿using Moq;
-using System.Threading.Tasks;
-using Xunit;
-using SolarflowServer.Services;
+﻿using Microsoft.EntityFrameworkCore;
 using SolarflowServer.DTOs.Notification;
 using SolarflowServer.Models;
-using System.Collections.Generic;
 using SolarflowServer.Models.Enums;
+using SolarflowServer.Services;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace SolarflowServer.Tests.Services
 {
     public class NotificationServiceTests
     {
-        private readonly Mock<INotificationRepository> _repositoryMock;
+        private readonly ApplicationDbContext _context;
         private readonly NotificationService _service;
 
         public NotificationServiceTests()
         {
-            _repositoryMock = new Mock<INotificationRepository>();
-            _service = new NotificationService(_repositoryMock.Object);
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "NotificationTestDb_" + System.Guid.NewGuid())
+                .EnableSensitiveDataLogging() // Optional: helps with debugging
+                .Options;
+
+            _context = new ApplicationDbContext(options);
+            _service = new NotificationService(_context);
         }
 
         [Fact]
-        public async Task CreateNotificationAsync_Should_Call_Add_And_Save()
+        public async Task CreateNotificationAsync_Should_Add_Notification()
         {
-            // Arrange
             int userId = 45;
             var dto = new NotificationCreateDto
             {
@@ -31,82 +36,95 @@ namespace SolarflowServer.Tests.Services
                 Description = "This is a test notification"
             };
 
-            // Act
             await _service.CreateNotificationAsync(userId, dto);
 
-            // Assert
-            _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Notification>()), Times.Once);
-            _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            var saved = await _context.Notifications.FirstOrDefaultAsync(n => n.UserId == userId);
+            Assert.NotNull(saved);
+            Assert.Equal("Test", saved.Title);
         }
 
         [Fact]
-        public async Task GetNotificationsAsync_Should_Return_Notifications_For_User()
+        public async Task GetNotificationsAsync_Should_Return_Only_Users_Notifications()
         {
-            // Arrange
-            int userId = 99;
-            _repositoryMock.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(new List<Notification>
-            {
-                new Notification { Id = 1, Title = "Test", Description = "Desc", UserId = userId, Status = NotificationStatus.Unread }
-            });
+            _context.Notifications.AddRange(
+                new Notification
+                {
+                    UserId = 1,
+                    Title = "User 1",
+                    Description = "Desc 1",
+                    Status = NotificationStatus.Unread,
+                    TimeSent = DateTime.UtcNow
+                },
+                new Notification
+                {
+                    UserId = 2,
+                    Title = "User 2",
+                    Description = "Desc 2",
+                    Status = NotificationStatus.Unread,
+                    TimeSent = DateTime.UtcNow
+                }
+            );
+            await _context.SaveChangesAsync();
 
-            // Act
-            var result = await _service.GetNotificationsAsync(userId);
+            var result = await _service.GetNotificationsAsync(1);
 
-            // Assert
             Assert.Single(result);
-            Assert.Equal("Test", result.First().Title);
+            Assert.Equal("User 1", result.First().Title);
         }
 
         [Fact]
-        public async Task MarkAsReadAsync_Should_Update_Status_If_Notification_Owned_By_User()
+        public async Task MarkAsReadAsync_Should_Change_Status()
         {
-            // Arrange
-            int userId = 99;
             var notification = new Notification
             {
-                Id = 1,
-                Title = "Test",
-                UserId = userId,
-                Status = NotificationStatus.Unread
+                UserId = 99,
+                Title = "Unread Notification",
+                Description = "Something unread",
+                Status = NotificationStatus.Unread,
+                TimeSent = DateTime.UtcNow
             };
-            _repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(notification);
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
 
-            // Act
-            await _service.MarkAsReadAsync(1, userId);
+            await _service.MarkAsReadAsync(notification.Id, 99);
 
-            // Assert
-            Assert.Equal(NotificationStatus.Read, notification.Status);
-            _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            var updated = await _context.Notifications.FindAsync(notification.Id);
+            Assert.Equal(NotificationStatus.Read, updated.Status);
         }
 
         [Fact]
-        public async Task DeleteNotificationAsync_Should_Remove_Notification_If_Owned_By_User()
+        public async Task DeleteNotificationAsync_Should_Remove_Notification()
         {
-            // Arrange
-            int userId = 99;
-            var notification = new Notification { Id = 1, UserId = userId };
-            _repositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(notification);
+            var notification = new Notification
+            {
+                UserId = 50,
+                Title = "Delete Me",
+                Description = "Desc to delete",
+                TimeSent = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
 
-            // Act
-            await _service.DeleteNotificationAsync(1, userId);
+            await _service.DeleteNotificationAsync(notification.Id, 50);
 
-            // Assert
-            _repositoryMock.Verify(r => r.DeleteAsync(1), Times.Once);
-            _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            var exists = await _context.Notifications.FindAsync(notification.Id);
+            Assert.Null(exists);
         }
 
         [Fact]
-        public async Task DeleteAllNotificationsAsync_Should_Call_DeleteAll_And_Save()
+        public async Task DeleteAllNotificationsAsync_Should_Clear_Users_Notifications()
         {
-            // Arrange
-            int userId = 99;
+            _context.Notifications.AddRange(
+                new Notification { UserId = 77, Title = "A", Description = "D1", TimeSent = DateTime.UtcNow },
+                new Notification { UserId = 77, Title = "B", Description = "D2", TimeSent = DateTime.UtcNow },
+                new Notification { UserId = 88, Title = "C", Description = "D3", TimeSent = DateTime.UtcNow }
+            );
+            await _context.SaveChangesAsync();
 
-            // Act
-            await _service.DeleteAllNotificationsAsync(userId);
+            await _service.DeleteAllNotificationsAsync(77);
 
-            // Assert
-            _repositoryMock.Verify(r => r.DeleteAllAsync(userId), Times.Once);
-            _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            var remaining = await _context.Notifications.Where(n => n.UserId == 77).ToListAsync();
+            Assert.Empty(remaining);
         }
     }
 }
