@@ -1,1 +1,0 @@
-search_result['574']=["topic_0000000000000137.html","CurrentForecastResult.WeatherCondition Property",""];

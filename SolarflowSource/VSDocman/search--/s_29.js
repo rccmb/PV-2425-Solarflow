@@ -1,1 +1,0 @@
-search_result['29']=["topic_000000000000000F.html","BatteryController Constructor","Initializes the BatteryController and configures the base API URL depending on environment."];

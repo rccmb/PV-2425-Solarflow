@@ -1,1 +1,0 @@
-search_result['88']=["topic_000000000000002F.html","SettingsController.Index Method","Displays the settings page for the logged-in user.\r\nOnly accessible to users with an \"Admin\" role."];

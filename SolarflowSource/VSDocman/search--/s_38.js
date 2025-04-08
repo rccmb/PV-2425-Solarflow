@@ -1,1 +1,0 @@
-search_result['38']=["topic_0000000000000013.html","HomeController Constructor","Initializes the HomeController and sets the base API URL depending on the environment."];

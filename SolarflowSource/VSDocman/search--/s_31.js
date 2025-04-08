@@ -1,1 +1,0 @@
-search_result['31']=["topic_0000000000000011.html","BatteryController.UpdateBattery Method","Updates the battery configuration with values from the view model."];

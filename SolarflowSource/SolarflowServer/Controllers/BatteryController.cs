@@ -10,6 +10,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using SolarflowServer.Services.Interfaces;
 
+/// <summary>
+/// Controller for handling battery-related actions for authenticated users.
+/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/battery")]
@@ -18,12 +21,21 @@ public class BatteryController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IAuditService _auditService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BatteryController"/> class.
+    /// </summary>
+    /// <param name="context">The application database context used for battery operations.</param>
+    /// <param name="auditService">The audit service used for logging actions.</param>
     public BatteryController(ApplicationDbContext context, IAuditService auditService)
     {
         _context = context;
         _auditService = auditService;
     }
 
+    /// <summary>
+    /// Retrieves the battery associated with the currently authenticated user.
+    /// </summary>
+    /// <returns>The battery details of the authenticated user if found, or an appropriate error message if not authenticated, invalid, or not found.</returns>
     [HttpGet("get-battery")]
     public async Task<IActionResult> GetBattery()
     {
@@ -46,6 +58,11 @@ public class BatteryController : ControllerBase
         return Ok(battery);
     }
 
+    /// <summary>
+    /// Updates the battery settings for the currently authenticated user.
+    /// </summary>
+    /// <param name="model">The battery settings to be updated.</param>
+    /// <returns>A result indicating the success or failure of the battery update process.</returns>
     [HttpPost("update-battery")]
     public async Task<IActionResult> UpdateBattery([FromBody] BatteryDTO model)
     {

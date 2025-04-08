@@ -1,1 +1,0 @@
-search_result['252']=["topic_0000000000000083.html","ForecastController.UpdateForecast Method","Updates forecast data for a given location and number of days."];

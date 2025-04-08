@@ -1,1 +1,0 @@
-search_result['575']=["topic_0000000000000138.html","CurrentForecastResult.EnergyGeneratedKwh Property",""];

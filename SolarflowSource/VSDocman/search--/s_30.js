@@ -1,1 +1,0 @@
-search_result['30']=["topic_0000000000000010.html","BatteryController.Index Method","Retrieves and displays the current battery settings for admin users."];

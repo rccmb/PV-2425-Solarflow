@@ -1,1 +1,0 @@
-search_result['92']=["topic_0000000000000033.html","SuggestionsController Class","Handles the actions related to the suggestions feature.\r\nEnsures that only users with the \"Admin\" role can access the suggestions view."];

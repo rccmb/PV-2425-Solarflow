@@ -1,1 +1,0 @@
-search_result['77']=["topic_0000000000000029.html","NotificationsController.Index Method","Displays the list of notifications for the current user.\r\nOnly accessible to users with an \"Admin\" role."];

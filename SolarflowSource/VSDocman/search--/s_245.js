@@ -1,1 +1,0 @@
-search_result['245']=["topic_0000000000000081.html","ForecastController Class","Controller for handling forecast-related operations."];

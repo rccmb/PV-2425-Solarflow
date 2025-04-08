@@ -1,1 +1,0 @@
-search_result['70']=["topic_0000000000000027.html","NotificationsController Class","Handles actions related to notifications for the application.\r\nAllows users to view, mark as read, and delete notifications."];

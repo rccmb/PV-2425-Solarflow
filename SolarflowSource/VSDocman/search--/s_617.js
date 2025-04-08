@@ -1,1 +1,0 @@
-search_result['617']=["topic_000000000000014E.html","WeatherProcessingService.GetAverageCloudCover Method",""];

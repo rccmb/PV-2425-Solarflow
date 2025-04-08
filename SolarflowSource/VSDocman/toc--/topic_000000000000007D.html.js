@@ -1,1 +1,0 @@
-var breadcrumbs=[['-1',"",""],['2',"SOLUTION-WIDE PROPERTIES Reference","topic_0000000000000170.html"],['4',"\u003cdefault\u003e Namespace","topic_0000000000000172.html"],['26',"BatteryController Class","topic_000000000000007A.html"],['27',"Methods","topic_000000000000007A_methods--.html"],['29',"UpdateBattery Method","topic_000000000000007D.html"]];

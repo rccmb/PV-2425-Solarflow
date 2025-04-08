@@ -9,6 +9,9 @@ using SolarflowServer.Models;
 
 namespace SolarflowServer.Controllers
 {
+    /// <summary>
+    /// Controller for managing suggestions related to the battery of the authenticated user.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class SuggestionController : ControllerBase
@@ -16,14 +19,22 @@ namespace SolarflowServer.Controllers
         private readonly ISuggestionService _suggestionService;
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SuggestionController"/> class.
+        /// </summary>
+        /// <param name="suggestionService">The service for managing suggestions.</param>
+        /// <param name="context">The database context.</param>
         public SuggestionController(ISuggestionService suggestionService, ApplicationDbContext context)
         {
             _suggestionService = suggestionService;
             _context = context;
         }
 
-        // POST: api/suggestion/create/{userId}
-        // Generates suggestions for the battery associated with the given user
+        /// <summary>
+        /// Generates suggestions for the battery associated with the given user.
+        /// </summary>
+        /// <param name="userId">The user ID for whom the suggestions are being generated.</param>
+        /// <returns>A response indicating success or failure.</returns>
         [HttpPost("create/{userId}")]
         public async Task<IActionResult> CreateSuggestions(int userId)
         {
@@ -37,8 +48,11 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestions processed successfully" });
         }
 
-        // GET: api/suggestion/get/{userId}
-        // Returns all pending suggestions for the user's battery
+        /// <summary>
+        /// Returns all pending suggestions for the user's battery.
+        /// </summary>
+        /// <param name="userId">The user ID for whom the suggestions are being fetched.</param>
+        /// <returns>A list of pending suggestions or a not found response.</returns>
         [HttpGet("get/{userId}")]
         public async Task<IActionResult> GetSuggestions(int userId)
         {
@@ -51,8 +65,11 @@ namespace SolarflowServer.Controllers
             return Ok(suggestions);
         }
 
-        // POST: api/suggestion/apply/{id}
-        // Applies the logic of a suggestion and updates the battery
+        /// <summary>
+        /// Applies the logic of a suggestion and updates the battery accordingly.
+        /// </summary>
+        /// <param name="id">The ID of the suggestion to apply.</param>
+        /// <returns>A response indicating the success of the operation.</returns>
         [HttpPost("apply/{id}")]
         public async Task<IActionResult> ApplySuggestion(int id)
         {
@@ -60,8 +77,11 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion applied successfully." });
         }
 
-        // POST: api/suggestion/ignore/{id}
-        // Marks a suggestion as ignored (won't be applied)
+        /// <summary>
+        /// Marks a suggestion as ignored, preventing it from being applied.
+        /// </summary>
+        /// <param name="id">The ID of the suggestion to ignore.</param>
+        /// <returns>A response indicating the success of the operation.</returns>
         [HttpPost("ignore/{id}")]
         public async Task<IActionResult> IgnoreSuggestion(int id)
         {
@@ -69,8 +89,10 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion ignored successfully." });
         }
 
-        // POST: api/suggestion/clean
-        // Removes all suggestions older than today
+        /// <summary>
+        /// Removes all suggestions older than the current date.
+        /// </summary>
+        /// <returns>A response indicating the success of the operation.</returns>
         [HttpPost("clean")]
         public async Task<IActionResult> CleanOldSuggestions()
         {
@@ -78,8 +100,10 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Old suggestions cleaned successfully." });
         }
 
-        // POST: api/suggestion/add-test-suggestions
-        // Creates two sample suggestions for testing/demo purposes
+        /// <summary>
+        /// Adds test suggestions for testing or demo purposes.
+        /// </summary>
+        /// <returns>A response indicating the success of the operation.</returns>
         [HttpPost("add-test-suggestions")]
         public async Task<IActionResult> AddTestSuggestions()
         {

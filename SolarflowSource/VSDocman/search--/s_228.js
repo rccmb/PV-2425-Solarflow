@@ -1,1 +1,0 @@
-search_result['228']=["topic_000000000000007A.html","BatteryController Class","Controller for managing user battery settings."];

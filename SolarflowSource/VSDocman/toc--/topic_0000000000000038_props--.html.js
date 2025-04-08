@@ -1,1 +1,0 @@
-var breadcrumbs=[['-1',"",""],['2',"SOLUTION-WIDE PROPERTIES Reference","topic_0000000000000170.html"],['116',"SolarflowClient.Models.ViewModels.Authentication Namespace","topic_0000000000000035.html"],['120',"ConfirmEmailViewModel Class","topic_0000000000000038.html"],['121',"Properties","topic_0000000000000038_props--.html"]];

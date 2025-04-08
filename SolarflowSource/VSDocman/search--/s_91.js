@@ -1,1 +1,0 @@
-search_result['91']=["topic_0000000000000032.html","SettingsController.CreateViewAccount Method","Registers a new view account for the user."];

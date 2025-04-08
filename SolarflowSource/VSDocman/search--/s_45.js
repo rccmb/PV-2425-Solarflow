@@ -1,1 +1,0 @@
-search_result['45']=["topic_000000000000001A.html","HomeController.GetBatteryChartData Method","Fetches data for battery usage and prepares a chart based on the battery charge percentage."];

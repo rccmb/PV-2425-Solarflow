@@ -1,1 +1,0 @@
-c['413']=[['414',"BatteryControllerTests Constructor","topic_0000000000000158.html",0],['415',"Methods","topic_0000000000000157_methods--.html",1]];

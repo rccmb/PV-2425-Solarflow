@@ -10,6 +10,9 @@ using SolarflowServer.Models.Enums;
 
 namespace SolarflowServer.Controllers
 {
+    /// <summary>
+    /// Controller for managing notifications for the authenticated user.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize] // Ensures only authenticated users can access this controller
@@ -19,6 +22,12 @@ namespace SolarflowServer.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _auditService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationsController"/> class.
+        /// </summary>
+        /// <param name="notificationService">The service for managing notifications.</param>
+        /// <param name="context">The database context.</param>
+        /// <param name="auditService">The service for auditing actions.</param>
         public NotificationsController(INotificationService notificationService, ApplicationDbContext context, IAuditService auditService)
         {
             _notificationService = notificationService;
@@ -26,8 +35,10 @@ namespace SolarflowServer.Controllers
             _auditService = auditService;
         }
 
-        // GET: api/notifications
-        // Retrieves all notifications for the authenticated user
+        /// <summary>
+        /// Retrieves all notifications for the authenticated user.
+        /// </summary>
+        /// <returns>A list of notifications.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -38,8 +49,11 @@ namespace SolarflowServer.Controllers
             return Ok(notifications);
         }
 
-        // GET: api/notifications/{id}
-        // Retrieves a specific notification if it belongs to the user
+        /// <summary>
+        /// Retrieves a specific notification by ID if it belongs to the authenticated user.
+        /// </summary>
+        /// <param name="id">The ID of the notification to retrieve.</param>
+        /// <returns>A specific notification if found, or a not found response.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -50,8 +64,11 @@ namespace SolarflowServer.Controllers
             return Ok(notification);
         }
 
-        // POST: api/notifications
-        // Creates a new notification for the authenticated user
+        /// <summary>
+        /// Creates a new notification for the authenticated user.
+        /// </summary>
+        /// <param name="dto">The notification data to create.</param>
+        /// <returns>A created notification response.</returns>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] NotificationCreateDto dto)
         {
@@ -61,8 +78,11 @@ namespace SolarflowServer.Controllers
             return CreatedAtAction(nameof(GetAll), null);
         }
 
-        // PUT: api/notifications/{id}/read
-        // Marks a notification as read if it belongs to the user
+        /// <summary>
+        /// Marks a specific notification as read if it belongs to the authenticated user.
+        /// </summary>
+        /// <param name="id">The ID of the notification to mark as read.</param>
+        /// <returns>A no content response if successful.</returns>
         [HttpPut("{id}/read")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
@@ -72,8 +92,11 @@ namespace SolarflowServer.Controllers
             return NoContent();
         }
 
-        // DELETE: api/notifications/{id}
-        // Deletes a specific notification if it belongs to the user
+        /// <summary>
+        /// Deletes a specific notification by ID if it belongs to the authenticated user.
+        /// </summary>
+        /// <param name="id">The ID of the notification to delete.</param>
+        /// <returns>A no content response if successful.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -83,8 +106,10 @@ namespace SolarflowServer.Controllers
             return NoContent();
         }
 
-        // DELETE: api/notifications
-        // Deletes all notifications for the user
+        /// <summary>
+        /// Deletes all notifications for the authenticated user.
+        /// </summary>
+        /// <returns>A no content response if successful.</returns>
         [HttpDelete]
         public async Task<IActionResult> DeleteAll()
         {
@@ -94,8 +119,10 @@ namespace SolarflowServer.Controllers
             return NoContent();
         }
 
-        // POST: api/notifications/generate-test
-        // Generates dummy notifications for testing purposes
+        /// <summary>
+        /// Generates test notifications for testing purposes.
+        /// </summary>
+        /// <returns>A success message indicating test notifications were created.</returns>
         [HttpPost("generate-test")]
         [AllowAnonymous]
         public async Task<IActionResult> GenerateTestNotifications()
@@ -113,7 +140,10 @@ namespace SolarflowServer.Controllers
             return Ok("Test notifications created.");
         }
 
-        // Helper method to get the authenticated user's ID from the JWT
+        /// <summary>
+        /// Helper method to retrieve the authenticated user's ID from the JWT.
+        /// </summary>
+        /// <returns>The user ID of the authenticated user.</returns>
         private int GetUserId()
         {
             return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));

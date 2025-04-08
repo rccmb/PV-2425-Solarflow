@@ -1,1 +1,0 @@
-c['27']=[['28',"GetBattery Method","topic_000000000000007C.html",0],['29',"UpdateBattery Method","topic_000000000000007D.html",0]];

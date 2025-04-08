@@ -1,1 +1,0 @@
-search_result['263']=["topic_0000000000000089.html","HomeController.GetPrevisionData Method","Returns mock forecast data for the next 8 days including expected solar hours and weather condition."];

@@ -1,1 +1,0 @@
-search_result['44']=["topic_0000000000000019.html","HomeController.GetConsumptionChartData Method","Fetches consumption data and prepares chart data for consumption and gain."];

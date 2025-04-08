@@ -1,1 +1,0 @@
-search_result['235']=["topic_000000000000007C.html","BatteryController.GetBattery Method","Retrieves the battery configuration for the authenticated user."];

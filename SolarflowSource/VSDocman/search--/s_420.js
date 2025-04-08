@@ -1,1 +1,0 @@
-search_result['420']=["topic_00000000000000DE.html","ApplicationUser.Battery Property",""];

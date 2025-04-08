@@ -1,1 +1,0 @@
-search_result['261']=["topic_0000000000000087.html","HomeController.GetLatestData Method","Returns the latest consumption and gain data for today."];

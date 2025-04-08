@@ -1,1 +1,0 @@
-search_result['76']=["topic_0000000000000028.html","NotificationsController Constructor","Initializes a new instance of the NotificationsController class."];
