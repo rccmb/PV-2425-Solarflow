@@ -1,107 +1,185 @@
-﻿/* Container principal da página */
-.sugestoes-container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-    font-family: 'Segoe UI', sans-serif;
-}
-
-/* Caixa de status (verde, amarelo, vermelho) */
-.status-box {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-    color: #fff;
-}
-
-    .status-box img {
-        width: 40px;
-        height: 40px;
-        margin-right: 20px;
-    }
-
-    .status-box.verde {
-        background-color: #28a745;
-    }
-
-    .status-box.amarelo {
-        background-color: #ffc107;
-        color: #212529;
-    }
-
-    .status-box.vermelho {
-        background-color: #dc3545;
-    }
-
-/* Cartão de sugestão individual */
-.suggestion-card {
-    background-color: #2c2c2c;
-    color: #fff;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: 0.3s ease;
-}
-
-    .suggestion-card:hover {
-        background-color: #3a3a3a;
-    }
-
-.suggestion-content {
-    flex: 1;
-    margin-right: 20px;
-}
-
-    .suggestion-content p {
-        margin: 0 0 5px;
-    }
-
-.suggestion-actions form {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-.suggestion-actions button {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: #fff;
-}
-
-    .btn-success:hover {
-        background-color: #218838;
-    }
-
-.btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-    .btn-danger:hover {
-        background-color: #c82333;
-    }
-
-.page-title {
+﻿.page-title {
     font-size: 2rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
+/* Suggestions Page Container */
+.suggestions-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
 
-/* Responsivo */
+/* Title */
+.page-title {
+    font-size: 34px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #222;
+    margin-bottom: 30px;
+}
+
+/* STATUS BANNER */
+.status-box {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    color: #fff;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-box img {
+    width: 36px;
+    height: 36px;
+}
+
+/* Status Colors */
+.status-box.green {
+    background-color: #e6f4ea;
+    color: #2e7d32;
+}
+
+.status-box.yellow {
+    background-color: #fff4ce;
+    color: #8a6d3b;
+}
+
+.status-box.red {
+    background-color: #f8d7da;
+    color: #a94442;
+}
+
+/* Adjust text */
+.status-box h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.status-box p {
+    margin: 4px 0 0;
+    font-size: 14px;
+}
+
+/* Suggestion card */
+.suggestion-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s ease;
+}
+
+
+.suggestions-panel {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eee;
+}
+
+
+    .suggestion-card:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+.suggestion-content {
+    flex: 1;
+}
+
+    .suggestion-content p {
+        margin: 5px 0;
+        font-size: 15px;
+        color: #333;
+    }
+
+.suggestion-actions {
+    display: flex;
+    gap: 10px;
+}
+
+    /* Button base */
+    .suggestion-actions button {
+        padding: 6px 14px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+/* Buttons */
+.btn-success {
+    background-color: #4caf50;
+    color: white;
+}
+
+    .btn-success:hover {
+        background-color: #388e3c;
+    }
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+    .btn-danger:hover {
+        background-color: #d32f2f;
+    }
+
+
+/* Applies only when there are no suggestions */
+.full-width-status {
+    justify-content: center;
+    min-height: 160px;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+    .full-width-status .status-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .full-width-status img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .full-width-status h3 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .full-width-status p {
+        font-size: 16px;
+        margin: 4px 0 0;
+    }
+
+
+
+/* Responsive */
 @media (max-width: 768px) {
     .suggestion-card {
         flex-direction: column;

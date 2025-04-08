@@ -1,59 +1,65 @@
 ﻿@model SolarflowClient.Models.ViewModels.Suggestions.GetSuggestionsViewModel
 
 @{
-    ViewData["Title"] = "Sugestões de Energia";
+    ViewData["Title"] = "Energy Suggestions";
 
-    var statusClass = "verde";
-    if (Model.Suggestions.Count == 1) statusClass = "amarelo";
-    else if (Model.Suggestions.Count > 1) statusClass = "vermelho";
+    var statusClass = "green";
+    if (Model.Suggestions.Count == 1) statusClass = "yellow";
+    else if (Model.Suggestions.Count > 1) statusClass = "red";
 }
 
 <link href="~/css/suggestion/suggestion.css" rel="stylesheet" asp-append-version="true" />
 
-<h1 class="page-title mb-4">📈 🧠 💡 ⚡ Notifications</h1>
+<h1 class="page-title mb-4">⚡ Suggestions</h1>
 
-
-<div class="sugestoes-container">
-    <div class="status-box @statusClass">
-        @if (!Model.Suggestions.Any())
-        {
-            <div class="status-content">
-                <img src="~/images/heart.png" alt="Coração" />
-                <div>
-                    <h3>Excelente!</h3>
-                    <p>O seu sistema tem as melhores configurações!</p>
+<div class="suggestions-container">
+    <div class="suggestions-panel">
+        <!-- NOVA DIV -->
+        <div class="status-box @statusClass">
+            @if (!Model.Suggestions.Any())
+            {
+                <div class="status-box @statusClass @(Model.Suggestions.Any() ? "" : "full-width-status")">
+                    <div class="status-content">
+                        <img src="~/images/heart.png" alt="Heart icon" />
+                        <div>
+                            <h3>Excellent!</h3>
+                            <p>Your system is using the best configurations!</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        }
-        else
+
+            }
+            else
+            {
+                <div class="status-content">
+                    <img src="~/images/@statusClass-alert.png" alt="Status icon" />
+                    <div>
+                        <h3>@(Model.Suggestions.Count == 1 ? "One suggestion available!" : "Multiple suggestions available!")</h3>
+                        <p>Check below to improve your system.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @foreach (var suggestion in Model.Suggestions)
         {
-            <div class="status-content">
-                <img src="~/img/@statusClass-face.svg" alt="Ícone de estado" />
-                <div>
-                    <h3>@(Model.Suggestions.Count == 1 ? "Há uma sugestão disponível!" : "Há várias sugestões pendentes!")</h3>
-                    <p>Veja abaixo como pode melhorar o seu sistema.</p>
+            <div class="suggestion-card">
+                <div class="suggestion-content">
+                    <p><strong>@suggestion.Title</strong></p>
+                    <p>@suggestion.Description</p>
+                </div>
+                <div class="suggestion-actions">
+                    <form asp-action="AcceptSuggestion" method="post">
+                        <input type="hidden" name="suggestionId" value="@suggestion.Id" />
+                        <button type="submit" class="btn btn-success">Accept</button>
+                    </form>
+                    <form asp-action="IgnoreSuggestion" method="post">
+                        <input type="hidden" name="suggestionId" value="@suggestion.Id" />
+                        <button type="submit" class="btn btn-danger">Ignore</button>
+                    </form>
                 </div>
             </div>
         }
     </div>
-
-    @foreach (var suggestion in Model.Suggestions)
-    {
-        <div class="suggestion-card">
-            <div class="suggestion-content">
-                <p><strong>@suggestion.Title</strong></p>
-                <p>@suggestion.Description</p>
-            </div>
-            <div class="suggestion-actions">
-                <form asp-action="AcceptSuggestion" method="post">
-                    <input type="hidden" name="suggestionId" value="@suggestion.Id" />
-                    <button type="submit" class="btn btn-success">Aceitar</button>
-                </form>
-                <form asp-action="IgnoreSuggestion" method="post">
-                    <input type="hidden" name="suggestionId" value="@suggestion.Id" />
-                    <button type="submit" class="btn btn-danger">Ignorar</button>
-                </form>
-            </div>
-        </div>
-    }
 </div>
+
