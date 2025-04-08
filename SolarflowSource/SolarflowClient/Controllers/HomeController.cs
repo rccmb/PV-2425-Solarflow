@@ -24,21 +24,55 @@ public class HomeController : Controller
             : new Uri("https://solarflowapi.azurewebsites.net/api/");
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
     {
+        startDate ??= DateTime.UtcNow;
+        endDate ??= DateTime.UtcNow.AddDays(1);
+
         // Energy Records
-        var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/consumption");
+        var consumptionUrl =
+            $"home/consumption?startDate={startDate.Value:O}&endDate={endDate.Value:O}";
+        var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, consumptionUrl);
         var energyResponse = await _httpClient.SendAsync(energyRequest);
         List<EnergyRecord> energyRecords = new();
 
         if (energyResponse.StatusCode == HttpStatusCode.Unauthorized)
-        {
             return RedirectToAction("Login", "Authentication");
-        }
-        else if (energyResponse.IsSuccessStatusCode)
+
+        if (energyResponse.IsSuccessStatusCode)
         {
             var energyJson = await energyResponse.Content.ReadAsStringAsync();
             energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
+        }
+
+
+        // Energy Records
+        var lastUrl = "home/consumption";
+        var eRequest = CreateAuthorizedRequest(HttpMethod.Get, lastUrl);
+        var eResponse = await _httpClient.SendAsync(eRequest);
+        List<EnergyRecord> eRecords = new();
+
+        if (eResponse.StatusCode == HttpStatusCode.Unauthorized)
+            return RedirectToAction("Login", "Authentication");
+
+        if (eResponse.IsSuccessStatusCode)
+        {
+            var eJson = await eResponse.Content.ReadAsStringAsync();
+            eRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(eJson);
+        }
+
+        // Forecast
+        var forecastRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/prevision");
+        var forecastResponse = await _httpClient.SendAsync(forecastRequest);
+        List<Forecast> forecast = new();
+
+        if (forecastResponse.StatusCode == HttpStatusCode.Unauthorized)
+            return RedirectToAction("Login", "Authentication");
+
+        if (forecastResponse.IsSuccessStatusCode)
+        {
+            var forecastJson = await forecastResponse.Content.ReadAsStringAsync();
+            forecast = JsonSerializer.Deserialize<List<Forecast>>(forecastJson);
         }
 
         // Battery
@@ -47,22 +81,20 @@ public class HomeController : Controller
         Battery battery = null;
 
         if (batteryResponse.StatusCode == HttpStatusCode.Unauthorized)
-        {
             return RedirectToAction("Login", "Authentication");
-        }
-        else if (batteryResponse.IsSuccessStatusCode)
+
+        if (batteryResponse.IsSuccessStatusCode)
         {
             var batteryJson = await batteryResponse.Content.ReadAsStringAsync();
-            Console.Write(batteryJson);
             battery = JsonSerializer.Deserialize<Battery>(batteryJson);
         }
 
         var viewModel = new HomeViewModel
         {
-            EnergyRecord = energyRecords.LastOrDefault(),
+            EnergyRecord = eRecords.LastOrDefault(),
             EnergyRecords = energyRecords,
             Battery = battery,
-            Forecast = null
+            Forecast = forecast
         };
 
         return View(viewModel);
@@ -101,58 +133,6 @@ public class HomeController : Controller
         var requestMessage = new HttpRequestMessage(method, url);
         requestMessage.Headers.Add("Authorization", $"Bearer {token}");
         return requestMessage;
-    }
-
-    
-    [HttpGet]
-    public async Task<ActionResult> GetPrevisionChartData()
-    {
-        // Receive json from server
-        var response = await _httpClient.GetAsync("home/prevision");
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-        var json = await response.Content.ReadAsStringAsync();
-
-        // Convert json to data
-        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
-
-        var forecastDate = new List<string>();
-        var solarHours = new List<int>();
-
-        foreach (var item in data)
-        {
-            forecastDate.Add(item.ForecastDate);
-            solarHours.Add(item.SolarHoursExpected);
-        }
-
-        // Prepare chart using data
-        var chart = new
-        {
-            type = "line",
-            data = new
-            {
-                labels = forecastDate,
-                datasets = new[]
-                {
-                    new
-                    {
-                        label = "Prevision",
-                        data = solarHours,
-                        fill = true,
-                        backgroundColor = "rgba(231,187,65, 0.6)",
-                        borderColor = "rgba(231,187,65, 1)",
-                        borderWidth = 1
-                    }
-                }
-            },
-            options = new
-            {
-                responsive = true,
-                maintainAspectRatio = false,
-                plugins = new { legend = new { display = false } }
-            }
-        };
-
-        return Json(chart);
     }
 
 

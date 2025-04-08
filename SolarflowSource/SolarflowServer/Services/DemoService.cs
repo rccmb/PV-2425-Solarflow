@@ -15,6 +15,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         foreach (var hub in hubs) await DemoEnergyIteration(hub.Id);
     }
 
+
     public async Task DemoEnergyIteration(int hubId)
     {
         // Parameters
