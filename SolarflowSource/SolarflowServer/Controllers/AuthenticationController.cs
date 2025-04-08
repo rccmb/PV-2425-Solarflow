@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
-using SolarflowServer.Services;
+using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Controllers;
 
@@ -79,6 +79,27 @@ public class AuthenticationController : ControllerBase
         _context.Batteries.Add(battery);
         await _context.SaveChangesAsync();
 
+        var random = new Random();
+        var hub = new Hub()
+        {
+            UserId = user.Id,
+            // Latitude: 35 to 70 (Europe)
+            Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
+            // Longitude: -10 to 40 (Europe)
+            Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5),
+            GridKWh = 10.35,
+            BatteryId = battery.Id,
+            // DemoSolar: random value between 5 kWh and 100 kWh
+            DemoSolar =  Math.Round(random.NextDouble() * (100 - 5) + 5,2),
+            // DemoConsumption: random value between 5 and 15 kWh
+            DemoConsumption =  Math.Round(random.NextDouble() * 10 + 5,2),
+            // DemoPeople: random integer from 1 to 5
+            DemoPeople = random.Next(1, 6)
+        };
+
+        _context.Hubs.Add(hub);
+        await _context.SaveChangesAsync();
+
         // Confirmation Link
         var baseUrlClient = _configuration["BaseUrlClient"];
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -94,8 +115,7 @@ public class AuthenticationController : ControllerBase
 
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered",
-            GetClientIPAddress());
+        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered", GetClientIPAddress());
 
         return Ok(new { message = "User registered successfully!" });
     }
@@ -121,8 +141,7 @@ public class AuthenticationController : ControllerBase
 
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Email Confirmation", "Resent Email Confirmation",
-            GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Email Confirmation", "Resent Email Confirmation", GetClientIPAddress());
 
         return Ok(new { message = "Email confirmation link sent successfully!" });
     }
@@ -155,8 +174,7 @@ public class AuthenticationController : ControllerBase
 
         user.ViewAccount = viewAccount;
 
-        await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered",
-            GetClientIPAddress());
+        // await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered", GetClientIPAddress());
         return Ok(new { message = "ViewAccount registered successfully!" });
     }
 
@@ -202,8 +220,7 @@ public class AuthenticationController : ControllerBase
             };
             Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
 
-            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In",
-                GetClientIPAddress());
+            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
             return Ok(new { token = viewToken });
         }
 
@@ -218,8 +235,7 @@ public class AuthenticationController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var email = User.FindFirstValue(ClaimTypes.Email);
 
-        if (userId != null)
-            await _auditService.LogAsync(userId, "Authentication", "User Logged Out", GetClientIPAddress());
+        // if (userId != null) await _auditService.LogAsync(userId, "Authentication", "User Logged Out", GetClientIPAddress());
 
         return Ok(new { message = "User logged out successfully!" });
     }
@@ -262,7 +278,7 @@ public class AuthenticationController : ControllerBase
         var result = await _userManager.ConfirmEmailAsync(user, model.Token);
         if (!result.Succeeded) return BadRequest(new { message = "Invalid request." });
 
-        await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Email Confirmed", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Email Confirmed", GetClientIPAddress());
         return Ok(new { message = "Email confirmed successfully!" });
     }
 
@@ -288,8 +304,7 @@ public class AuthenticationController : ControllerBase
         await _emailSender.SendMessage(message);
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Forgot Password Requested",
-            GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Forgot Password Requested", GetClientIPAddress());
 
         return Ok(new { message = "If the email exists, a reset link has been sent." });
     }
@@ -305,7 +320,7 @@ public class AuthenticationController : ControllerBase
         var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Password Reset", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "Authentication", "Password Reset", GetClientIPAddress());
         return Ok(new { message = "Password reset successfully!" });
     }
 
@@ -318,7 +333,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
 
         var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
 
@@ -336,7 +351,6 @@ public class AuthenticationController : ControllerBase
             HasViewAccount = viewAccount != null
         };
 
-        await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Retrieved", GetClientIPAddress());
         return Ok(userDTO);
     }
 
@@ -349,7 +363,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
         var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
 
         if (user == null)
@@ -359,7 +373,7 @@ public class AuthenticationController : ControllerBase
 
         await _userManager.UpdateAsync(user);
 
-        await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
         return Ok(new { message = "User updated successfully!" });
     }
 
@@ -372,7 +386,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized(new { error = "User not authenticated." });
 
         if (!int.TryParse(userId, out var parsedUserId))
-            return BadRequest(new { error = "Invalid user ID" });
+            return BadRequest(new { error = "Invalid user Id" });
 
         var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
 
@@ -389,7 +403,7 @@ public class AuthenticationController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(new { error = "An error occurred while deleting the View Account." });
 
-        await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
+        // await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
         return Ok(new { message = "View Account deleted successfully!" });
     }
 

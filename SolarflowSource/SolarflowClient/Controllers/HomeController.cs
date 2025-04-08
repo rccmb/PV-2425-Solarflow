@@ -1,344 +1,236 @@
-﻿using System.Net.Http.Headers;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SolarflowClient.Models;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace SolarflowClient.Controllers
+namespace SolarflowClient.Controllers;
+
+public class HomeController : Controller
 {
+    private readonly IConfiguration _configuration;
+    private readonly HttpClient _httpClient;
 
-    public class HomeController : Controller
+    public HomeController(HttpClient httpClient, IConfiguration configuration)
     {
-        private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration;
+        _httpClient = httpClient;
+        _configuration = configuration;
 
-        public HomeController(HttpClient httpClient, IConfiguration configuration)
-        {
-            _httpClient = httpClient;
-            _configuration = configuration;
+        _httpClient.BaseAddress = _configuration["Environment"].Equals("Development")
+            ? new Uri("https://localhost:7280/api/")
+            : new Uri("https://solarflowapi.azurewebsites.net/api/");
+    }
 
-            if (_configuration["Environment"].Equals("Development"))
-            {
-                _httpClient.BaseAddress = new Uri("https://localhost:7280/api/");
-            }
-            else
-            {
-                _httpClient.BaseAddress = new Uri("https://solarflowapi.azurewebsites.net/api/");
-            }
-        }
+    public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
+    {
+        startDate ??= DateTime.UtcNow;
+        endDate ??= DateTime.UtcNow.AddDays(1);
 
-        public IActionResult Index()
-        {
-            var token = Request.Cookies["AuthToken"];
+        // Energy Records
+        var consumptionUrl =
+            $"home/consumption?startDate={startDate.Value:O}&endDate={endDate.Value:O}";
+        var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, consumptionUrl);
+        var energyResponse = await _httpClient.SendAsync(energyRequest);
+        List<EnergyRecord> energyRecords = new();
 
-            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Authentication");
-
-            return View();
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> GetDashboardData()
-        {
-            // Receive json from server
-            var response = await _httpClient.GetAsync("home/latest");
-            if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-            var json = await response.Content.ReadAsStringAsync();
-
-            // Convert json to data
-            var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(json);
-
-            var dashboardData = new
-            {
-                lastUpdate = data[0].Date,
-                energyUsage = data[0].Consumption
-            };
-
-
-            return Json(dashboardData);
-        }
-
-
-        [HttpGet]
-        public async Task<ActionResult> GetWeatherImage()
-        {
-            // Fetch the forecast data from the API
-            var response = await _httpClient.GetAsync("home/prevision");
-            if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-
-            var json = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
-
-            // Determine the image based on weather condition
-            var weatherCondition = data[0].WeatherCondition.ToLower();
-            var imageUrl = weatherCondition switch
-            {
-                "partly cloudy" => "/images/weather/partly_cloudy.png",
-                "cloudy" => "/images/weather/cloudy.png",
-                "very cloudy" => "/images/weather/very_cloudy.png",
-                _ => "/images/weather/clear.png"
-            };
-
-            return Json(new { imageUrl });
-        }
-
-        public async Task<ActionResult> ExportCSV()
-        {
-            // Receive json from server
-            var response = await _httpClient.GetAsync("home/consumption");
-            if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-            var json = await response.Content.ReadAsStringAsync();
-
-            // Convert json to data
-            var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(json);
-
-            // Prepare CSV using data
-            var csvData = new StringBuilder();
-            csvData.AppendLine("Date,Gain,Consumption"); // Header
-            foreach (var item in data) csvData.AppendLine($"{item.Date},{item.Gain},{item.Consumption}");
-            var fileBytes = Encoding.UTF8.GetBytes(csvData.ToString());
-
-            return File(fileBytes, "text/csv", "data.csv");
-        }
-
-
-        [HttpGet]
-        public async Task<ActionResult> GetPrevisionChartData()
-        {
-            // Receive json from server
-            var response = await _httpClient.GetAsync("home/prevision");
-            if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-            var json = await response.Content.ReadAsStringAsync();
-
-            // Convert json to data
-            var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
-
-            var forecastDate = new List<string>();
-            var solarHours = new List<int>();
-
-            foreach (var item in data)
-            {
-                forecastDate.Add(item.ForecastDate);
-                solarHours.Add(item.SolarHoursExpected);
-            }
-
-            // Prepare chart using data
-            var chart = new
-            {
-                type = "line",
-                data = new
-                {
-                    labels = forecastDate,
-                    datasets = new[]
-                    {
-                        new
-                        {
-                            label = "Prevision",
-                            data = solarHours,
-                            fill = true,
-                            backgroundColor = "rgba(231,187,65, 0.6)",
-                            borderColor = "rgba(231,187,65, 1)",
-                            borderWidth = 1
-                        }
-                    }
-                },
-                options = new
-                {
-                    responsive = true,
-                    maintainAspectRatio = false,
-                    plugins = new { legend = new { display = false } }
-                }
-            };
-
-            return Json(chart);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> GetConsumptionChartData()
-        {
-            // Receive json from server
-            var response = await _httpClient.GetAsync("home/consumption");
-            if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
-            var jsonString = await response.Content.ReadAsStringAsync();
-
-            // Convert json to data
-            var data = JsonConvert.DeserializeObject<List<ConsumptionData>>(jsonString);
-
-            var date = new List<string>();
-            var consumption = new List<int>();
-            var gain = new List<int>();
-
-            foreach (var item in data)
-            {
-                date.Add(item.Date);
-                consumption.Add(item.Consumption);
-                gain.Add(item.Gain);
-            }
-
-            // Prepare chart using data
-            var chart = new
-            {
-                type = "line",
-                data = new
-                {
-                    labels = date,
-                    datasets = new[]
-                    {
-                        new
-                        {
-                            label = "Gains",
-                            data = gain,
-                            fill = true,
-                            backgroundColor = "rgba(231,187,65, 0.6)",
-                            borderColor = "rgba(231,187,65, 1)",
-                            borderWidth = 1
-                        },
-                        new
-                        {
-                            label = "Consumption",
-                            data = consumption,
-                            fill = true,
-                            backgroundColor = "rgba(57,62,65, 0.6)",
-                            borderColor = "rgba(57,62,65, 1)",
-                            borderWidth = 1
-                        }
-                    }
-                },
-                options = new
-                {
-                    responsive = true,
-                    maintainAspectRatio = false,
-                    plugins = new { legend = new { display = false } }
-                }
-            };
-
-            return Json(chart);
-        }
-
-        [HttpGet]
-        public IActionResult GetBatteryChartData()
-        {
-            // TODO: Get Battery Data
-            var random = new Random();
-            var valuesBattery = random.Next(0, 101);
-            ;
-
-            var (backgroundColor, borderColor) = valuesBattery switch
-            {
-                >= 60 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
-                >= 40 => ("rgba(243, 146, 55, 0.6)", "rgba(243, 146, 55, 1)"),
-                _ => ("rgba(219, 83, 117, 0.6)", "rgba(219, 83, 117, 1)")
-            };
-
-            var chart = new
-            {
-                type = "bar",
-                data = new
-                {
-                    labels = new[] { "" },
-                    datasets = new[]
-                    {
-                        new
-                        {
-                            label = "Charge",
-                            data = new[] { valuesBattery },
-                            backgroundColor = new[] { backgroundColor },
-                            borderColor = new[] { borderColor },
-                            borderWidth = 1
-                        }
-                    }
-                },
-                options = new
-                {
-                    responsive = true,
-                    maintainAspectRatio = false,
-                    plugins = new { legend = new { display = false } },
-                    scales = new
-                    {
-                        y = new
-                        {
-                            min = 0,
-                            max = 100,
-                            ticks = new { stepSize = 10 }
-                        }
-                    }
-                }
-            };
-
-            return Json(chart);
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> Logout()
-        {
-            var token = Request.Cookies["AuthToken"];
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, "auth/logout");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                await _httpClient.SendAsync(request);
-            }
-
-            Response.Cookies.Delete("AuthToken");
-
+        if (energyResponse.StatusCode == HttpStatusCode.Unauthorized)
             return RedirectToAction("Login", "Authentication");
+
+        if (energyResponse.IsSuccessStatusCode)
+        {
+            var energyJson = await energyResponse.Content.ReadAsStringAsync();
+            energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
         }
 
 
-        public IActionResult AccessDenied()
+        // Energy Records
+        var lastUrl = "home/consumption";
+        var eRequest = CreateAuthorizedRequest(HttpMethod.Get, lastUrl);
+        var eResponse = await _httpClient.SendAsync(eRequest);
+        List<EnergyRecord> eRecords = new();
+
+        if (eResponse.StatusCode == HttpStatusCode.Unauthorized)
+            return RedirectToAction("Login", "Authentication");
+
+        if (eResponse.IsSuccessStatusCode)
         {
-            return View();
+            var eJson = await eResponse.Content.ReadAsStringAsync();
+            eRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(eJson);
         }
 
-        public IActionResult RegisterViewAccount()
+        // Forecast
+        var forecastRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/prevision");
+        var forecastResponse = await _httpClient.SendAsync(forecastRequest);
+        List<Forecast> forecast = new();
+
+        if (forecastResponse.StatusCode == HttpStatusCode.Unauthorized)
+            return RedirectToAction("Login", "Authentication");
+
+        if (forecastResponse.IsSuccessStatusCode)
         {
-            return View("~/Views/Users/RegisterViewAccount.cshtml");
+            var forecastJson = await forecastResponse.Content.ReadAsStringAsync();
+            forecast = JsonSerializer.Deserialize<List<Forecast>>(forecastJson);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> RegisterViewAccount(string Password)
+        // Battery
+        var batteryRequest = CreateAuthorizedRequest(HttpMethod.Get, "Battery/get-battery");
+        var batteryResponse = await _httpClient.SendAsync(batteryRequest);
+        Battery battery = null;
+
+        if (batteryResponse.StatusCode == HttpStatusCode.Unauthorized)
+            return RedirectToAction("Login", "Authentication");
+
+        if (batteryResponse.IsSuccessStatusCode)
         {
-            var token = Request.Cookies["AuthToken"];
+            var batteryJson = await batteryResponse.Content.ReadAsStringAsync();
+            battery = JsonSerializer.Deserialize<Battery>(batteryJson);
+        }
+
+        var viewModel = new HomeViewModel
+        {
+            EnergyRecord = eRecords.LastOrDefault(),
+            EnergyRecords = energyRecords,
+            Battery = battery,
+            Forecast = forecast
+        };
+
+        return View(viewModel);
+    }
+
+    public async Task<ActionResult> Export()
+    {
+        // Fetch energy records
+        var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/consumption");
+        var energyResponse = await _httpClient.SendAsync(energyRequest);
+        if (!energyResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch energy records from the server.");
+        var energyJson = await energyResponse.Content.ReadAsStringAsync();
+        var energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
+
+        // Prepare CSV
+        var csvData = new StringBuilder();
+        csvData.AppendLine("ID,HUB_ID,HOUSE,GRID,SOLAR,BATTERY"); // Header
+        foreach (var record in energyRecords)
+            csvData.AppendLine(
+                $"{record.Id},{record.HubId},{record.House}, {record.Grid}, {record.Solar}, {record.Battery}");
+        var fileBytes = Encoding.UTF8.GetBytes(csvData.ToString());
+
+        return File(fileBytes, "text/csv", "data.csv");
+    }
 
 
-            var requestData = new
-            {
-                Password
-            };
+    private HttpRequestMessage CreateAuthorizedRequest(HttpMethod method, string url)
+    {
+        var token = Request.Cookies["AuthToken"];
+        if (string.IsNullOrEmpty(token)) throw new Exception("Authorization token is missing.");
 
-            var jsonContent =
-                new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
+        // Optionally, validate or inspect the token:
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "auth/register-view")
-            {
-                Content = jsonContent
-            };
+        var requestMessage = new HttpRequestMessage(method, url);
+        requestMessage.Headers.Add("Authorization", $"Bearer {token}");
+        return requestMessage;
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        var token = Request.Cookies["AuthToken"];
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "auth/logout");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await _httpClient.SendAsync(request);
-
-            if (response.IsSuccessStatusCode) return RedirectToAction("Index");
-
-            ViewBag.ErrorMessage = "Error registering the View Account.";
-            return View("Index");
+            await _httpClient.SendAsync(request);
         }
 
-        public class ForecastData
+        Response.Cookies.Delete("AuthToken");
+
+        return RedirectToAction("Login", "Authentication");
+    }
+
+
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
+
+    public IActionResult RegisterViewAccount()
+    {
+        return View("~/Views/Users/RegisterViewAccount.cshtml");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RegisterViewAccount(string Password)
+    {
+        var token = Request.Cookies["AuthToken"];
+
+
+        var requestData = new
         {
-            public string ForecastDate { get; set; }
+            Password
+        };
 
-            public int SolarHoursExpected { get; set; }
+        var jsonContent =
+            new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
 
-            public string WeatherCondition { get; set; }
-        }
-
-        public class ConsumptionData
+        var request = new HttpRequestMessage(HttpMethod.Post, "auth/register-view")
         {
-            public string Date { get; set; }
+            Content = jsonContent
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            public int Consumption { get; set; }
+        var response = await _httpClient.SendAsync(request);
 
-            public int Gain { get; set; }
-        }
+        if (response.IsSuccessStatusCode) return RedirectToAction("Index");
+
+        ViewBag.ErrorMessage = "Error registering the View Account.";
+        return View("Index");
+    }
+
+
+    [HttpGet]
+    public async Task<ActionResult> GetWeatherImage()
+    {
+        // Fetch the forecast data from the API
+        var response = await _httpClient.GetAsync("home/prevision");
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to fetch data from the server.");
+
+        var json = await response.Content.ReadAsStringAsync();
+        var data = JsonConvert.DeserializeObject<List<ForecastData>>(json);
+
+        // Determine the image based on weather condition
+        var weatherCondition = data[0].WeatherCondition.ToLower();
+        var imageUrl = weatherCondition switch
+        {
+            "partly cloudy" => "/images/weather/partly_cloudy.png",
+            "cloudy" => "/images/weather/cloudy.png",
+            "very cloudy" => "/images/weather/very_cloudy.png",
+            _ => "/images/weather/clear.png"
+        };
+
+        return Json(new { imageUrl });
+    }
+
+    public class ForecastData
+    {
+        public string ForecastDate { get; set; }
+
+        public int SolarHoursExpected { get; set; }
+
+        public string WeatherCondition { get; set; }
+    }
+
+    public class ConsumptionData
+    {
+        public string Date { get; set; }
+
+        public int Consumption { get; set; }
+
+        public int Gain { get; set; }
     }
 }
