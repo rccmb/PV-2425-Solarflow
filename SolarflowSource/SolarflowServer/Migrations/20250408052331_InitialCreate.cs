@@ -183,7 +183,7 @@ namespace SolarflowServer.Migrations
                 name: "Batteries",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ChargeLevel = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     MaxKW = table.Column<int>(type: "int", nullable: false),
@@ -198,7 +198,7 @@ namespace SolarflowServer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Batteries", x => x.ID);
+                    table.PrimaryKey("PK_Batteries", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Batteries_Users_UserId",
                         column: x => x.UserId,
@@ -273,6 +273,7 @@ namespace SolarflowServer.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BatteryID = table.Column<int>(type: "int", nullable: false),
                     ForecastDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    kwh = table.Column<double>(type: "float", nullable: false),
                     SolarHoursExpected = table.Column<double>(type: "float", nullable: false),
                     WeatherCondition = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
@@ -283,7 +284,87 @@ namespace SolarflowServer.Migrations
                         name: "FK_Forecasts_Batteries_BatteryID",
                         column: x => x.BatteryID,
                         principalTable: "Batteries",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Hubs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    GridKWh = table.Column<double>(type: "float", nullable: false),
+                    BatteryId = table.Column<int>(type: "int", nullable: false),
+                    DemoSolar = table.Column<double>(type: "float", nullable: false),
+                    DemoConsumption = table.Column<double>(type: "float", nullable: false),
+                    DemoPeople = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Hubs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Hubs_Batteries_BatteryId",
+                        column: x => x.BatteryId,
+                        principalTable: "Batteries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Hubs_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Suggestions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    TimeSent = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    BatteryId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Suggestions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Suggestions_Batteries_BatteryId",
+                        column: x => x.BatteryId,
+                        principalTable: "Batteries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EnergyRecords",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HubId = table.Column<int>(type: "int", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    House = table.Column<double>(type: "float", nullable: false),
+                    Grid = table.Column<double>(type: "float", nullable: false),
+                    Solar = table.Column<double>(type: "float", nullable: false),
+                    Battery = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EnergyRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EnergyRecords_Hubs_HubId",
+                        column: x => x.HubId,
+                        principalTable: "Hubs",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -321,14 +402,35 @@ namespace SolarflowServer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_EnergyRecords_HubId",
+                table: "EnergyRecords",
+                column: "HubId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Forecasts_BatteryID",
                 table: "Forecasts",
                 column: "BatteryID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Hubs_BatteryId",
+                table: "Hubs",
+                column: "BatteryId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Hubs_UserId",
+                table: "Hubs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_UserId",
                 table: "Notifications",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Suggestions_BatteryId",
+                table: "Suggestions",
+                column: "BatteryId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -371,16 +473,25 @@ namespace SolarflowServer.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
+                name: "EnergyRecords");
+
+            migrationBuilder.DropTable(
                 name: "Forecasts");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
 
             migrationBuilder.DropTable(
+                name: "Suggestions");
+
+            migrationBuilder.DropTable(
                 name: "ViewAccounts");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Hubs");
 
             migrationBuilder.DropTable(
                 name: "Batteries");

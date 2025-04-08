@@ -4,6 +4,7 @@ using SolarflowServer.DTOs.Notification;
 
 namespace SolarflowServer.Services
 {
+    // Defines the contract for all notification-related operations
     public interface INotificationService
     {
         Task<IEnumerable<NotificationDto>> GetNotificationsAsync(int userId);

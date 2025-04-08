@@ -1,74 +1,56 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SolarflowServer.Services;
+using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class HomeController : ControllerBase
+public class HomeController(
+    IEnergyRecordService energyRecordService,
+    ForecastService forecastService,
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager) : Controller
 {
-
-    [HttpGet("latest")]
-    public IActionResult GetLatestData()
-    {
-        // TODO: Get Consumption Data
-        const int days = 1;
-        var random = new Random();
-        var startDate = DateTime.Today;
-        var data = Enumerable.Range(0, days)
-            .Select(i => new
-            {
-                date = startDate.AddDays(i).ToString("dd/MM"),
-                consumption = random.Next(-100, 0),
-                gain = random.Next(0, 50)
-            })
-            .ToArray();
-
-        var jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-
-        return Content(jsonString, "application/json");
-    }
-
     [HttpGet("consumption")]
-    public IActionResult GetConsumptionData()
+    public async Task<IActionResult> GetConsumptionData(int? hubId, DateTime? startDate, DateTime? endDate)
     {
-        // TODO: Get Consumption Data
-        const int days = 8;
-        var random = new Random();
-        var startDate = DateTime.Today;
-        var data = Enumerable.Range(0, days)
-            .Select(i => new
-            {
-                date = startDate.AddDays(i).ToString("dd/MM"),
-                consumption = random.Next(-100, 0),
-                gain = random.Next(0, 50)
-            })
-            .ToArray();
+        // Fetch the user
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+            return Unauthorized(); // Return unauthorized if user is not found
 
-        var jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
 
-        return Content(jsonString, "application/json");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized(new { error = "User not authenticated." });
+
+
+        Console.WriteLine(startDate);
+
+        // Fetch data from the service
+        var data = await energyRecordService.GetEnergyRecords(user.Id, hubId, startDate, endDate);
+        return Json(data);
     }
 
     [HttpGet("prevision")]
     public async Task<IActionResult> GetPrevisionData()
     {
-        // TODO: Get real data
-        const int days = 8;
-        var startDate = DateTime.Today;
-        var random = new Random();
-        string[] weatherOptions = { "Clear", "Partly Cloudy", "Cloudy", "Very Cloudy" };
-        var data = Enumerable.Range(0, days)
-            .Select(i => new
-            {
-                forecastDate = startDate.AddDays(i).ToString("dd/MM"),
-                solarHoursExpected = random.Next(0, 50),
-                weatherCondition = weatherOptions[random.Next(weatherOptions.Length)] // Randomly select weather
-            })
-            .ToArray();
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+            return Unauthorized();
 
-        var jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized(new { error = "User not authenticated." });
 
-        return Content(jsonString, "application/json");
+        var firstHub = context.Hubs.First(h => h.UserId == user.Id);
+        var data = await forecastService.GetForecast(firstHub.Latitude, firstHub.Longitude);
+        Console.WriteLine(data);
+        return Json(data);
     }
 }

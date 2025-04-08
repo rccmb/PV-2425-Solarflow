@@ -1,11 +1,65 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model SolarflowClient.Models.ViewModels.Suggestions.GetSuggestionsViewModel
+
 @{
-    ViewData["Title"] = "Suggestions Page";
-    var authToken = Context.Request.Cookies["AuthToken"];
+    ViewData["Title"] = "Energy Suggestions";
+
+    var statusClass = "green";
+    if (Model.Suggestions.Count == 1) statusClass = "yellow";
+    else if (Model.Suggestions.Count > 1) statusClass = "red";
 }
 
-<link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/suggestion/suggestion.css" rel="stylesheet" asp-append-version="true" />
 
-<h1 class="page-title">Suggestions</h1>
+<h1 class="page-title mb-4">⚡ Suggestions</h1>
+
+<div class="suggestions-container">
+    <div class="suggestions-panel">
+        <!-- NOVA DIV -->
+        <div class="status-box @statusClass">
+            @if (!Model.Suggestions.Any())
+            {
+                <div class="status-box @statusClass @(Model.Suggestions.Any() ? "" : "full-width-status")">
+                    <div class="status-content">
+                        <img src="~/images/heart.png" alt="Heart icon" />
+                        <div>
+                            <h3>Excellent!</h3>
+                            <p>Your system is using the best configurations!</p>
+                        </div>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+                <div class="status-content">
+                    <img src="~/images/@statusClass-alert.png" alt="Status icon" />
+                    <div>
+                        <h3>@(Model.Suggestions.Count == 1 ? "One suggestion available!" : "Multiple suggestions available!")</h3>
+                        <p>Check below to improve your system.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @foreach (var suggestion in Model.Suggestions)
+        {
+            <div class="suggestion-card">
+                <div class="suggestion-content">
+                    <p><strong>@suggestion.Title</strong></p>
+                    <p>@suggestion.Description</p>
+                </div>
+                <div class="suggestion-actions">
+                    <form asp-action="AcceptSuggestion" method="post">
+                        <input type="hidden" name="suggestionId" value="@suggestion.Id" />
+                        <button type="submit" class="btn btn-success">Accept</button>
+                    </form>
+                    <form asp-action="IgnoreSuggestion" method="post">
+                        <input type="hidden" name="suggestionId" value="@suggestion.Id" />
+                        <button type="submit" class="btn btn-danger">Ignore</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

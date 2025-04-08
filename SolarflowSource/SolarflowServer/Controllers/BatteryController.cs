@@ -8,6 +8,7 @@ using SolarflowServer.Services;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using SolarflowServer.Services.Interfaces;
 
 [Authorize]
 [ApiController]
@@ -35,24 +36,13 @@ public class BatteryController : ControllerBase
 
         var battery = await _context.Batteries
             .Where(b => b.UserId == parsedUserId)
-            .Select(b => new BatteryDTO
-            {
-                ChargingSource = b.ChargingSource,
-                BatteryMode = b.BatteryMode,
-                MinimalTreshold = b.MinimalTreshold,
-                MaximumTreshold = b.MaximumTreshold,
-                SpendingStartTime = b.SpendingStartTime,
-                SpendingEndTime = b.SpendingEndTime
-            })
             .FirstOrDefaultAsync();
 
         if (battery == null)
         {
-            await _auditService.LogAsync(userId, "Battery Access", "Failed - Not Found", GetClientIPAddress());
             return NotFound(new { error = "Battery not found" });
         }
 
-        await _auditService.LogAsync(userId, "Battery Access", "Battery Data Retrieved", GetClientIPAddress());
         return Ok(battery);
     }
 
@@ -79,7 +69,7 @@ public class BatteryController : ControllerBase
         var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == parsedUserId);
         if (battery == null)
         {
-            await _auditService.LogAsync(userId, "Battery Update", "Failed - Not Found", GetClientIPAddress());
+            // await _auditService.LogAsync(userId, "Battery Update", "Failed - Not Found", GetClientIPAddress());
             return NotFound(new { error = "Battery not found" });
         }
 
@@ -94,7 +84,7 @@ public class BatteryController : ControllerBase
         _context.Batteries.Update(battery);
         await _context.SaveChangesAsync();
 
-        await _auditService.LogAsync(userId, "Battery Update", "Battery Successfully Updated", GetClientIPAddress());
+        // await _auditService.LogAsync(userId, "Battery Update", "Battery Successfully Updated", GetClientIPAddress());
         return Ok(new { message = "Battery settings updated successfully!" });
     }
 

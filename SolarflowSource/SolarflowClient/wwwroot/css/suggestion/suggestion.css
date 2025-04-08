@@ -1,0 +1,192 @@
+﻿.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+/* Suggestions Page Container */
+.suggestions-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* Title */
+.page-title {
+    font-size: 34px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #222;
+    margin-bottom: 30px;
+}
+
+/* STATUS BANNER */
+.status-box {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    color: #fff;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-box img {
+    width: 36px;
+    height: 36px;
+}
+
+/* Status Colors */
+.status-box.green {
+    background-color: #e6f4ea;
+    color: #2e7d32;
+}
+
+.status-box.yellow {
+    background-color: #fff4ce;
+    color: #8a6d3b;
+}
+
+.status-box.red {
+    background-color: #f8d7da;
+    color: #a94442;
+}
+
+/* Adjust text */
+.status-box h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.status-box p {
+    margin: 4px 0 0;
+    font-size: 14px;
+}
+
+/* Suggestion card */
+.suggestion-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s ease;
+}
+
+
+.suggestions-panel {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eee;
+}
+
+
+    .suggestion-card:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+.suggestion-content {
+    flex: 1;
+}
+
+    .suggestion-content p {
+        margin: 5px 0;
+        font-size: 15px;
+        color: #333;
+    }
+
+.suggestion-actions {
+    display: flex;
+    gap: 10px;
+}
+
+    /* Button base */
+    .suggestion-actions button {
+        padding: 6px 14px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+/* Buttons */
+.btn-success {
+    background-color: #4caf50;
+    color: white;
+}
+
+    .btn-success:hover {
+        background-color: #388e3c;
+    }
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+    .btn-danger:hover {
+        background-color: #d32f2f;
+    }
+
+
+/* Applies only when there are no suggestions */
+.full-width-status {
+    justify-content: center;
+    min-height: 160px;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+    .full-width-status .status-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .full-width-status img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .full-width-status h3 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .full-width-status p {
+        font-size: 16px;
+        margin: 4px 0 0;
+    }
+
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .suggestion-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .suggestion-actions {
+        margin-top: 15px;
+    }
+}
