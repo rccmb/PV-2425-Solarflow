@@ -22,6 +22,8 @@ namespace SolarflowServer.Controllers
             _context = context;
         }
 
+        // POST: api/suggestion/create/{userId}
+        // Generates suggestions for the battery associated with the given user
         [HttpPost("create/{userId}")]
         public async Task<IActionResult> CreateSuggestions(int userId)
         {
@@ -35,6 +37,8 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestions processed successfully" });
         }
 
+        // GET: api/suggestion/get/{userId}
+        // Returns all pending suggestions for the user's battery
         [HttpGet("get/{userId}")]
         public async Task<IActionResult> GetSuggestions(int userId)
         {
@@ -47,6 +51,8 @@ namespace SolarflowServer.Controllers
             return Ok(suggestions);
         }
 
+        // POST: api/suggestion/apply/{id}
+        // Applies the logic of a suggestion and updates the battery
         [HttpPost("apply/{id}")]
         public async Task<IActionResult> ApplySuggestion(int id)
         {
@@ -54,6 +60,8 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion applied successfully." });
         }
 
+        // POST: api/suggestion/ignore/{id}
+        // Marks a suggestion as ignored (won't be applied)
         [HttpPost("ignore/{id}")]
         public async Task<IActionResult> IgnoreSuggestion(int id)
         {
@@ -61,6 +69,8 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion ignored successfully." });
         }
 
+        // POST: api/suggestion/clean
+        // Removes all suggestions older than today
         [HttpPost("clean")]
         public async Task<IActionResult> CleanOldSuggestions()
         {
@@ -68,6 +78,8 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Old suggestions cleaned successfully." });
         }
 
+        // POST: api/suggestion/add-test-suggestions
+        // Creates two sample suggestions for testing/demo purposes
         [HttpPost("add-test-suggestions")]
         public async Task<IActionResult> AddTestSuggestions()
         {
@@ -77,7 +89,6 @@ namespace SolarflowServer.Controllers
                 return NotFound(new { message = "Battery not found for this user." });
             }
 
-            // Adiciona a primeira sugestão de teste
             var suggestion1 = new Suggestion
             {
                 BatteryId = 1,
@@ -88,14 +99,13 @@ namespace SolarflowServer.Controllers
                 TimeSent = DateTime.UtcNow
             };
 
-            // Adiciona a segunda sugestão de teste
             var suggestion2 = new Suggestion
             {
                 BatteryId = 1,
                 Title = "Test Suggestion 2",
                 Description = "This is the second test suggestion.",
                 Status = SuggestionStatus.Pending,
-                Type = SuggestionType.EnableEmergencyMode,
+                Type = SuggestionType.RaiseBatteryThreshold,
                 TimeSent = DateTime.UtcNow
             };
 
