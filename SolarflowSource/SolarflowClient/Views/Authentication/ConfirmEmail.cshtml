@@ -12,48 +12,20 @@
 @model SolarflowClient.Models.ViewModels.Authentication.ConfirmEmailViewModel
 
 <body class="authentication-body">
-        
-    @if (ViewBag.Message != null)
-    {
-        <div class="alert alert-success">@ViewBag.Message</div>
-    }
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-
-    <div style="margin-top: 30px">
-        <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
-        <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
-        <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
-    </div>
-
-    <h1 class="authentication-form-title" style="text-align: center">Email Confirmation</h1>
-
-    <p style="color: white">Click the button below to confirm your email address. If you haven't received the confirmation email, please check your spam folder or request a new one.</p>
-
-
-    <form class="authentication-form" asp-action="SubmitConfirmEmail" method="post">
-
+    <form id="confirmForm" class="authentication-form" asp-action="SubmitConfirmEmail" method="post">
         <div class="authentication-input-div">
             <input type="hidden" asp-for="Token" />
             <input type="hidden" asp-for="UserId" />
         </div>
-
-        <button type="submit" class="authentication-form-button background-blue">Confirm Email</button>
+        <button type="submit" class="authentication-form-button background-blue" style="display: none;">Confirm Email</button>
     </form>
 
-    <form class="authentication-form" asp-action="ResendEmailConfirmation" method="post">
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('confirmForm').submit();
+        });
+    </script>
 
-        <div class="authentication-input-div">
-            <input type="hidden" asp-for="Token" />
-            <input type="hidden" asp-for="UserId" />
-        </div>
-
-        <button type="submit" class="authentication-form-button background-blue">Resend Email Confirmation</button>
-    </form>
 
 </body>
