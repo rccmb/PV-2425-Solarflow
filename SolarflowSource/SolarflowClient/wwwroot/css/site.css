@@ -160,3 +160,26 @@ body, html {
     overflow: auto; 
     padding: 20px;
 }
+
+/* STYLE FOR SENSIBLE INPUTS. */
+
+/* Wrapper for the input. */
+.input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* Style for the toggle password visibility. */
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    color: #666;
+}

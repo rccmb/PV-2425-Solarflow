@@ -49,11 +49,12 @@
     border: solid 2px #ffffff;
     border-radius: 10px;
     padding-block: 10px;
-    padding-inline: 10px;
+    padding-left: 10px;
     background-color: #393E41;
     width: 445px;
     color: white;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    padding-right: 40px; 
 }
 
 /* Style for the login text. */
@@ -121,4 +122,13 @@
     font-size: 12px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+/* Style for the authentication form link. */
+.authentication-form-footer {
+    margin-top: 30px;
+    width: 445px;
+    text-align: center;
+    font-size: 12px;
+    cursor: pointer;
 }
