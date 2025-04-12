@@ -9,6 +9,18 @@
 <link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
+<script>
+    function togglePassword1() {
+        const input = document.getElementById('passwordInput1');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function togglePassword2() {
+        const input = document.getElementById('passwordInput2');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+</script>
+
 <body class="authentication-body">
     <div style="margin-top: 30px">
         <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
@@ -41,16 +53,31 @@
 
         <div class="authentication-input-div">
             <label class="authentication-form-label">Password</label>
-            <input asp-for="Password" type="password" class="authentication-form-text-input" />
+            <div class="input-wrapper">
+                <input id="passwordInput1" asp-for="Password" type="password" class="authentication-form-text-input" />
+                <button type="button" onclick="togglePassword1()" class="toggle-password">
+                    👁️
+                </button>
+            </div>
+            
         </div>
 
         <div class="authentication-input-div">
             <label class="authentication-form-label">Confirm Password</label>
-            <input asp-for="ConfirmPassword" type="password" class="authentication-form-text-input" />
+            <div class="input-wrapper">
+                <input id="passwordInput2" asp-for="ConfirmPassword" type="password" class="authentication-form-text-input" />
+                <button type="button" onclick="togglePassword2()" class="toggle-password">
+                    👁️
+                </button>
+            </div>
         </div>
 
         <button type="submit" class="authentication-form-button background-blue">Register</button>
     </form>
+
+    <div class="authentication-form-footer">
+        <a asp-action="Login" class="authentication-form-link" style="color: white;">Back to Login</a>
+    </div>
 </body>
 
 

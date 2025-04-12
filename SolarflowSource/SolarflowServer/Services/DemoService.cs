@@ -8,6 +8,12 @@ namespace SolarflowServer.Services;
 [ApiExplorerSettings(IgnoreApi = true)]
 public class DemoService(ApplicationDbContext context, IEnergyRecordService energyRecordService)
 {
+
+    /// <summary>
+    /// Simulates energy generation and consumption for all hubs in the system.
+    /// It retrieves all hubs and triggers energy iteration for each hub.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task DemoEnergy(int minutes = 60)
     {
         var hubs = await context.Hubs.ToListAsync();
@@ -15,7 +21,13 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         foreach (var hub in hubs) await DemoEnergyIteration(hub.Id, minutes);
     }
 
-
+    /// <summary>
+    /// Simulates energy generation and consumption for a specific hub.
+    /// This method calculates consumption from house, solar, battery, and grid sources.
+    /// It also updates the battery charge level and records energy data.
+    /// </summary>
+    /// <param name="hubId">The identifier of the hub for which energy data should be simulated.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task DemoEnergyIteration(int hubId, int minutes = 60)
     {
         // Hub
@@ -124,6 +136,14 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         var result = await energyRecordService.AddEnergyRecords(dto);
     }
 
+    /// <summary>
+    /// Simulates the total consumption of energy in the house based on the base consumption,
+    /// the number of people, and the time of day.
+    /// </summary>
+    /// <param name="baseConsumptionKWh">The base energy consumption in kWh.</param>
+    /// <param name="numberOfPeople">The number of people in the house, used to adjust consumption.</param>
+    /// <param name="hour">The current hour of the day used to adjust consumption based on time of day.</param>
+    /// <returns>The simulated total energy consumption in kWh.</returns>
     public double DemoConsumption(double gridKWh, int hour, int numberOfPeople = 0)
     {
         // Time Factor
@@ -174,6 +194,15 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         return Math.Round(totalConsumptionKWh, 2);
     }
 
+
+    /// <summary>
+    /// Simulates solar energy production based on the maximum solar capacity, time of day,
+    /// and cloud cover factor.
+    /// </summary>
+    /// <param name="maxCapacityKWh">The maximum solar energy production capacity in kWh.</param>
+    /// <param name="hour">The current hour of the day used to calculate solar energy generation.</param>
+    /// <param name="cloudFactor">The cloud cover factor, where 0 is completely cloudy and 1 is completely sunny.</param>
+    /// <returns>The simulated energy production from solar in kWh.</returns>
     public double DemoSolar(double solarKWh, int hour, double sunFactor = 1)
     {
         // Time Factor

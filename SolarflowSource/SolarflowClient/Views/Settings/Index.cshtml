@@ -5,6 +5,13 @@
 
 <link href="~/css/settings/settings.css" rel="stylesheet" asp-append-version="true" />
 
+<script>
+    function togglePassword() {
+        const input = document.getElementById('passwordInput1');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+</script>
+
 <div class="inbox-container">
     <h2 class="page-title">👤 User Information</h2>
 
@@ -61,7 +68,10 @@
                     <form asp-controller="Home" asp-action="RegisterViewAccount" method="post">
                         <div class="settings-input-group">
                             <label>View Account Password:</label>
-                            <input type="password" name="Password" required />
+                            <div class="password-input-wrapper">
+                                <input id="passwordInput1" type="password" name="Password" required />
+                                <button type="button" class="toggle-password-btn" onclick="togglePassword()">👁️</button>
+                            </div>
                         </div>
                         <div class="settings-buttons">
                             <button type="submit" class="btn btn-success">➕ Create View Account</button>

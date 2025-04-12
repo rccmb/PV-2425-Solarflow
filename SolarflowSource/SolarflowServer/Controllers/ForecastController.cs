@@ -5,7 +5,9 @@ using SolarflowServer.Services;
 using System.Security.Claims;
 
 
-//[Authorize]
+/// <summary>
+/// Controller for managing forecast-related operations, such as updating and retrieving forecast data.
+/// </summary>
 [ApiController]
 [Route("api/forecast")]
 public class ForecastController : ControllerBase
@@ -13,13 +15,24 @@ public class ForecastController : ControllerBase
     private readonly ForecastService _forecastService;
     private readonly ApplicationDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ForecastController"/> class.
+    /// </summary>
+    /// <param name="forecastService">The service responsible for forecast operations.</param>
+    /// <param name="context">The application database context used for data operations.</param>
     public ForecastController(ForecastService forecastService, ApplicationDbContext context)
     {
         _forecastService = forecastService;
         _context = context;
     }
 
-    
+    /// <summary>
+    /// Updates the forecast data for a specific battery based on geographic coordinates and the number of days.
+    /// </summary>
+    /// <param name="lat">Latitude for the location.</param>
+    /// <param name="lon">Longitude for the location.</param>
+    /// <param name="days">Number of days for the forecast.</param>
+    /// <returns>A result indicating the success or failure of the forecast update.</returns>
     [HttpPost("update")]
     public async Task<IActionResult> UpdateForecast([FromQuery] double lat, [FromQuery] double lon, [FromQuery] int days)
     {
@@ -37,6 +50,10 @@ public class ForecastController : ControllerBase
         return Ok(new { message = "Updated" });
     }
 
+    /// <summary>
+    /// Retrieves the saved forecast data for the battery associated with the user.
+    /// </summary>
+    /// <returns>The list of saved forecasts for the associated battery, or an error if no forecasts are found.</returns>
     [HttpGet("get")]
     public async Task<IActionResult> GetSavedForecasts()
     {
@@ -59,6 +76,12 @@ public class ForecastController : ControllerBase
         return Ok(forecasts);
     }
 
+    /// <summary>
+    /// Retrieves the current forecast data based on geographic coordinates.
+    /// </summary>
+    /// <param name="lat">Latitude for the location.</param>
+    /// <param name="lon">Longitude for the location.</param>
+    /// <returns>The current forecast data for the specified location, or an error if no data is found.</returns>
     [HttpGet("current")]
     public async Task<IActionResult> GetCurrentForecast([FromQuery] double lat, [FromQuery] double lon)
     {

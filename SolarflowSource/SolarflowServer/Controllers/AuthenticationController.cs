@@ -11,6 +11,9 @@ using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Controllers;
 
+/// <summary>
+/// Controller responsible for user authentication, registration, login, and account management operations.
+/// </summary>
 [Route("api/auth")]
 [ApiController]
 public class AuthenticationController : ControllerBase
@@ -24,6 +27,17 @@ public class AuthenticationController : ControllerBase
     private readonly SignInManager<ViewAccount> _viewSignInManager;
     private readonly UserManager<ViewAccount> _viewUserManager;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthenticationController"/> class.
+    /// </summary>
+    /// <param name="userManager">The user manager.</param>
+    /// <param name="signInManager">The sign-in manager.</param>
+    /// <param name="viewUserManager">The view account user manager.</param>
+    /// <param name="viewSignInManager">The view account sign-in manager.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="auditService">The audit service.</param>
+    /// <param name="emailSender">The email sender service.</param>
+    /// <param name="context">The database context.</param>
     public AuthenticationController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
@@ -45,6 +59,11 @@ public class AuthenticationController : ControllerBase
         _emailSender = emailSender;
     }
 
+    /// <summary>
+    /// Registers a new user in the system.
+    /// </summary>
+    /// <param name="model">The registration model containing user details.</param>
+    /// <returns>A result indicating the success or failure of the registration.</returns>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDTO model)
     {
@@ -118,6 +137,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "User registered successfully!" });
     }
 
+    /// <summary>
+    /// Resends the email confirmation link to the user.
+    /// </summary>
+    /// <param name="model">The model containing user information for email confirmation.</param>
+    /// <returns>A result indicating the success or failure of resending the confirmation email.</returns>
     [HttpPost("resend-email-confirmation")]
     public async Task<IActionResult> ResendEmailConfirmation([FromBody] ConfirmEmailDTO model)
     {
@@ -144,6 +168,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "Email confirmation link sent successfully!" });
     }
 
+    /// <summary>
+    /// Registers a view account for an existing user.
+    /// </summary>
+    /// <param name="model">The view account registration model.</param>
+    /// <returns>A result indicating the success or failure of the view account registration.</returns>
     [HttpPost("register-view")]
     public async Task<IActionResult> RegisterViewAccount([FromBody] RegisterViewDTO model)
     {
@@ -176,6 +205,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "ViewAccount registered successfully!" });
     }
 
+    /// <summary>
+    /// Logs in a user by generating a JWT token.
+    /// </summary>
+    /// <param name="model">The login model containing user credentials.</param>
+    /// <returns>A result containing the JWT token if login is successful.</returns>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO model)
     {
@@ -225,6 +259,10 @@ public class AuthenticationController : ControllerBase
         return Unauthorized("Confirm Email.");
     }
 
+    /// <summary>
+    /// Logs out the currently authenticated user.
+    /// </summary>
+    /// <returns>A result indicating the success or failure of the logout operation.</returns>
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -238,6 +276,12 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "User logged out successfully!" });
     }
 
+    /// <summary>
+    /// Generates a JWT token for the specified user and role.
+    /// </summary>
+    /// <param name="user">The user for whom the token will be generated.</param>
+    /// <param name="role">The role of the user (e.g., "Admin" or "View").</param>
+    /// <returns>The generated JWT token as a string.</returns>
     private string GenerateJWTToken(IdentityUser<int> user, string role)
     {
         var claims = new[]
@@ -264,7 +308,11 @@ public class AuthenticationController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-
+    /// <summary>
+    /// Confirms the email of the user by verifying the provided token.
+    /// </summary>
+    /// <param name="model">The model containing the user id and confirmation token.</param>
+    /// <returns>A result indicating the success or failure of the email confirmation.</returns>
     [HttpPost("confirm-email")]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO model)
     {
@@ -280,6 +328,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "Email confirmed successfully!" });
     }
 
+    /// <summary>
+    /// Initiates the password recovery process by sending a reset link to the provided email.
+    /// </summary>
+    /// <param name="model">The account recovery model containing the email address.</param>
+    /// <returns>A result indicating whether a reset link was sent or not.</returns>
     [HttpPost("forgotpassword")]
     public async Task<IActionResult> ForgotPassword([FromBody] AccountRecoveryViewModel model)
     {
@@ -307,6 +360,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "If the email exists, a reset link has been sent." });
     }
 
+    /// <summary>
+    /// Resets the user's password using the provided reset token and new password.
+    /// </summary>
+    /// <param name="model">The model containing the email, token, and new password.</param>
+    /// <returns>A result indicating whether the password was successfully reset or not.</returns>
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
     {
@@ -322,6 +380,10 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "Password reset successfully!" });
     }
 
+    /// <summary>
+    /// Retrieves the current authenticated user's details.
+    /// </summary>
+    /// <returns>A result containing the user details.</returns>
     [HttpGet("get-user")]
     public async Task<IActionResult> GetUser()
     {
@@ -352,6 +414,11 @@ public class AuthenticationController : ControllerBase
         return Ok(userDTO);
     }
 
+    /// <summary>
+    /// Updates the details of the current authenticated user.
+    /// </summary>
+    /// <param name="model">The model containing the updated user data.</param>
+    /// <returns>A result indicating the success or failure of the user update.</returns>
     [HttpPost("update-user")]
     public async Task<IActionResult> UpdateUser([FromBody] ChangeUserDTO model)
     {
@@ -375,6 +442,10 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "User updated successfully!" });
     }
 
+    /// <summary>
+    /// Deletes the View Account associated with the currently authenticated user.
+    /// </summary>
+    /// <returns>A result indicating the success or failure of the View Account deletion process.</returns>
     [HttpPost("delete-user-view-model")]
     public async Task<IActionResult> DeleteUserViewModel()
     {

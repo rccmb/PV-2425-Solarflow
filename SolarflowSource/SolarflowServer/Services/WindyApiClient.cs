@@ -4,20 +4,33 @@ using SolarflowServer.Models;
 
 namespace SolarflowServer.Services
 {
-    // Responsible for communicating with the Windy API to fetch weather forecast data
+    /// <summary>
+    /// Responsible for communicating with the Windy API to fetch weather forecast data.
+    /// </summary>
     public class WindyApiClient
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
 
-        // Injects HttpClient and reads API key from configuration
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WindyApiClient"/> class.
+        /// Injects the HttpClient and reads the Windy API key from the configuration.
+        /// </summary>
+        /// <param name="httpClient">The HttpClient instance for making API requests.</param>
+        /// <param name="configuration">The configuration object for reading the API key.</param>
         public WindyApiClient(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _apiKey = configuration["WindyAPI:Key"];
         }
 
-        // Sends a POST request to Windy API to retrieve weather forecast based on coordinates
+        /// <summary>
+        /// Sends a POST request to Windy API to retrieve a weather forecast based on the provided coordinates (latitude and longitude).
+        /// </summary>
+        /// <param name="latitude">The latitude of the location for which the weather forecast is requested.</param>
+        /// <param name="longitude">The longitude of the location for which the weather forecast is requested.</param>
+        /// <returns>A task that represents the asynchronous operation, containing the forecast data from the Windy API.</returns>
+        /// <exception cref="Exception">Throws an exception if the API request fails.</exception>
         public async Task<WindyForecast> GetWeatherForecastAsync(double latitude, double longitude)
         {
             // Prepare request body with required parameters

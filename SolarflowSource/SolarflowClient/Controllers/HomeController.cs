@@ -9,11 +9,21 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SolarflowClient.Controllers;
 
+/// <summary>
+/// Controller responsible for handling the main dashboard logic, energy data retrieval,
+/// export functionality, weather forecasts, battery data, and user-specific actions.
+/// </summary>
 public class HomeController : Controller
 {
     private readonly IConfiguration _configuration;
     private readonly HttpClient _httpClient;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HomeController"/> class.
+    /// Sets the API base address based on the application environment.
+    /// </summary>
+    /// <param name="httpClient">HTTP client used for API communication.</param>
+    /// <param name="configuration">Application configuration service.</param>
     public HomeController(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
@@ -24,6 +34,12 @@ public class HomeController : Controller
             : new Uri("https://solarflowapi.azurewebsites.net/api/");
     }
 
+    /// <summary>
+    /// Displays the main dashboard with energy, battery, and forecast data for a given date range.
+    /// </summary>
+    /// <param name="startDate">Optional start date for data filtering. Defaults to current UTC day.</param>
+    /// <param name="endDate">Optional end date for data filtering. Defaults to the next UTC day.</param>
+    /// <returns>The dashboard view populated with retrieved data or a redirect to login if unauthorized.</returns>
     public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
     {
         startDate ??= DateTime.Today.AddHours(0);
@@ -110,6 +126,10 @@ public class HomeController : Controller
         return View(viewModel);
     }
 
+    /// <summary>
+    /// Exports all energy records in CSV format.
+    /// </summary>
+    /// <returns>A downloadable CSV file containing energy record data.</returns>
     public async Task<ActionResult> Export()
     {
         // Fetch energy records
@@ -130,7 +150,13 @@ public class HomeController : Controller
         return File(fileBytes, "text/csv", "data.csv");
     }
 
-
+    /// <summary>
+    /// Helper method that builds an authorized HTTP request using the token from cookies.
+    /// </summary>
+    /// <param name="method">HTTP method to use (GET, POST, etc.).</param>
+    /// <param name="url">Endpoint URL (relative to base address).</param>
+    /// <returns>A prepared <see cref="HttpRequestMessage"/> with an Authorization header.</returns>
+    /// <exception cref="Exception">Thrown if no token is found in the cookies.</exception>
     private HttpRequestMessage CreateAuthorizedRequest(HttpMethod method, string url)
     {
         var token = Request.Cookies["AuthToken"];
@@ -151,7 +177,10 @@ public class HomeController : Controller
         return requestMessage;
     }
 
-
+    /// <summary>
+    /// Logs the current user out by invalidating the token and clearing cookies.
+    /// </summary>
+    /// <returns>Redirects the user to the login page.</returns>
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
@@ -169,17 +198,29 @@ public class HomeController : Controller
         return RedirectToAction("Login", "Authentication");
     }
 
-
+    /// <summary>
+    /// Displays an access denied view.
+    /// </summary>
+    /// <returns>The access denied view.</returns>
     public IActionResult AccessDenied()
     {
         return View();
     }
 
+    /// <summary>
+    /// Displays the register view account form.
+    /// </summary>
+    /// <returns>The register view account page.</returns>
     public IActionResult RegisterViewAccount()
     {
         return View("~/Views/Users/RegisterViewAccount.cshtml");
     }
 
+    /// <summary>
+    /// Registers a new view-only user account using a provided password.
+    /// </summary>
+    /// <param name="Password">The password for the new view account.</param>
+    /// <returns>Redirects to the index page on success; otherwise, displays an error.</returns>
     [HttpPost]
     public async Task<IActionResult> RegisterViewAccount(string Password)
     {
@@ -208,7 +249,10 @@ public class HomeController : Controller
         return View("Index");
     }
 
-
+    /// <summary>
+    /// Determines and returns the appropriate weather image URL based on the latest forecast.
+    /// </summary>
+    /// <returns>A JSON object containing the weather image URL, or a BadRequest on failure.</returns>
     [HttpGet]
     public async Task<ActionResult> GetWeatherImage()
     {
@@ -232,21 +276,45 @@ public class HomeController : Controller
         return Json(new { imageUrl });
     }
 
+    /// <summary>
+    /// Represents weather forecast data returned from the API.
+    /// </summary>
     public class ForecastData
     {
+        /// <summary>
+        /// Gets or sets the forecast date.
+        /// </summary>
         public string ForecastDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the expected number of solar hours.
+        /// </summary>
         public int SolarHoursExpected { get; set; }
 
+        /// <summary>
+        /// Gets or sets the weather condition description.
+        /// </summary>
         public string WeatherCondition { get; set; }
     }
 
+    /// <summary>
+    /// Represents a record of energy consumption and gain for a given day.
+    /// </summary>
     public class ConsumptionData
     {
+        /// <summary>
+        /// Gets or sets the date of the record.
+        /// </summary>
         public string Date { get; set; }
 
+        /// <summary>
+        /// Gets or sets the energy consumption value.
+        /// </summary>
         public int Consumption { get; set; }
 
+        /// <summary>
+        /// Gets or sets the energy gain value.
+        /// </summary>
         public int Gain { get; set; }
     }
 }
