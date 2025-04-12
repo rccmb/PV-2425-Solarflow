@@ -25,15 +25,12 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
 
         // Timestamp
         var now = DateTime.UtcNow;
-        Console.WriteLine(now);
-        Console.WriteLine(now.Hour);
-
 
         // House
-        var house = DemoConsumption(hub.GridKWh, now.Hour, hub.DemoPeople);
+        var house = DemoConsumption(hub.GridKWh, now.Hour, hub.People);
 
         // Solar
-        var solar = DemoSolar(hub.DemoSolar, now.Hour);
+        var solar = DemoSolar(hub.SolarKWh, now.Hour);
 
         // Battery
         var battery = await context.Batteries.Where(b => b.Id == hub.BatteryId).FirstOrDefaultAsync();

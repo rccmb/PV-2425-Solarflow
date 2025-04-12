@@ -27,9 +27,7 @@ public class Hub
     public virtual ICollection<EnergyRecord> EnergyRecords { get; set; }
 
     // Demo Columns
-    [Required] public double DemoSolar { get; set; }
+    [Required] public double SolarKWh { get; set; }
 
-    [Required] public double DemoConsumption { get; set; }
-
-    [Required] public int DemoPeople { get; set; }
+    [Required] public int People { get; set; }
 }

@@ -89,12 +89,10 @@ public class AuthenticationController : ControllerBase
             Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5),
             GridKWh = 10.35,
             BatteryId = battery.Id,
-            // DemoSolar: random value between 5 kWh and 100 kWh
-            DemoSolar =  Math.Round(random.NextDouble() * (100 - 5) + 5,2),
-            // DemoConsumption: random value between 5 and 15 kWh
-            DemoConsumption =  Math.Round(random.NextDouble() * 10 + 5,2),
-            // DemoPeople: random integer from 1 to 5
-            DemoPeople = random.Next(1, 6)
+            // SolarKWh: random value between 5 kWh and 100 kWh
+            SolarKWh =  Math.Round(random.NextDouble() * (100 - 5) + 5,2),
+            // People: random integer from 1 to 5
+            People = random.Next(1, 6)
         };
 
         _context.Hubs.Add(hub);

@@ -420,15 +420,6 @@ namespace SolarflowServer.Migrations
                     b.Property<int>("BatteryId")
                         .HasColumnType("int");
 
-                    b.Property<double>("DemoConsumption")
-                        .HasColumnType("float");
-
-                    b.Property<int>("DemoPeople")
-                        .HasColumnType("int");
-
-                    b.Property<double>("DemoSolar")
-                        .HasColumnType("float");
-
                     b.Property<double>("GridKWh")
                         .HasColumnType("float");
 
@@ -436,6 +427,12 @@ namespace SolarflowServer.Migrations
                         .HasColumnType("float");
 
                     b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("People")
+                        .HasColumnType("int");
+
+                    b.Property<double>("SolarKWh")
                         .HasColumnType("float");
 
                     b.Property<int>("UserId")

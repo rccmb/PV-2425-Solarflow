@@ -6,12 +6,32 @@
 
 
     // Chart House Consumption 
-    var chartHouseConsumption = Model.EnergyRecord?.House;
+    var chartHouseConsumption = Model.EnergyRecord?.House * -1;
 
-    // Chart Consumption vs. Production
-    var chartConsumptionDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("hh:mm")).ToList() ?? [];
-    var chartConsumptionSolar = Model.EnergyRecords?.Select(record => (int)record.Solar).ToList() ?? [];
-    var chartConsumptionHouse = Model.EnergyRecords?.Select(record => (int)record.House).ToList() ?? [];
+    // Chart Solar Production vs. House Consumption 
+    var chartSolarHouseDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("dd-MM-yyyy HH:mm")).ToList() ?? [];
+    var chartSolarHouseProduction = Model.EnergyRecords?.Select(record => record.Solar).ToList() ?? [];
+    var chartSolarHouseConsumption = Model.EnergyRecords?.Select(record => record.House).ToList() ?? [];
+
+
+    var chartConsumptionBattery = Model.EnergyRecords?
+        .Select(record => record.Battery > 0
+            ? record.Battery
+            : 0.0
+        ).ToList() ?? [];
+
+    var chartConsumptionGrid = Model.EnergyRecords?
+        .Select(record => record.Grid > 0
+            ? record.Grid
+            : 0.0
+        ).ToList() ?? [];
+
+    var chartConsumptionSolar = Model.EnergyRecords?
+        .Select(record =>
+        {
+            var sum = Math.Min(Math.Abs(record.House), record.Solar);
+            return sum > 0 ? Math.Abs(sum) : 0.0;
+        }).ToList() ?? [];
 
     // Chart Battery Level
     var chartBatteryLevel = Model.Battery != null ? Model.Battery.ChargeLevel / (double)Model.Battery.MaxKW * 100.0 : 0;
@@ -38,8 +58,17 @@
         _ => "/images/weather/clear.png"
     };
 
-    var startOfToday = DateTime.Now.Date.ToString("yyyy-MM-ddTHH:mm");
-    var endOfToday = DateTime.Now.Date.AddHours(23).AddMinutes(59).ToString("yyyy-MM-ddTHH:mm");
+    var startDate = Model.Filter.StartDate;
+    var endDate = Model.Filter.EndDate;
+    var startDateValue = startDate.HasValue
+        ? startDate.Value.ToString("yyyy-MM-ddTHH:mm")
+        : "";
+
+    var endDateValue = endDate.HasValue
+        ? endDate.Value.ToString("yyyy-MM-ddTHH:mm")
+        : "";
+
+    Console.WriteLine(startDate);
 }
 
 <!DOCTYPE html>
@@ -74,11 +103,11 @@
         <div id="dashboard-filters">
             <div class="dashboard-filter-item">
                 <label>Start Date</label>
-                    <input type="datetime-local" name="startDate" value="@startOfToday" />
+                <input type="datetime-local" name="startDate" value="@startDateValue"/>
             </div>
             <div class="dashboard-filter-item">
                 <label>End Date</label>
-                <input type="datetime-local" name="endDate" value="@endOfToday"/>
+                <input type="datetime-local" name="endDate" value="@endDateValue"/>
             </div>
             <button type="submit">Apply Filters</button>
         </div>
@@ -130,9 +159,20 @@
             @if (Model.EnergyRecords != null)
             {
                 <div class="chart-item">
-                    <h2>Consumption vs. Production</h2>
+                    <h2>Solar Production / House Consumption</h2>
                     <div>
                         <canvas id="chartConsumptionProduction"></canvas>
+                    </div>
+                </div>
+            }
+
+            <!-- Energy Consumption -->
+            @if (Model.EnergyRecords != null)
+            {
+                <div class="chart-item">
+                    <h2>Consumption</h2>
+                    <div>
+                            <canvas id="chartConsumptionStacked"></canvas>
                     </div>
                 </div>
             }
@@ -179,25 +219,25 @@
             </text>
         }
 
-        // Chart Consumption vs Production
+        // Chart Solar Production vs. House Consumption
         @if (Model.EnergyRecords != null)
         {
             <text>
             // Chart Consumption vs. Production
-            new Chart(document.getElementById('chartConsumptionProduction').getContext('2d'), {
+                new Chart(document.getElementById('chartConsumptionProduction').getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: @Html.Raw(Json.Serialize(chartConsumptionDate)),
+                    labels: @Html.Raw(Json.Serialize(chartSolarHouseDate)),
                     datasets: [{
                         label: 'Gains',
-                        data: @Html.Raw(Json.Serialize(chartConsumptionSolar)),
+                        data: @Html.Raw(Json.Serialize(chartSolarHouseProduction)),
                         fill: true,
                         backgroundColor: "rgba(231,187,65, 0.6)",
                         borderColor: "rgba(231,187,65, 1)",
                         borderWidth: 1
                     }, {
                         label: 'Consumption',
-                        data: @Html.Raw(Json.Serialize(chartConsumptionHouse)),
+                        data: @Html.Raw(Json.Serialize(chartSolarHouseConsumption)),
                         fill: true,
                         backgroundColor: "rgba(57,62,65, 0.6)",
                         borderColor: "rgba(57,62,65, 1)",
@@ -215,6 +255,62 @@
                 }
             });
         </text>
+        }
+
+        @if (Model.EnergyRecords != null)
+        {
+            <text>
+            // Example: stacked line chart
+            new Chart(document.getElementById('chartConsumptionStacked').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(chartSolarHouseDate)), // e.g., timestamps or other x-axis labels
+                    datasets: [
+                        {
+                            label: 'Grid',
+                            data: @Html.Raw(Json.Serialize(chartConsumptionGrid)), 
+                            fill: true,
+                            backgroundColor: "rgba(0, 0, 255, 0.4)",
+                            borderColor: "rgba(0, 0, 255, 1)",
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Solar',
+                            data: @Html.Raw(Json.Serialize(chartConsumptionSolar)), 
+                            fill: true,
+                            backgroundColor: "rgba(255, 165, 0, 0.4)",
+                            borderColor: "rgba(255, 165, 0, 1)",
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Battery',
+                            data: @Html.Raw(Json.Serialize(chartConsumptionBattery)), 
+                            fill: true,
+                            backgroundColor: "rgba(0, 128, 0, 0.4)",
+                            borderColor: "rgba(0, 128, 0, 1)",
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            stacked: true
+                        },
+                        x: {
+                            // optional x-axis config
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true // or false if you don't want to show dataset labels
+                        }
+                    }
+                }
+            });
+            </text>
         }
 
         // Chart Solar Prevision

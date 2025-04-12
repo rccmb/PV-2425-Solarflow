@@ -24,12 +24,12 @@ public class Hub
 
     [ForeignKey(nameof(BatteryId))] public virtual Battery Battery { get; set; }
 
-    public virtual ICollection<EnergyRecord> EnergyRecords { get; set; }
 
     // Demo Columns
-    [Required] public double DemoSolar { get; set; }
+    [Required] public double SolarKWh { get; set; }
 
-    [Required] public double DemoConsumption { get; set; }
+    [Required] public int People { get; set; }
+    public virtual ICollection<EnergyRecord> EnergyRecords { get; set; }
 
-    [Required] public int DemoPeople { get; set; }
+
 }
