@@ -16,7 +16,7 @@ public class DemoBackgroundService(IServiceProvider serviceProvider) : Backgroun
         while (!stoppingToken.IsCancellationRequested)
         {
             await RunDemoEnergyIterationAsync();
-            await Task.Delay(TimeSpan.FromMinutes(recurrence), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
     }
 

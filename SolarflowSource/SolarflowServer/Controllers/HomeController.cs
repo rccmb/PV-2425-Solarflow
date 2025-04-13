@@ -43,7 +43,7 @@ public class HomeController(
         Console.WriteLine(startDate);
 
         // Fetch data from the service
-        var data = await energyRecordService.GetEnergyRecords(user.Id, hubId, startDate, endDate);
+        var data = await energyRecordService.GetEnergyRecords(user.Id,  startDate, endDate);
         return Json(data);
     }
 
@@ -62,8 +62,7 @@ public class HomeController(
         if (userId == null)
             return Unauthorized(new { error = "User not authenticated." });
 
-        var firstHub = context.Hubs.First(h => h.UserId == user.Id);
-        var data = await forecastService.GetForecast(firstHub.Latitude, firstHub.Longitude);
+        var data = await forecastService.GetForecast(user.Latitude, user.Longitude);
         Console.WriteLine(data);
         return Json(data);
     }

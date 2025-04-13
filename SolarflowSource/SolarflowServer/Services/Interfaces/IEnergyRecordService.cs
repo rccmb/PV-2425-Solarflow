@@ -7,6 +7,6 @@ public interface IEnergyRecordService
 {
     Task<IEnumerable<EnergyRecordDTO>> AddEnergyRecords(object data);
 
-    Task<IEnumerable<EnergyRecordDTO>> GetEnergyRecords(int userId, int? hubId, DateTime? startDate,
+    Task<IEnumerable<EnergyRecordDTO>> GetEnergyRecords(int userId, DateTime? startDate,
         DateTime? endDate);
 }

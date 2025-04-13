@@ -16,9 +16,9 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task DemoEnergy(int minutes = 60)
     {
-        var hubs = await context.Hubs.ToListAsync();
+        var users = await context.Users.ToListAsync();
 
-        foreach (var hub in hubs) await DemoEnergyIteration(hub.Id, minutes);
+        foreach (var user in users) await DemoEnergyIteration(user.Id, minutes);
     }
 
     /// <summary>
@@ -26,31 +26,31 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
     /// This method calculates consumption from house, solar, battery, and grid sources.
     /// It also updates the battery charge level and records energy data.
     /// </summary>
-    /// <param name="hubId">The identifier of the hub for which energy data should be simulated.</param>
+    /// <param name="userId">The identifier of the hub for which energy data should be simulated.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task DemoEnergyIteration(int hubId, int minutes = 60)
+    public async Task DemoEnergyIteration(int userId, int minutes = 60)
     {
         // Hub
-        var hub = await context.Hubs.Where(h => h.Id == hubId).FirstOrDefaultAsync();
-        if (hub == null)
-            throw new InvalidOperationException($"Hub with Id {hubId} not found.");
+        var user = await context.Users.Where(u => u.Id == userId).Include(applicationUser => applicationUser.Battery).FirstOrDefaultAsync();
+        if (user == null)
+            throw new InvalidOperationException($"Hub with Id {userId} not found.");
 
         // Timestamp
         var now = DateTime.UtcNow;
 
         // House
-        var house = DemoConsumption(hub.GridKWh, now.Hour, hub.People);
+        var house = DemoConsumption(user.GridKWh, now.Hour);
 
         // Solar
-        var solar = DemoSolar(hub.SolarKWh, now.Hour);
+        var solar = DemoSolar(user.SolarKWh, now.Hour);
 
         // Battery
-        var battery = await context.Batteries.Where(b => b.Id == hub.BatteryId).FirstOrDefaultAsync();
+        var battery = user.Battery;
         var isBatteryChargeForced = battery == null;
 
         var dto = new EnergyRecordDTO
         {
-            HubId = hub.Id,
+            ApplicationUserId = user.Id,
             Timestamp = now,
             House = -house,
             Grid = 0.0,
@@ -62,7 +62,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
 
         var quotaConsumption = Math.Abs(house);
         var quotaSolar = Math.Abs(solar);
-        var quotaGrid = Math.Abs(hub.GridKWh);
+        var quotaGrid = Math.Abs(user.GridKWh);
         var quotaBatteryCharge = battery?.ChargeLevel ?? 0.0;
         var quotaBatteryDischarge = battery?.ChargeLevel ?? 0.0;
 
