@@ -42,8 +42,9 @@ public class HomeController : Controller
     /// <returns>The dashboard view populated with retrieved data or a redirect to login if unauthorized.</returns>
     public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
     {
-        startDate ??= DateTime.UtcNow;
-        endDate ??= DateTime.UtcNow.AddDays(1);
+        startDate ??= DateTime.Today.AddHours(0);
+        endDate ??= DateTime.Today.AddDays(1).AddHours(0);
+        Console.WriteLine(endDate);
 
         // Energy Records
         var consumptionUrl =
@@ -59,6 +60,7 @@ public class HomeController : Controller
         {
             var energyJson = await energyResponse.Content.ReadAsStringAsync();
             energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
+            energyRecords = energyRecords.OrderBy(x => x.Timestamp).ToList();
         }
 
 
@@ -105,12 +107,20 @@ public class HomeController : Controller
             battery = JsonSerializer.Deserialize<Battery>(batteryJson);
         }
 
+
+        var filter = new DashboardFilter
+        {
+            StartDate = startDate,
+            EndDate = endDate
+        };
+
         var viewModel = new HomeViewModel
         {
             EnergyRecord = eRecords.LastOrDefault(),
             EnergyRecords = energyRecords,
             Battery = battery,
-            Forecast = forecast
+            Forecast = forecast,
+            Filter = filter
         };
 
         return View(viewModel);
@@ -150,7 +160,13 @@ public class HomeController : Controller
     private HttpRequestMessage CreateAuthorizedRequest(HttpMethod method, string url)
     {
         var token = Request.Cookies["AuthToken"];
-        if (string.IsNullOrEmpty(token)) throw new Exception("Authorization token is missing.");
+        if (string.IsNullOrEmpty(token))
+        {
+            // Force a redirect to the login page
+            Response.Redirect("/Authentication/Login", true);
+            // After Response.Redirect, execution won’t continue, but we must return something to satisfy the method signature.
+            return null;
+        }
 
         // Optionally, validate or inspect the token:
         var handler = new JwtSecurityTokenHandler();

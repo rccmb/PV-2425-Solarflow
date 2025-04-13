@@ -58,11 +58,20 @@ namespace SolarflowServer.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<double>("GridKWh")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -87,6 +96,9 @@ namespace SolarflowServer.Migrations
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("SolarKWh")
+                        .HasColumnType("float");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -352,6 +364,9 @@ namespace SolarflowServer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ApplicationUserId")
+                        .HasColumnType("int");
+
                     b.Property<double>("Battery")
                         .HasColumnType("float");
 
@@ -361,9 +376,6 @@ namespace SolarflowServer.Migrations
                     b.Property<double>("House")
                         .HasColumnType("float");
 
-                    b.Property<int>("HubId")
-                        .HasColumnType("int");
-
                     b.Property<double>("Solar")
                         .HasColumnType("float");
 
@@ -372,7 +384,7 @@ namespace SolarflowServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HubId");
+                    b.HasIndex("ApplicationUserId");
 
                     b.ToTable("EnergyRecords", (string)null);
                 });
@@ -407,48 +419,6 @@ namespace SolarflowServer.Migrations
                     b.HasIndex("BatteryID");
 
                     b.ToTable("Forecasts", (string)null);
-                });
-
-            modelBuilder.Entity("SolarflowServer.Models.Hub", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BatteryId")
-                        .HasColumnType("int");
-
-                    b.Property<double>("DemoConsumption")
-                        .HasColumnType("float");
-
-                    b.Property<int>("DemoPeople")
-                        .HasColumnType("int");
-
-                    b.Property<double>("DemoSolar")
-                        .HasColumnType("float");
-
-                    b.Property<double>("GridKWh")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BatteryId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Hubs");
                 });
 
             modelBuilder.Entity("SolarflowServer.Models.Notification", b =>
@@ -654,13 +624,13 @@ namespace SolarflowServer.Migrations
 
             modelBuilder.Entity("SolarflowServer.Models.EnergyRecord", b =>
                 {
-                    b.HasOne("SolarflowServer.Models.Hub", "Hub")
+                    b.HasOne("ApplicationUser", "ApplicationUser")
                         .WithMany("EnergyRecords")
-                        .HasForeignKey("HubId")
+                        .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hub");
+                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("SolarflowServer.Models.Forecast", b =>
@@ -670,25 +640,6 @@ namespace SolarflowServer.Migrations
                         .HasForeignKey("BatteryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("SolarflowServer.Models.Hub", b =>
-                {
-                    b.HasOne("SolarflowServer.Models.Battery", "Battery")
-                        .WithOne()
-                        .HasForeignKey("SolarflowServer.Models.Hub", "BatteryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ApplicationUser", "User")
-                        .WithMany("Hubs")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Battery");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SolarflowServer.Models.Notification", b =>
@@ -729,15 +680,10 @@ namespace SolarflowServer.Migrations
                     b.Navigation("Battery")
                         .IsRequired();
 
-                    b.Navigation("Hubs");
+                    b.Navigation("EnergyRecords");
 
                     b.Navigation("ViewAccount")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("SolarflowServer.Models.Hub", b =>
-                {
-                    b.Navigation("EnergyRecords");
                 });
 #pragma warning restore 612, 618
         }

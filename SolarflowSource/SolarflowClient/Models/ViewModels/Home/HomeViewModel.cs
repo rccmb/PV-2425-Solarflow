@@ -9,4 +9,6 @@ public class HomeViewModel
     public Battery? Battery { get; set; }
 
     public List<Forecast>? Forecast { get; set; }
+
+    public DashboardFilter? Filter { get; set; }
 }

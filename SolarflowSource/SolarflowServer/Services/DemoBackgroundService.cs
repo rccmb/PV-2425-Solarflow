@@ -12,21 +12,23 @@ public class DemoBackgroundService(IServiceProvider serviceProvider) : Backgroun
     /// <returns>A task representing the asynchronous operation.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        const int recurrence = 1;
         while (!stoppingToken.IsCancellationRequested)
         {
             await RunDemoEnergyIterationAsync();
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
     }
+
 
     /// <summary>
     /// Runs a single demo energy iteration using the demo service.
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task RunDemoEnergyIterationAsync()
+    private async Task RunDemoEnergyIterationAsync(int minutes = 60)
     {
         using var scope = serviceProvider.CreateScope();
         var demoService = scope.ServiceProvider.GetRequiredService<DemoService>();
-        await demoService.DemoEnergy();
+        await demoService.DemoEnergy(minutes);
     }
 }
