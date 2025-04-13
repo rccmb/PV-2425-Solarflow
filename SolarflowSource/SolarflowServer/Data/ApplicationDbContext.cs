@@ -17,10 +17,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<AuditLog> AuditLogs { get; set; }
 
     public DbSet<Suggestion> Suggestions { get; set; }
-
-    public DbSet<Hub> Hubs { get; set; }
     public DbSet<EnergyRecord> EnergyRecords { get; set; }
-
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -134,22 +131,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         });
 
 
-        // MAPPING THE HUB.
-        builder.Entity<Hub>(entity =>
-        {
-            entity.HasKey(h => h.Id);
-
-            entity.HasOne(h => h.User)
-                .WithMany(u => u.Hubs)
-                .HasForeignKey(h => h.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // okay
-
-            entity.HasOne(h => h.Battery)
-                .WithOne()
-                .HasForeignKey<Hub>(h => h.BatteryId)
-                .OnDelete(DeleteBehavior.Restrict); // to prevent multiple cascade paths
-        });
-
         // MAPPING THE ENERGY RECORD.
         builder.Entity<EnergyRecord>(entity =>
         {
@@ -163,9 +144,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.Solar).IsRequired();
             entity.Property(e => e.Battery).IsRequired();
 
-            entity.HasOne(e => e.Hub)
-                .WithMany(h => h.EnergyRecords)
-                .HasForeignKey(e => e.HubId)
+            entity.HasOne(er => er.ApplicationUser)
+                .WithMany(au => au.EnergyRecords)
+                .HasForeignKey(er => er.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

@@ -67,6 +67,8 @@ public class AuthenticationController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDTO model)
     {
+        var random = new Random();
+
         var user = new ApplicationUser
         {
             UserName = model.Email, // Do not remove.
@@ -74,7 +76,10 @@ public class AuthenticationController : ControllerBase
             Fullname = model.Fullname,
             Photo = "",
             ConfirmedEmail = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            GridKWh = 10.35,
+            Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
+            Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5),
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -83,6 +88,7 @@ public class AuthenticationController : ControllerBase
 
         var battery = new Battery
         {
+
             User = user,
             ChargeLevel = 40,
             MaxKW = 180,
@@ -92,29 +98,13 @@ public class AuthenticationController : ControllerBase
             MaximumTreshold = 100,
             SpendingStartTime = "00:00",
             SpendingEndTime = "09:00",
-            LastUpdate = DateTime.UtcNow.ToString()
+            LastUpdate = DateTime.UtcNow.ToString(),
+
+
+
         };
 
         _context.Batteries.Add(battery);
-        await _context.SaveChangesAsync();
-
-        var random = new Random();
-        var hub = new Hub()
-        {
-            UserId = user.Id,
-            // Latitude: 35 to 70 (Europe)
-            Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
-            // Longitude: -10 to 40 (Europe)
-            Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5),
-            GridKWh = 10.35,
-            BatteryId = battery.Id,
-            // SolarKWh: random value between 5 kWh and 100 kWh
-            SolarKWh =  Math.Round(random.NextDouble() * (100 - 5) + 5,2),
-            // People: random integer from 1 to 5
-            People = random.Next(1, 6)
-        };
-
-        _context.Hubs.Add(hub);
         await _context.SaveChangesAsync();
 
         // Confirmation Link
