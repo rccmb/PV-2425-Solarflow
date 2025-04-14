@@ -11,7 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace SolarflowServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
+<<<<<<<< HEAD:SolarflowSource/SolarflowServer/Migrations/20250414222456_InitialCreate.Designer.cs
     [Migration("20250414222456_InitialCreate")]
+========
+    [Migration("20250414223115_InitialCreate")]
+>>>>>>>> dev:SolarflowSource/SolarflowServer/Migrations/20250414223115_InitialCreate.Designer.cs
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -301,52 +305,60 @@ namespace SolarflowServer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("BatteryMode")
-                        .IsRequired()
+                    b.Property<double>("Capacity")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("");
+                        .HasColumnType("float")
+                        .HasDefaultValue(0.0);
 
-                    b.Property<int>("ChargeLevel")
+                    b.Property<double>("CapacityMax")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(10.0);
+
+                    b.Property<TimeSpan>("ChargeGridEndTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time")
+                        .HasDefaultValue(new TimeSpan(0, 9, 0, 0, 0));
+
+                    b.Property<TimeSpan>("ChargeGridStartTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time")
+                        .HasDefaultValue(new TimeSpan(0, 0, 0, 0, 0));
+
+                    b.Property<int>("ChargeMode")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("ChargingSource")
-                        .IsRequired()
+                    b.Property<double>("ChargeRate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("");
+                        .HasColumnType("float")
+                        .HasDefaultValue(5.0);
 
-                    b.Property<string>("LastUpdate")
+                    b.Property<int>("ChargeSource")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("");
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
-                    b.Property<int>("MaxKW")
-                        .HasColumnType("int");
+                    b.Property<double>("DischargeRate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(7.0);
 
-                    b.Property<int>("MaximumTreshold")
+                    b.Property<DateTime>("LastUpdate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<int>("ThresholdMax")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(100);
 
-                    b.Property<int>("MinimalTreshold")
+                    b.Property<int>("ThresholdMin")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
-
-                    b.Property<string>("SpendingEndTime")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("09:00");
-
-                    b.Property<string>("SpendingStartTime")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("00:00");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

@@ -44,7 +44,7 @@ public class HomeController : Controller
         var token = Request.Cookies["AuthToken"];
         if (string.IsNullOrEmpty(token))
         {
-            TempData["ErrorMessage"] = "You must be logged in to update your account.";
+            TempData["ErrorMessage"] = "";
             return RedirectToAction("Login", "Authentication");
         }
 
@@ -138,6 +138,7 @@ public class HomeController : Controller
 
         if (!responseBattery.IsSuccessStatusCode) return battery;
         var jsonBattery = await responseBattery.Content.ReadAsStringAsync();
+        Console.WriteLine(jsonBattery);
         battery = JsonSerializer.Deserialize<Battery>(jsonBattery);
 
         return battery;
