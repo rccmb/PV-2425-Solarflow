@@ -41,7 +41,13 @@ public class SettingsController : Controller
     /// <returns>The settings view with user data or an error message.</returns>
     public async Task<IActionResult> Index()
     {
+
         var token = Request.Cookies["AuthToken"];
+        if (string.IsNullOrEmpty(token))
+        {
+            TempData["ErrorMessage"] = "You must be logged in to update your account.";
+            return RedirectToAction("Login", "Authentication");
+        }
 
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);

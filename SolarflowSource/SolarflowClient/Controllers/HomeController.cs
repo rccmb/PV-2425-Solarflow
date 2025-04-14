@@ -40,6 +40,14 @@ public class HomeController : Controller
     /// <returns>The dashboard view populated with retrieved data or a redirect to login if unauthorized.</returns>
     public async Task<IActionResult> Index(HomeViewModel model)
     {
+
+        var token = Request.Cookies["AuthToken"];
+        if (string.IsNullOrEmpty(token))
+        {
+            TempData["ErrorMessage"] = "You must be logged in to update your account.";
+            return RedirectToAction("Login", "Authentication");
+        }
+
         var startDate = model.Filter.StartDate ?? DateTime.Today;
         var endDate = model.Filter.EndDate ?? DateTime.Today.AddDays(1);
         var timeInterval = model.Filter.TimeInterval ?? TimeInterval.Minute;

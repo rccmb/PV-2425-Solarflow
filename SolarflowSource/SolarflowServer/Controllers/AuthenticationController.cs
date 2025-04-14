@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
+using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Controllers;
@@ -21,6 +22,7 @@ public class AuthenticationController : ControllerBase
     private readonly IAuditService _auditService;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly DemoService _demoService;
     private readonly EmailSender _emailSender;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -46,7 +48,8 @@ public class AuthenticationController : ControllerBase
         IConfiguration configuration,
         IAuditService auditService,
         EmailSender emailSender,
-        ApplicationDbContext context
+        ApplicationDbContext context,
+        DemoService demoService
     )
     {
         _userManager = userManager;
@@ -57,6 +60,7 @@ public class AuthenticationController : ControllerBase
         _auditService = auditService;
         _context = context;
         _emailSender = emailSender;
+        _demoService = demoService;
     }
 
     /// <summary>
@@ -78,8 +82,9 @@ public class AuthenticationController : ControllerBase
             ConfirmedEmail = false,
             CreatedAt = DateTime.UtcNow,
             GridKWh = 10.35,
+            SolarKWh = 3.5,
             Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
-            Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5)
+            Longitude = Math.Round(random.NextDouble() * (40 - -10) + -10, 5)
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -102,6 +107,18 @@ public class AuthenticationController : ControllerBase
 
         _context.Batteries.Add(battery);
         await _context.SaveChangesAsync();
+
+
+        var daysAgo = 7; // Change this value as needed
+        var minutes = 15;
+        var start = DateTime.Now.AddDays(-daysAgo);
+        var now = DateTime.Now;
+        while (start <= now)
+        {
+            await _demoService.DemoEnergyIteration(user.Id, minutes, start);
+            start = start.AddMinutes(minutes);
+        }
+
 
         // Confirmation Link
         var baseUrlClient = _configuration["BaseUrlClient"];
