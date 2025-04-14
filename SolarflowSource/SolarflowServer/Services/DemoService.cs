@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.DTOs.Hub;
+using SolarflowServer.Models.Enums;
 using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Services;
@@ -35,16 +36,10 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         if (user == null)
             throw new InvalidOperationException($"Hub with Id {userId} not found.");
 
-        // Timestamp
+
         var now = date ?? DateTime.UtcNow;
-
-        // House
         var house = DemoConsumption(user.GridKWh, now.Hour);
-
-        // Solar
         var solar = DemoSolar(user.SolarKWh, now.Hour);
-
-        // Battery
         var battery = user.Battery;
         var isBatteryChargeForced = battery == null;
 
@@ -63,8 +58,8 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         var quotaConsumption = Math.Abs(house);
         var quotaSolar = Math.Abs(solar);
         var quotaGrid = Math.Abs(user.GridKWh);
-        var quotaBatteryCharge = battery?.ChargeLevel ?? 0.0;
-        var quotaBatteryDischarge = battery?.ChargeLevel ?? 0.0;
+        var quotaBatteryCharge = battery?.QuotaCharge ?? 0.0;
+        var quotaBatteryDischarge = battery?.QuotaDischarge ?? 0.0;
 
         // House ------------------------------------------------------------------------------------
 
@@ -79,7 +74,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         // House Consumption from battery
         if (quotaConsumption > 0.0 && quotaBatteryDischarge > 0.0)
         {
-            quotaBatteryDischarge = (quotaBatteryDischarge * minutes) / 60;
+            quotaBatteryDischarge = quotaBatteryDischarge * minutes / 60;
             var usedBattery = Math.Min(quotaConsumption, quotaBatteryDischarge);
             quotaConsumption -= usedBattery;
             dto.Battery += usedBattery;
@@ -99,24 +94,40 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
 
         // Battery ----------------------------------------------------------------------------------------
 
-        // Charge battery from solar
-        if (quotaBatteryCharge > 0.0 && quotaSolar > 0.0)
+        if (battery != null)
         {
-            quotaBatteryCharge = (quotaBatteryCharge * minutes) / 60;
-            var usedSolar = Math.Min(quotaBatteryCharge, quotaSolar);
-            quotaSolar -= usedSolar;
-            quotaBatteryCharge -= usedSolar;
-            dto.Battery -= usedSolar;
+            // Charge battery from solar
+            if (quotaBatteryCharge > 0.0 && quotaSolar > 0.0 && battery.ChargeSource != BatterySource.Grid)
+            {
+                quotaBatteryCharge = quotaBatteryCharge * minutes / 60;
+                var usedSolar = Math.Min(quotaBatteryCharge, quotaSolar);
+                quotaSolar -= usedSolar;
+                quotaBatteryCharge -= usedSolar;
+                dto.Battery -= usedSolar;
+            }
+
+            // Charge battery from grid if isForced
+            if (quotaBatteryCharge > 0.0 && quotaGrid > 0.0)
+            {
+                if (battery.ChargeMode == BatteryMode.Personalized &&
+                    battery.ChargeSource != BatterySource.Solar &&
+                    now.TimeOfDay >= battery.ChargeGridStartTime &&
+                    now.TimeOfDay <= battery.ChargeGridEndTime)
+                {
+                    var usedGrid = Math.Min(quotaBatteryCharge, quotaGrid);
+                    dto.Grid += usedGrid;
+                    dto.Battery -= usedGrid;
+                }
+
+                if (battery.ChargeMode == BatteryMode.Emergency)
+                {
+                    var usedGrid = Math.Min(quotaBatteryCharge, quotaGrid);
+                    dto.Grid += usedGrid;
+                    dto.Battery -= usedGrid;
+                }
+            }
         }
 
-        // Charge battery from grid if isForced
-        if (quotaBatteryCharge > 0.0 && isBatteryChargeForced && quotaGrid > 0.0)
-        {
-
-            var usedGrid = Math.Min(quotaBatteryCharge, quotaGrid);
-            dto.Grid += usedGrid;
-            dto.Battery -= usedGrid;
-        }
 
         // Grid -------------------------------------------------------------------------------------------
 
@@ -132,7 +143,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         // Update database
         if (battery != null && dto.Battery != 0.0)
         {
-            battery.ChargeLevel -= (int)dto.Battery;
+            battery.CapacityLevel -= (int)dto.Battery;
             await context.SaveChangesAsync();
         }
 

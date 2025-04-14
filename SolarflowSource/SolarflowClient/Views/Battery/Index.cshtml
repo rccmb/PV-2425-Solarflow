@@ -1,44 +1,38 @@
-﻿@model SolarflowClient.Models.ViewModels.Battery.GetBatteryViewModel
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using SolarflowClient.Models.Enums
+@model SolarflowClient.Models.ViewModels.Battery.GetBatteryViewModel
 
 @{
     ViewData["Title"] = "Battery Page";
     var userEmail = Context.Request.Cookies["UserEmail"];
 }
 
-<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/settings/settings.css" rel="stylesheet" asp-append-version="true" />
-<link href="~/css/battery/battery.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true"/>
+<link href="~/css/global/pages.css" rel="stylesheet" type="text/css" asp-append-version="true"/>
+<link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true"/>
+<link href="~/css/settings/settings.css" rel="stylesheet" asp-append-version="true"/>
+<link href="~/css/battery/battery.css" rel="stylesheet" type="text/css" asp-append-version="true"/>
 
 <div class="inbox-container">
     <h2 class="page-title">🔋 Battery Management</h2>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success">
-                @TempData["SuccessMessage"]
-            </div>
-        }
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
     }
 
     @if (TempData["ErrorMessage"] != null)
     {
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="battery-error-container">
-                <p class="battery-error-message">@TempData["ErrorMessage"]</p>
-            </div>
-        }
+        <div class="battery-error-container">
+            <p class="battery-error-message">@TempData["ErrorMessage"]</p>
+        </div>
     }
 
     <div class="notification-card">
-        <div class="notification-content">            
-
+        <div class="notification-content">
             <div class="notification-text">
-
                 <p class="battery-form-title">Battery Capacity: @Model.ChargeLevel%</p>
 
                 <form method="post" action="/Battery/UpdateBattery">
@@ -46,51 +40,90 @@
                         <div class="battery-form-group">
                             <div class="battery-input-group">
                                 <label class="battery-input-label">Battery Mode</label>
-                                <select class="battery-input" name="BatteryMode">
-                                    <option value="personalized" selected="@(Model.BatteryMode == "personalized" ? "selected" : null)">Personalized</option>
-                                    <option value="emergency" selected="@(Model.BatteryMode == "emergency" ? "selected" : null)">Emergency</option>
+                                <select class="battery-input" name="ChargeMode">
+                                    @foreach (BatteryMode mode in Enum.GetValues(typeof(BatteryMode)))
+                                    {
+                                        if (mode == Model.ChargeMode)
+                                        {
+                                            <option value="@mode" selected>@mode</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@mode">@mode</option>
+                                        }
+                                    }
                                 </select>
-                                <span asp-validation-for="BatteryMode" class="text-danger"></span>
+                                <span asp-validation-for="ChargeMode" class="text-danger"></span>
                             </div>
 
-                            <div class="battery-input-group">
-                                <label class="battery-input-label">Charging Source</label>
-                                <select class="battery-input" name="ChargingSource">
-                                    <option value="solar" selected="@(Model.ChargingSource == "solar" ? "selected" : null)">Solar</option>
-                                    <option value="grid" selected="@(Model.ChargingSource == "grid" ? "selected" : null)">Grid</option>
-                                    <option value="both" selected="@(Model.ChargingSource == "both" ? "selected" : null)">Both</option>
-                                </select>
-                                <span asp-validation-for="ChargingSource" class="text-danger"></span>
-                            </div>
-
-                            <div class="battery-input-group">
-                                <label class="battery-input-label">Minimal Threshold</label>
-                                <input class="battery-input" type="number" name="MinimalTreshold" min="0" max="100" value="@Model.MinimalTreshold" />
-                                <span asp-validation-for="MinimalTreshold" class="text-danger"></span>
-                            </div>
-
-                            <div class="battery-input-group">
-                                <label class="battery-input-label">Maximal Threshold</label>
-                                <input class="battery-input" type="number" name="MaximumTreshold" min="0" max="100" value="@Model.MaximumTreshold" />
-                                <span asp-validation-for="MaximumTreshold" class="text-danger"></span>
-                            </div>
-
-                            <div class="battery-input-group">
-                                <label class="battery-input-label">Charging Schedules</label>
-                                <div class="battery-time-group">
-                                    <label class="battery-input-label-time">Start Time</label>
-                                    <input class="battery-input" type="time" name="SpendingStartTime" value="@Model.SpendingStartTime" />
-                                    <span asp-validation-for="SpendingStartTime" class="text-danger"></span>
-
-                                    <label class="battery-input-label-time">End Time</label>
-                                    <input class="battery-input" type="time" name="SpendingEndTime" value="@Model.SpendingEndTime" />
-                                    <span asp-validation-for="SpendingEndTime" class="text-danger"></span>
+                            @if (Model.ChargeMode == BatteryMode.Personalized)
+                            {
+                                <!-- Render visible inputs when ChargeMode is Personalized -->
+                                <div class="battery-input-group">
+                                    <label class="battery-input-label">Charging Source</label>
+                                    <select class="battery-input" name="ChargeSource">
+                                        @foreach (BatterySource source in Enum.GetValues(typeof(BatterySource)))
+                                        {
+                                            if (source == Model.ChargeSource)
+                                            {
+                                                <option value="@source" selected>@source</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@source">@source</option>
+                                            }
+                                        }
+                                    </select>
+                                    <span asp-validation-for="ChargeSource" class="text-danger"></span>
                                 </div>
-                            </div>
+
+                                <div class="battery-input-group">
+                                    <label class="battery-input-label">Minimal Threshold</label>
+                                    <input class="battery-input" type="number" name="ThresholdMin" min="0" max="100" value="@Model.ThresholdMin"/>
+                                    <span asp-validation-for="ThresholdMin" class="text-danger"></span>
+                                </div>
+
+                                <div class="battery-input-group">
+                                    <label class="battery-input-label">Maximal Threshold</label>
+                                    <input class="battery-input" type="number" name="ThresholdMax" min="0" max="100" value="@Model.ThresholdMax"/>
+                                    <span asp-validation-for="ThresholdMax" class="text-danger"></span>
+                                </div>
+
+                                @if (Model.ChargeSource != BatterySource.Solar)
+                                {
+
+                                    <div class="battery-input-group">
+                                        <label class="battery-input-label">Charging Schedules</label>
+                                        <div class="battery-time-group">
+                                            <label class="battery-input-label-time">Start Time</label>
+                                            <input class="battery-input" type="time" name="ChargeGridStartTime" value="@Model.ChargeGridStartTime"/>
+                                            <span asp-validation-for="ChargeGridStartTime" class="text-danger"></span>
+
+                                            <label class="battery-input-label-time">End Time</label>
+                                            <input class="battery-input" type="time" name="ChargeGridEndTime" value="@Model.ChargeGridEndTime"/>
+                                            <span asp-validation-for="ChargeGridEndTime" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="ChargeGridStartTime" value="@Model.ChargeGridStartTime"/>
+                                    <input type="hidden" name="ChargeGridEndTime" value="@Model.ChargeGridEndTime"/>
+                                }
+                            }
+                            else
+                            {
+                                <!-- When ChargeMode is not Personalized, include hidden fields so that the values still post back -->
+                                <input type="hidden" name="ChargeSource" value="@Model.ChargeSource"/>
+                                <input type="hidden" name="ThresholdMin" value="@Model.ThresholdMin"/>
+                                <input type="hidden" name="ThresholdMax" value="@Model.ThresholdMax"/>
+                                <input type="hidden" name="ChargeGridStartTime" value="@Model.ChargeGridStartTime"/>
+                                <input type="hidden" name="ChargeGridEndTime" value="@Model.ChargeGridEndTime"/>
+                            }
                         </div>
                     </div>
 
-                    <br />
+                    <br/>
 
                     <div class="battery-button-group">
                         <button class="battery-button cancel-button" type="reset">Cancel</button>
@@ -100,6 +133,4 @@
             </div>
         </div>
     </div>
-
 </div>
-

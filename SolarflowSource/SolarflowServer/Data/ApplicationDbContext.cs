@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Models;
+using SolarflowServer.Models.Enums;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
 {
@@ -74,14 +75,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
             entity.HasKey(b => b.Id);
 
-            entity.Property(b => b.ChargeLevel).HasDefaultValue(0);
-            entity.Property(b => b.ChargingSource).HasDefaultValue("");
-            entity.Property(b => b.BatteryMode).HasDefaultValue("");
-            entity.Property(b => b.MinimalTreshold).HasDefaultValue(0);
-            entity.Property(b => b.MaximumTreshold).HasDefaultValue(100);
-            entity.Property(b => b.SpendingStartTime).HasDefaultValue("00:00");
-            entity.Property(b => b.SpendingEndTime).HasDefaultValue("09:00");
-            entity.Property(b => b.LastUpdate).HasDefaultValue("");
+            // Basic properties with default values
+            entity.Property(b => b.Capacity).HasDefaultValue(0.0);
+            entity.Property(b => b.CapacityMax).HasDefaultValue(10.0);
+            entity.Property(b => b.ChargeRate).HasDefaultValue(5.0);
+            entity.Property(b => b.DischargeRate).HasDefaultValue(7.0);
+
+            entity.Property(b => b.ChargeMode).HasDefaultValue(BatteryMode.Normal);
+            entity.Property(b => b.ChargeSource).HasDefaultValue(BatterySource.All);
+            entity.Property(b => b.ThresholdMin).HasDefaultValue(0);
+            entity.Property(b => b.ThresholdMax).HasDefaultValue(100);
+            entity.Property(b => b.ChargeGridStartTime).HasColumnType("time")
+                .HasDefaultValue(new TimeSpan(0, 0, 0)); // default: 00:00
+            entity.Property(b => b.ChargeGridEndTime).HasColumnType("time")
+                .HasDefaultValue(new TimeSpan(9, 0, 0)); // default: 09:00
+
+            entity.Property(b => b.LastUpdate).HasDefaultValueSql("getutcdate()");
 
             entity.HasOne(b => b.User)
                 .WithOne(u => u.Battery)

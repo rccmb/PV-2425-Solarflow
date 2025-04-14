@@ -6,7 +6,7 @@
 
 
     // Chart House Consumption 
-    var chartHouseConsumption = Model.LastEnergyRecord?.House * -1;
+    var chartHouseConsumption = Model.LastEnergyRecord?.House ?? 0 * -1;
 
     // Chart Solar Production vs. House Consumption 
     var chartSolarHouseDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("dd-MM-yyyy HH:mm")).ToList() ?? [];
@@ -34,11 +34,11 @@
         }).ToList() ?? [];
 
     // Chart Battery Level
-    var chartBatteryLevel = Model.Battery != null ? Model.Battery.ChargeLevel / (double)Model.Battery.MaxKW * 100.0 : 0;
+    var chartBatteryLevel = Model.Battery?.CapacityLevel ?? 0;
     var (chartBatteryBackgroundColor, chartBatteryBorderColor) = chartBatteryLevel switch
     {
-        >= 60.0 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
-        >= 40.0 => ("rgba(243, 146, 55, 0.6)", "rgba(243, 146, 55, 1)"),
+        >= 60 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
+        >= 40 => ("rgba(243, 146, 55, 0.6)", "rgba(243, 146, 55, 1)"),
         _ => ("rgba(219, 83, 117, 0.6)", "rgba(219, 83, 117, 1)")
     };
 
@@ -52,9 +52,9 @@
 
     var urlForecastIcon = firstForecastDayWeather switch
     {
-        "partly cloudy" => "/images/weather/partly_cloudy.png",
-        "cloudy" => "/images/weather/cloudy.png",
-        "very cloudy" => "/images/weather/very_cloudy.png",
+        "Partly Cloudy" => "/images/weather/partly_cloudy.png",
+        "Cloudy" => "/images/weather/cloudy.png",
+        "Very Cloudy" => "/images/weather/very_cloudy.png",
         _ => "/images/weather/clear.png"
     };
 }
@@ -134,7 +134,7 @@
             @if (Model.Battery != null)
             {
                 <div class="chart-item">
-                    <h2>@Model.Battery.ChargeLevel @Model.Battery.MaxKW Battery @chartBatteryLevel Status</h2>
+                    <h2>@Model.Battery.CapacityLevel @Model.Battery.CapacityMax Battery @chartBatteryLevel Status</h2>
                     <canvas id="chartBattery"></canvas>
                 </div>
             }
@@ -195,7 +195,7 @@
                             labels: ['Battery'],
                             datasets: [{
                                 label: 'Battery Level',
-                                data: [@Html.Raw(Json.Serialize((int)chartBatteryLevel))],
+                                data: [@Html.Raw(Json.Serialize(chartBatteryLevel))],
                                 backgroundColor: @Html.Raw(Json.Serialize(chartBatteryBackgroundColor)),
                                 borderColor: @Html.Raw(Json.Serialize(chartBatteryBorderColor)),
                                 borderWidth: 1

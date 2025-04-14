@@ -1,70 +1,104 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using SolarflowClient.Models.Enums;
 
 namespace SolarflowClient.Models;
 
 /// <summary>
-/// Represents a battery with its properties and configuration details.
+///     Represents a battery with its properties and configuration details.
 /// </summary>
 public class Battery
 {
-    /// <summary>
-    /// Gets or sets the unique identifier for the battery.
-    /// </summary>
     [JsonPropertyName("id")] public int Id { get; set; }
 
-    /// <summary>
-    /// Gets or sets the current charge level of the battery.
-    /// </summary>
-    [JsonPropertyName("chargeLevel")] public int ChargeLevel { get; set; }
+
+    [JsonPropertyName("capacity")] public double Capacity { get; set; }
+
+
+    [JsonPropertyName("capacityMax")] public double CapacityMax { get; set; }
+
+
+    public int CapacityLevel
+    {
+        get => CapacityMax == 0 ? 0 : (int)(Capacity / CapacityMax * 100);
+        set
+        {
+            var percentage = value < 0 ? 0 : value > 100 ? 100 : value;
+            Capacity = percentage / 100.0 * CapacityMax;
+        }
+    }
+
+
+    [JsonPropertyName("chargeRate")] public double ChargeRate { get; set; } = 5.0;
+
+    [JsonPropertyName("dischargeRate")] public double DischargeRate { get; set; } = 7.0;
+
+
+    [JsonPropertyName("chargeMode")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public BatteryMode ChargeMode { get; set; }
+
+    [JsonPropertyName("chargeSource")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public BatterySource ChargeSource { get; set; }
+
+
+    [JsonPropertyName("thresholdMin")] public int ThresholdMin { get; set; }
+
+    [JsonPropertyName("thresholdMax")] public int ThresholdMax { get; set; }
+
+
+    [JsonPropertyName("chargeGridStartTime")]
+
+    public TimeSpan ChargeGridStartTime { get; set; }
+
+    [JsonPropertyName("chargeGridEndTime")]
+
+    public TimeSpan ChargeGridEndTime { get; set; }
+
+
+    public double QuotaCharge
+    {
+        get
+        {
+            var allowedCapacity = ThresholdMax / 100.0 * CapacityMax;
+            var remainingCapacity = allowedCapacity - Capacity;
+            if (remainingCapacity <= 0)
+                return 0;
+            return remainingCapacity < ChargeRate ? remainingCapacity : ChargeRate;
+        }
+    }
+
+
+    public double QuotaDischarge
+    {
+        get
+        {
+            var allowedMinimum = ThresholdMin / 100.0 * CapacityMax;
+            var dischargeable = Capacity - allowedMinimum;
+            if (dischargeable <= 0)
+                return 0;
+            return dischargeable < DischargeRate ? dischargeable : DischargeRate;
+        }
+    }
+
+
+    [JsonPropertyName("lastUpdate")] public DateTime LastUpdate { get; set; }
+
+
+    [JsonPropertyName("userId")] public int UserId { get; set; }
+
+    [JsonPropertyName("user")] public ApplicationUser User { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum power output of the battery in kilowatts.
+    ///     Validates the battery configuration.
     /// </summary>
-    [JsonPropertyName("maxKW")] public int MaxKW { get; set; }
-
-    /// <summary>
-    /// Gets or sets the source used to charge the battery.
-    /// </summary>
-    [JsonPropertyName("chargingSource")] public string ChargingSource { get; set; }
-
-    /// <summary>
-    /// Gets or sets the operational mode of the battery.
-    /// </summary>
-    [JsonPropertyName("batteryMode")] public string BatteryMode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the minimal threshold percentage for the battery's charge level.
-    /// </summary>
-    [JsonPropertyName("minimalTreshold")] public int MinimalTreshold { get; set; }
-
-    /// <summary>
-    /// Gets or sets the maximum threshold percentage for the battery's charge level.
-    /// </summary>
-    [JsonPropertyName("maximumTreshold")] public int MaximumTreshold { get; set; }
-
-    /// <summary>
-    /// Gets or sets the start time for energy spending from the battery.
-    /// </summary>
-    [JsonPropertyName("spendingStartTime")]
-    public string SpendingStartTime { get; set; }
-
-    /// <summary>
-    /// Gets or sets the end time for energy spending from the battery.
-    /// </summary>
-    [JsonPropertyName("spendingEndTime")] public string SpendingEndTime { get; set; }
-
-    /// <summary>
-    /// Gets or sets the timestamp of the last update to the battery's data.
-    /// </summary>
-    [JsonPropertyName("lastupdate")] public string LastUpdate { get; set; }
-
-    /// <summary>
-    /// Gets or sets the unique identifier of the user associated with the battery.
-    /// </summary>
-    [JsonPropertyName("userid")] public int UserId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the user associated with the battery.
-    /// </summary>
-    [JsonPropertyName("user")] public string User { get; set; }
+    /// <param name="validationContext">The context in which validation is performed.</param>
+    /// <returns>A collection of validation results.</returns>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (ThresholdMax < ThresholdMin)
+            yield return new ValidationResult("Maximum Threshold cannot be lower than Minimal Threshold",
+                new[] { nameof(ThresholdMax) });
+    }
 }

@@ -1,6 +1,4 @@
-﻿using SolarflowClient.Models.ViewModels;
-
-namespace SolarflowClient.Models;
+﻿namespace SolarflowClient.Models;
 
 public class HomeViewModel
 {
@@ -12,5 +10,5 @@ public class HomeViewModel
 
     public List<Forecast>? Forecast { get; set; }
 
-    public EnergyRecordFilter Filter { get; set; } = new EnergyRecordFilter();
+    public EnergyRecordFilter Filter { get; set; } = new();
 }

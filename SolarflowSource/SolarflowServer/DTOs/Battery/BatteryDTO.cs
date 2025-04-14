@@ -1,15 +1,11 @@
-﻿namespace SolarflowServer.DTOs
+﻿using SolarflowServer.Models.Enums;
+
+public class BatteryDTO
 {
-    namespace SolarflowServer.DTOs
-    {
-        public class BatteryDTO
-        {
-            public string ChargingSource { get; set; }
-            public string BatteryMode { get; set; }
-            public int MinimalTreshold { get; set; }
-            public int MaximumTreshold { get; set; }
-            public string SpendingStartTime { get; set; }
-            public string SpendingEndTime { get; set; }
-        }
-    }
+    public BatterySource ChargeSource { get; set; }
+    public BatteryMode ChargeMode { get; set; }
+    public int ThresholdMin { get; set; }
+    public int ThresholdMax { get; set; }
+    public TimeSpan ChargeGridStartTime { get; set; }
+    public TimeSpan ChargeGridEndTime { get; set; }
 }
