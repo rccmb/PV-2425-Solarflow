@@ -4,7 +4,7 @@ namespace SolarflowClient.Models;
 
 public class HomeViewModel
 {
-    public EnergyRecord? EnergyRecord { get; set; }
+    public EnergyRecord? LastEnergyRecord { get; set; }
 
     public List<EnergyRecord>? EnergyRecords { get; set; }
 

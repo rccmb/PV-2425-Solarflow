@@ -25,11 +25,13 @@
                     <div class="settings-input-group">
                         <label>Email:</label>
                         <input type="text" value="@Model.Email" readonly class="readonly-input" />
+                        <input type="hidden" name="Email" value="@Model.Email" />
                     </div>
 
                     <div class="settings-input-group">
                         <label>Created At:</label>
                         <input type="text" value="@Model.CreatedAt" readonly class="readonly-input" />
+                        <input type="hidden" name="CreatedAt" value="@Model.CreatedAt" />
                     </div>
 
                     <div class="settings-input-group">
@@ -37,6 +39,22 @@
                         <input type="text" name="Fullname" value="@Model.Fullname" required />
                     </div>
 
+                    <div class="settings-input-group">
+                        <label>GridKWh:</label>
+                        <input type="number" name="GridKWh" value="@Model.GridKWh" required />
+                    </div>
+                    <div class="settings-input-group">
+                        <label>SolarKWh:</label>
+                        <input type="number" name="SolarKWh" value="@Model.SolarKWh" required />
+                    </div>
+                    <div class="settings-input-group">
+                        <label>Latitude:</label>
+                        <input type="number" name="Latitude" value="@Model.Latitude" required />
+                    </div>
+                    <div class="settings-input-group">
+                        <label>Longitude:</label>
+                        <input type="number" name="Longitude" value="@Model.Longitude" required />
+                    </div>
                     <div class="settings-buttons">
                         <button type="reset" class="btn btn-danger">❌ Cancel</button>
                         <button type="submit" class="btn btn-success">💾 Save</button>

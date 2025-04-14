@@ -62,7 +62,7 @@ public class HomeController : Controller
         // View Model
         var viewModel = new HomeViewModel
         {
-            EnergyRecord = energyRecordLast,
+            LastEnergyRecord = energyRecordLast,
             EnergyRecords = energyRecords,
             Battery = battery,
             Forecast = forecast,
