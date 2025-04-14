@@ -66,12 +66,14 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
     ///     For Minute and Hour intervals, averages are computed.
     ///     For larger intervals (Day, Week, Month, Year), the hourly averages are summed.
     /// </summary>
+    /// <param name="records">The raw energy records.</param>
+    /// <param name="interval">The desired TimeInterval for grouping.</param>
+    /// <returns>A list of aggregated EnergyRecord objects.</returns>
+    private static List<EnergyRecord> AggregateRecords(IEnumerable<EnergyRecord> records, TimeInterval? interval)
     {
-        var query = context.EnergyRecords
-            .Where(r => r.ApplicationUser.Id == userId);
+        if (records == null)
+            throw new ArgumentNullException(nameof(records));
 
-        if (startDate.HasValue) query = query.Where(er => er.Timestamp >= startDate.Value);
-        if (endDate.HasValue) query = query.Where(er => er.Timestamp <= endDate.Value);
         // If grouping by Minute, group directly by minute and average.
         if (interval == TimeInterval.Minute)
             return records
