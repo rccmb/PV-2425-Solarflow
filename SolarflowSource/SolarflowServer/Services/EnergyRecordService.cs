@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SolarflowClient.Models.Enums;
 using SolarflowServer.DTOs.Hub;
 using SolarflowServer.Models;
 using SolarflowServer.Services.Interfaces;
@@ -31,23 +32,143 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
         }
     }
 
+
     /// <summary>
-    ///     Retrieves energy records based on the provided filters (user ID, hub ID, and date range).
+    ///     Retrieves aggregated energy records based on the provided filters and grouping interval.
     /// </summary>
-    /// <param name="userId">The user ID to filter energy records by.</param>
-    /// <param name="startDate">The optional start date for filtering energy records.</param>
-    /// <param name="endDate">The optional end date for filtering energy records.</param>
-    /// <returns>A task that represents the asynchronous operation, containing a list of energy records matching the filters.</returns>
-    public async Task<IEnumerable<EnergyRecordDTO>> GetEnergyRecords(int userId, DateTime? startDate,
-        DateTime? endDate)
+    /// <param name="userId">ID of the user.</param>
+    /// <param name="startDate">Optional start date filter.</param>
+    /// <param name="endDate">Optional end date filter.</param>
+    /// <param name="interval">TimeInterval for grouping.</param>
+    /// <returns>A task representing the asynchronous operation; the task result contains a list of EnergyRecordDTOs.</returns>
+    public async Task<IEnumerable<EnergyRecordDTO>> GetEnergyRecords(
+        int userId, DateTime? startDate, DateTime? endDate, TimeInterval? interval)
+    {
+        // Build the query filtering by user and dates.
+        var query = context.EnergyRecords.Where(r => r.ApplicationUser.Id == userId);
+        if (startDate.HasValue)
+            query = query.Where(er => er.Timestamp >= startDate.Value);
+        if (endDate.HasValue)
+            query = query.Where(er => er.Timestamp <= endDate.Value);
+
+        // Retrieve raw records.
+        var rawRecords = await query.ToListAsync();
+
+        // Aggregate records using our private aggregation method.
+        var aggregatedRecords = AggregateRecords(rawRecords, interval);
+
+        // Map the aggregated records to DTOs.
+        return aggregatedRecords.Select(MapToDto).ToList();
+    }
+
+    /// <summary>
+    ///     Aggregates energy records based on the provided time interval.
+    ///     For Minute and Hour intervals, averages are computed.
+    ///     For larger intervals (Day, Week, Month, Year), the hourly averages are summed.
+    /// </summary>
     {
         var query = context.EnergyRecords
             .Where(r => r.ApplicationUser.Id == userId);
 
         if (startDate.HasValue) query = query.Where(er => er.Timestamp >= startDate.Value);
         if (endDate.HasValue) query = query.Where(er => er.Timestamp <= endDate.Value);
+        // If grouping by Minute, group directly by minute and average.
+        if (interval == TimeInterval.Minute)
+            return records
+                .GroupBy(r => new DateTime(r.Timestamp.Year, r.Timestamp.Month, r.Timestamp.Day, r.Timestamp.Hour,
+                    r.Timestamp.Minute, 0))
+                .Select(g => new EnergyRecord
+                {
+                    Timestamp = g.Key,
+                    House = g.Average(x => x.House),
+                    Grid = g.Average(x => x.Grid),
+                    Solar = g.Average(x => x.Solar),
+                    Battery = g.Average(x => x.Battery)
+                })
+                .ToList();
 
-        return await query.Select(er => MapToDto(er)).ToListAsync();
+        // For Hour or larger intervals, first compute hourly averages.
+        var hourlyAverages = records
+            .GroupBy(r => new { r.Timestamp.Year, r.Timestamp.Month, r.Timestamp.Day, r.Timestamp.Hour })
+            .Select(g => new EnergyRecord
+            {
+                Timestamp = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, 0, 0),
+                House = g.Average(x => x.House),
+                Grid = g.Average(x => x.Grid),
+                Solar = g.Average(x => x.Solar),
+                Battery = g.Average(x => x.Battery)
+            })
+            .ToList();
+
+        return interval switch
+        {
+            // If grouping by Hour, return the hourly averages directly.
+            TimeInterval.Hour => hourlyAverages,
+            // For larger intervals (Day, Week, Month, Year), sum the hourly averages.
+            TimeInterval.Day => hourlyAverages.GroupBy(r => r.Timestamp.Date)
+                .Select(g => new EnergyRecord
+                {
+                    Timestamp = g.Key,
+                    House = g.Sum(x => x.House),
+                    Grid = g.Sum(x => x.Grid),
+                    Solar = g.Sum(x => x.Solar),
+                    Battery = g.Sum(x => x.Battery)
+                })
+                .ToList(),
+            TimeInterval.Week => hourlyAverages.GroupBy(r =>
+                {
+                    // Calculate the Monday for each week.
+                    var diff = ((int)r.Timestamp.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+                    return r.Timestamp.Date.AddDays(-diff);
+                })
+                .Select(g => new EnergyRecord
+                {
+                    Timestamp = g.Key,
+                    House = g.Sum(x => x.House),
+                    Grid = g.Sum(x => x.Grid),
+                    Solar = g.Sum(x => x.Solar),
+                    Battery = g.Sum(x => x.Battery)
+                })
+                .ToList(),
+            TimeInterval.Month => hourlyAverages.GroupBy(r => new { r.Timestamp.Year, r.Timestamp.Month })
+                .Select(g => new EnergyRecord
+                {
+                    Timestamp = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    House = g.Sum(x => x.House),
+                    Grid = g.Sum(x => x.Grid),
+                    Solar = g.Sum(x => x.Solar),
+                    Battery = g.Sum(x => x.Battery)
+                })
+                .ToList(),
+            TimeInterval.Year => hourlyAverages.GroupBy(r => r.Timestamp.Year)
+                .Select(g => new EnergyRecord
+                {
+                    Timestamp = new DateTime(g.Key, 1, 1),
+                    House = g.Sum(x => x.House),
+                    Grid = g.Sum(x => x.Grid),
+                    Solar = g.Sum(x => x.Solar),
+                    Battery = g.Sum(x => x.Battery)
+                })
+                .ToList(),
+            _ => throw new ArgumentOutOfRangeException(nameof(interval), interval, "Unsupported time interval.")
+        };
+    }
+
+
+    public async Task<EnergyRecordDTO?> GetLastEnergyRecord(int userId)
+    {
+        // Retrieve the most recent energy record for the specified user.
+        var record = await context.EnergyRecords
+            .Where(r => r.ApplicationUser.Id == userId)
+            .OrderByDescending(r => r.Timestamp)
+            .FirstOrDefaultAsync();
+
+        // If no record exists, return null.
+        return record == null
+            ? null
+            :
+            // Map the entity to DTO before returning.
+            MapToDto(record);
     }
 
     /// <summary>
@@ -55,7 +176,7 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
     /// </summary>
     /// <param name="data">The energy record DTO to be added.</param>
     /// <returns>A task that represents the asynchronous operation, containing the added energy record as a DTO.</returns>
-    private async Task<EnergyRecordDTO> AddEnergyRecord(EnergyRecordDTO data)
+    private async Task<EnergyRecordDTO?> AddEnergyRecord(EnergyRecordDTO data)
     {
         var hub = await context.Users.FirstOrDefaultAsync(h => h.Id == data.ApplicationUserId);
         if (hub == null) throw new Exception("Hub not found.");
@@ -90,7 +211,7 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
     /// </summary>
     /// <param name="record">The energy record to be mapped.</param>
     /// <returns>The mapped <see cref="EnergyRecordDTO" />.</returns>
-    private static EnergyRecordDTO MapToDto(EnergyRecord record)
+    private static EnergyRecordDTO? MapToDto(EnergyRecord record)
     {
         return new EnergyRecordDTO
         {

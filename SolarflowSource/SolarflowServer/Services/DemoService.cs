@@ -10,7 +10,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
 {
 
     /// <summary>
-    /// Simulates energy generation and consumption for all hubs in the system.
+    /// Simulates energy generation and records for all hubs in the system.
     /// It retrieves all hubs and triggers energy iteration for each hub.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation.</returns>
@@ -22,8 +22,8 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
     }
 
     /// <summary>
-    /// Simulates energy generation and consumption for a specific hub.
-    /// This method calculates consumption from house, solar, battery, and grid sources.
+    /// Simulates energy generation and records for a specific hub.
+    /// This method calculates records from house, solar, battery, and grid sources.
     /// It also updates the battery charge level and records energy data.
     /// </summary>
     /// <param name="userId">The identifier of the hub for which energy data should be simulated.</param>
@@ -93,7 +93,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
             dto.Grid += usedGrid;
         }
 
-        // "Trip breaker" if consumption > 0
+        // "Trip breaker" if records > 0
         if (quotaConsumption > 0.0) throw new Exception();
 
         // Battery ----------------------------------------------------------------------------------------
@@ -137,13 +137,13 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
     }
 
     /// <summary>
-    /// Simulates the total consumption of energy in the house based on the base consumption,
+    /// Simulates the total records of energy in the house based on the base records,
     /// the number of people, and the time of day.
     /// </summary>
-    /// <param name="baseConsumptionKWh">The base energy consumption in kWh.</param>
-    /// <param name="numberOfPeople">The number of people in the house, used to adjust consumption.</param>
-    /// <param name="hour">The current hour of the day used to adjust consumption based on time of day.</param>
-    /// <returns>The simulated total energy consumption in kWh.</returns>
+    /// <param name="baseConsumptionKWh">The base energy records in kWh.</param>
+    /// <param name="numberOfPeople">The number of people in the house, used to adjust records.</param>
+    /// <param name="hour">The current hour of the day used to adjust records based on time of day.</param>
+    /// <returns>The simulated total energy records in kWh.</returns>
     public double DemoConsumption(double gridKWh, int hour, int numberOfPeople = 0)
     {
         // Time Factor
@@ -176,7 +176,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
             _ => 0.4
         };
 
-        // People Factor (Low, Medium and High consumption)
+        // People Factor (Low, Medium and High records)
         var peopleFactor = numberOfPeople switch
         {
             0 => 1.0,
@@ -188,7 +188,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         var random = new Random();
         var randomFactor = 0.95 + random.NextDouble() * 0.05;
 
-        // Calculate total consumption
+        // Calculate total records
         var totalConsumptionKWh = gridKWh * timeFactor * peopleFactor * randomFactor;
 
         return Math.Round(totalConsumptionKWh, 2);

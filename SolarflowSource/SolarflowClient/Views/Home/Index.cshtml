@@ -1,4 +1,5 @@
-﻿@model HomeViewModel;
+﻿@using SolarflowClient.Models.Enums
+@model HomeViewModel;
 
 @{
     ViewData["Title"] = "Dashboard";
@@ -47,35 +48,23 @@
     var chartForecastData = Model.Forecast?.Select(forecast => (int)forecast.SolarHoursExpected).ToList() ?? [];
 
     // --- Weather Icon Based On First Forecast ---
-    var firstForecastItem = Model.Forecast?.FirstOrDefault();
-    var weatherCondition = firstForecastItem?.WeatherCondition ?? "";
+    var firstForecastDay = Model.Forecast?.FirstOrDefault();
+    var firstForecastDayWeather = firstForecastDay?.WeatherCondition ?? "";
 
-    var weatherIconUrl = weatherCondition switch
+    var urlForecastIcon = firstForecastDayWeather switch
     {
         "partly cloudy" => "/images/weather/partly_cloudy.png",
         "cloudy" => "/images/weather/cloudy.png",
         "very cloudy" => "/images/weather/very_cloudy.png",
         _ => "/images/weather/clear.png"
     };
-
-    var startDate = Model.Filter.StartDate;
-    var endDate = Model.Filter.EndDate;
-    var startDateValue = startDate.HasValue
-        ? startDate.Value.ToString("yyyy-MM-ddTHH:mm")
-        : "";
-
-    var endDateValue = endDate.HasValue
-        ? endDate.Value.ToString("yyyy-MM-ddTHH:mm")
-        : "";
-
-    Console.WriteLine(startDate);
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Solarflow - Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    !<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="~/css/dashboard/dashboard.css" asp-append-version="true">
 </head>
 <body>
@@ -93,7 +82,7 @@
             </small>
         </div>
         <div>
-            <a href="@Url.Action("Export", "Home")" id="download-icon" title="Download CSV" download>
+            <a href="@Url.Action("Export", "Home", new { Model.Filter.StartDate, Model.Filter.EndDate, Model.Filter.TimeInterval })" id="download-icon" title="Download CSV" download>
                 <i class="fas fa-download"></i>
             </a>
         </div>
@@ -102,14 +91,19 @@
     <form asp-action="Index" asp-controller="Home" method="get">
         <div id="dashboard-filters">
             <div class="dashboard-filter-item">
-                <label>Start Date</label>
-                <input type="datetime-local" name="startDate" value="@startDateValue"/>
+                <label asp-for="Filter.StartDate"></label>
+                <!-- Using the asp-for helper here, although you might need to adjust the format -->
+                <input asp-for="Filter.StartDate" type="datetime-local" class="form-control"/>
             </div>
             <div class="dashboard-filter-item">
-                <label>End Date</label>
-                <input type="datetime-local" name="endDate" value="@endDateValue"/>
+                <label asp-for="Filter.EndDate"></label>
+                <input asp-for="Filter.EndDate" type="datetime-local" class="form-control"/>
             </div>
-            <button type="submit">Apply Filters</button>
+            <div class="dashboard-filter-item">
+                <label asp-for="Filter.TimeInterval"></label>
+                <select asp-for="Filter.TimeInterval" class="form-control" asp-items="Html.GetEnumSelectList<TimeInterval>()"></select>
+            </div>
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
         </div>
     </form>
 
@@ -131,7 +125,7 @@
             {
                 <div class="chart-item">
                     <h2>Weather Prevision</h2>
-                    <img src="@weatherIconUrl" alt="@weatherCondition" width="200" height="200"/>
+                    <img src="@urlForecastIcon" alt="@firstForecastDayWeather" width="200" height="200"/>
                 </div>
             }
 
@@ -172,7 +166,7 @@
                 <div class="chart-item">
                     <h2>Consumption</h2>
                     <div>
-                            <canvas id="chartConsumptionStacked"></canvas>
+                        <canvas id="chartConsumptionStacked"></canvas>
                     </div>
                 </div>
             }
