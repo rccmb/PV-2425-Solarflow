@@ -189,15 +189,17 @@ namespace SolarflowServer.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ChargeLevel = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    MaxKW = table.Column<int>(type: "int", nullable: false),
-                    ChargingSource = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: ""),
-                    BatteryMode = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: ""),
-                    MinimalTreshold = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    MaximumTreshold = table.Column<int>(type: "int", nullable: false, defaultValue: 100),
-                    SpendingStartTime = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "00:00"),
-                    SpendingEndTime = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "09:00"),
-                    LastUpdate = table.Column<string>(type: "nvarchar(max)", nullable: true, defaultValue: ""),
+                    Capacity = table.Column<double>(type: "float", nullable: false, defaultValue: 0.0),
+                    CapacityMax = table.Column<double>(type: "float", nullable: false, defaultValue: 10.0),
+                    ChargeRate = table.Column<double>(type: "float", nullable: false, defaultValue: 5.0),
+                    DischargeRate = table.Column<double>(type: "float", nullable: false, defaultValue: 7.0),
+                    ChargeMode = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ChargeSource = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ThresholdMin = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ThresholdMax = table.Column<int>(type: "int", nullable: false, defaultValue: 100),
+                    ChargeGridStartTime = table.Column<TimeSpan>(type: "time", nullable: false, defaultValue: new TimeSpan(0, 0, 0, 0, 0)),
+                    ChargeGridEndTime = table.Column<TimeSpan>(type: "time", nullable: false, defaultValue: new TimeSpan(0, 9, 0, 0, 0)),
+                    LastUpdate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getutcdate()"),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

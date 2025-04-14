@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
+using SolarflowServer.Models.Enums;
 using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
 
@@ -94,23 +95,14 @@ public class AuthenticationController : ControllerBase
         var battery = new Battery
         {
             User = user,
-            ChargeLevel = 40,
-            MaxKW = 180,
-            ChargingSource = "Solar",
-            BatteryMode = "Personalized",
-            MinimalTreshold = 0,
-            MaximumTreshold = 100,
-            SpendingStartTime = "00:00",
-            SpendingEndTime = "09:00",
-            LastUpdate = DateTime.UtcNow.ToString()
         };
 
         _context.Batteries.Add(battery);
         await _context.SaveChangesAsync();
 
 
-        var daysAgo = 7; // Change this value as needed
-        var minutes = 15;
+        const int daysAgo = 7;
+        const int minutes = 15;
         var start = DateTime.Now.AddDays(-daysAgo);
         var now = DateTime.Now;
         while (start <= now)
