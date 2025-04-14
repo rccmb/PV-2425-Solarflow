@@ -6,7 +6,7 @@
 
 
     // Chart House Consumption 
-    var chartHouseConsumption = Model.LastEnergyRecord?.House ?? 0 * -1;
+    var chartHouseConsumption = (Model.LastEnergyRecord?.House ?? 0) * -1;
 
     // Chart Solar Production vs. House Consumption 
     var chartSolarHouseDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("dd-MM-yyyy HH:mm")).ToList() ?? [];
@@ -76,7 +76,7 @@
             <small>
                 Last Update:
                 <span id="last-update">
-                    @Model.LastEnergyRecord.Timestamp.ToString("F");
+                    @Model.LastEnergyRecord?.Timestamp.ToString("F");
                 </span>
             </small>
         </div>
