@@ -7,12 +7,13 @@ using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
+using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Controllers;
 
 /// <summary>
-/// Controller responsible for user authentication, registration, login, and account management operations.
+///     Controller responsible for user authentication, registration, login, and account management operations.
 /// </summary>
 [Route("api/auth")]
 [ApiController]
@@ -21,6 +22,7 @@ public class AuthenticationController : ControllerBase
     private readonly IAuditService _auditService;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly DemoService _demoService;
     private readonly EmailSender _emailSender;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -28,7 +30,7 @@ public class AuthenticationController : ControllerBase
     private readonly UserManager<ViewAccount> _viewUserManager;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AuthenticationController"/> class.
+    ///     Initializes a new instance of the <see cref="AuthenticationController" /> class.
     /// </summary>
     /// <param name="userManager">The user manager.</param>
     /// <param name="signInManager">The sign-in manager.</param>
@@ -46,7 +48,8 @@ public class AuthenticationController : ControllerBase
         IConfiguration configuration,
         IAuditService auditService,
         EmailSender emailSender,
-        ApplicationDbContext context
+        ApplicationDbContext context,
+        DemoService demoService
     )
     {
         _userManager = userManager;
@@ -57,10 +60,11 @@ public class AuthenticationController : ControllerBase
         _auditService = auditService;
         _context = context;
         _emailSender = emailSender;
+        _demoService = demoService;
     }
 
     /// <summary>
-    /// Registers a new user in the system.
+    ///     Registers a new user in the system.
     /// </summary>
     /// <param name="model">The registration model containing user details.</param>
     /// <returns>A result indicating the success or failure of the registration.</returns>
@@ -78,8 +82,9 @@ public class AuthenticationController : ControllerBase
             ConfirmedEmail = false,
             CreatedAt = DateTime.UtcNow,
             GridKWh = 10.35,
+            SolarKWh = 3.5,
             Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
-            Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5),
+            Longitude = Math.Round(random.NextDouble() * (40 - -10) + -10, 5)
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -88,7 +93,6 @@ public class AuthenticationController : ControllerBase
 
         var battery = new Battery
         {
-
             User = user,
             ChargeLevel = 40,
             MaxKW = 180,
@@ -98,14 +102,23 @@ public class AuthenticationController : ControllerBase
             MaximumTreshold = 100,
             SpendingStartTime = "00:00",
             SpendingEndTime = "09:00",
-            LastUpdate = DateTime.UtcNow.ToString(),
-
-
-
+            LastUpdate = DateTime.UtcNow.ToString()
         };
 
         _context.Batteries.Add(battery);
         await _context.SaveChangesAsync();
+
+
+        var daysAgo = 7; // Change this value as needed
+        var minutes = 15;
+        var start = DateTime.Now.AddDays(-daysAgo);
+        var now = DateTime.Now;
+        while (start <= now)
+        {
+            await _demoService.DemoEnergyIteration(user.Id, minutes, start);
+            start = start.AddMinutes(minutes);
+        }
+
 
         // Confirmation Link
         var baseUrlClient = _configuration["BaseUrlClient"];
@@ -122,13 +135,14 @@ public class AuthenticationController : ControllerBase
 
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered", GetClientIPAddress());
+        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered",
+            GetClientIPAddress());
 
         return Ok(new { message = "User registered successfully!" });
     }
 
     /// <summary>
-    /// Resends the email confirmation link to the user.
+    ///     Resends the email confirmation link to the user.
     /// </summary>
     /// <param name="model">The model containing user information for email confirmation.</param>
     /// <returns>A result indicating the success or failure of resending the confirmation email.</returns>
@@ -159,7 +173,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Registers a view account for an existing user.
+    ///     Registers a view account for an existing user.
     /// </summary>
     /// <param name="model">The view account registration model.</param>
     /// <returns>A result indicating the success or failure of the view account registration.</returns>
@@ -196,7 +210,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Logs in a user by generating a JWT token.
+    ///     Logs in a user by generating a JWT token.
     /// </summary>
     /// <param name="model">The login model containing user credentials.</param>
     /// <returns>A result containing the JWT token if login is successful.</returns>
@@ -242,7 +256,8 @@ public class AuthenticationController : ControllerBase
             };
             Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
 
-            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
+            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In",
+                GetClientIPAddress());
             return Ok(new { token = viewToken });
         }
 
@@ -250,7 +265,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Logs out the currently authenticated user.
+    ///     Logs out the currently authenticated user.
     /// </summary>
     /// <returns>A result indicating the success or failure of the logout operation.</returns>
     [HttpPost("logout")]
@@ -267,7 +282,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Generates a JWT token for the specified user and role.
+    ///     Generates a JWT token for the specified user and role.
     /// </summary>
     /// <param name="user">The user for whom the token will be generated.</param>
     /// <param name="role">The role of the user (e.g., "Admin" or "View").</param>
@@ -299,7 +314,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Confirms the email of the user by verifying the provided token.
+    ///     Confirms the email of the user by verifying the provided token.
     /// </summary>
     /// <param name="model">The model containing the user id and confirmation token.</param>
     /// <returns>A result indicating the success or failure of the email confirmation.</returns>
@@ -319,7 +334,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Initiates the password recovery process by sending a reset link to the provided email.
+    ///     Initiates the password recovery process by sending a reset link to the provided email.
     /// </summary>
     /// <param name="model">The account recovery model containing the email address.</param>
     /// <returns>A result indicating whether a reset link was sent or not.</returns>
@@ -351,7 +366,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Resets the user's password using the provided reset token and new password.
+    ///     Resets the user's password using the provided reset token and new password.
     /// </summary>
     /// <param name="model">The model containing the email, token, and new password.</param>
     /// <returns>A result indicating whether the password was successfully reset or not.</returns>
@@ -371,7 +386,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves the current authenticated user's details.
+    ///     Retrieves the current authenticated user's details.
     /// </summary>
     /// <returns>A result containing the user details.</returns>
     [HttpGet("get-user")]
@@ -398,14 +413,18 @@ public class AuthenticationController : ControllerBase
             Email = user.Email,
             Photo = user.Photo,
             CreatedAt = user.CreatedAt,
-            HasViewAccount = viewAccount != null
+            HasViewAccount = viewAccount != null,
+            GridKWh = user.GridKWh,
+            SolarKWh = user.SolarKWh,
+            Latitude = user.Latitude,
+            Longitude = user.Longitude
         };
 
         return Ok(userDTO);
     }
 
     /// <summary>
-    /// Updates the details of the current authenticated user.
+    ///     Updates the details of the current authenticated user.
     /// </summary>
     /// <param name="model">The model containing the updated user data.</param>
     /// <returns>A result indicating the success or failure of the user update.</returns>
@@ -423,8 +442,11 @@ public class AuthenticationController : ControllerBase
 
         if (user == null)
             return NotFound(new { error = "User not found." });
-
         user.Fullname = model.Fullname;
+        user.GridKWh = model.GridKWh;
+        user.Latitude = model.Latitude;
+        user.Longitude = model.Longitude;
+        user.SolarKWh = model.SolarKWh;
 
         await _userManager.UpdateAsync(user);
 
@@ -433,7 +455,7 @@ public class AuthenticationController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes the View Account associated with the currently authenticated user.
+    ///     Deletes the View Account associated with the currently authenticated user.
     /// </summary>
     /// <returns>A result indicating the success or failure of the View Account deletion process.</returns>
     [HttpPost("delete-user-view-model")]

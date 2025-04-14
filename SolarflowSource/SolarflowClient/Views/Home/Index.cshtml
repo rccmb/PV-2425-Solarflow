@@ -1,12 +1,12 @@
-﻿@model HomeViewModel;
+﻿@using SolarflowClient.Models.Enums
+@model HomeViewModel;
 
 @{
     ViewData["Title"] = "Dashboard";
-    ViewData["LastUpdate"] = Model.EnergyRecord?.Timestamp.ToString("yyyy-MM-dd HH:mm") ?? "No data";
 
 
     // Chart House Consumption 
-    var chartHouseConsumption = Model.EnergyRecord?.House * -1;
+    var chartHouseConsumption = Model.LastEnergyRecord?.House * -1;
 
     // Chart Solar Production vs. House Consumption 
     var chartSolarHouseDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("dd-MM-yyyy HH:mm")).ToList() ?? [];
@@ -47,28 +47,16 @@
     var chartForecastData = Model.Forecast?.Select(forecast => (int)forecast.SolarHoursExpected).ToList() ?? [];
 
     // --- Weather Icon Based On First Forecast ---
-    var firstForecastItem = Model.Forecast?.FirstOrDefault();
-    var weatherCondition = firstForecastItem?.WeatherCondition ?? "";
+    var firstForecastDay = Model.Forecast?.FirstOrDefault();
+    var firstForecastDayWeather = firstForecastDay?.WeatherCondition ?? "";
 
-    var weatherIconUrl = weatherCondition switch
+    var urlForecastIcon = firstForecastDayWeather switch
     {
         "partly cloudy" => "/images/weather/partly_cloudy.png",
         "cloudy" => "/images/weather/cloudy.png",
         "very cloudy" => "/images/weather/very_cloudy.png",
         _ => "/images/weather/clear.png"
     };
-
-    var startDate = Model.Filter.StartDate;
-    var endDate = Model.Filter.EndDate;
-    var startDateValue = startDate.HasValue
-        ? startDate.Value.ToString("yyyy-MM-ddTHH:mm")
-        : "";
-
-    var endDateValue = endDate.HasValue
-        ? endDate.Value.ToString("yyyy-MM-ddTHH:mm")
-        : "";
-
-    Console.WriteLine(startDate);
 }
 
 <!DOCTYPE html>
@@ -88,12 +76,12 @@
             <small>
                 Last Update:
                 <span id="last-update">
-                    @ViewData["LastUpdate"]
+                    @Model.LastEnergyRecord.Timestamp.ToString("F");
                 </span>
             </small>
         </div>
         <div>
-            <a href="@Url.Action("Export", "Home")" id="download-icon" title="Download CSV" download>
+            <a href="@Url.Action("Export", "Home", new { Model.Filter.StartDate, Model.Filter.EndDate, Model.Filter.TimeInterval })" id="download-icon" title="Download CSV" download>
                 <i class="fas fa-download"></i>
             </a>
         </div>
@@ -102,14 +90,19 @@
     <form asp-action="Index" asp-controller="Home" method="get">
         <div id="dashboard-filters">
             <div class="dashboard-filter-item">
-                <label>Start Date</label>
-                <input type="datetime-local" name="startDate" value="@startDateValue"/>
+                <label asp-for="Filter.StartDate"></label>
+                <!-- Using the asp-for helper here, although you might need to adjust the format -->
+                <input asp-for="Filter.StartDate" type="datetime-local" class="form-control"/>
             </div>
             <div class="dashboard-filter-item">
-                <label>End Date</label>
-                <input type="datetime-local" name="endDate" value="@endDateValue"/>
+                <label asp-for="Filter.EndDate"></label>
+                <input asp-for="Filter.EndDate" type="datetime-local" class="form-control"/>
             </div>
-            <button type="submit">Apply Filters</button>
+            <div class="dashboard-filter-item">
+                <label asp-for="Filter.TimeInterval"></label>
+                <select asp-for="Filter.TimeInterval" class="form-control" asp-items="Html.GetEnumSelectList<TimeInterval>()"></select>
+            </div>
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
         </div>
     </form>
 
@@ -118,7 +111,8 @@
         <div id="dashboard-charts-energy">
 
             <!-- Current Consumption -->
-            @if (Model.EnergyRecord != null)
+            @if (Model.LastEnergyRecord != null)
+
             {
                 <div class="chart-item">
                     <h2>Energy Usage</h2>
@@ -126,12 +120,13 @@
                 </div>
             }
 
+
             <!-- Weather Icon -->
             @if (Model.Forecast != null)
             {
                 <div class="chart-item">
                     <h2>Weather Prevision</h2>
-                    <img src="@weatherIconUrl" alt="@weatherCondition" width="200" height="200"/>
+                    <img src="@urlForecastIcon" alt="@firstForecastDayWeather" width="200" height="200"/>
                 </div>
             }
 
@@ -172,7 +167,7 @@
                 <div class="chart-item">
                     <h2>Consumption</h2>
                     <div>
-                            <canvas id="chartConsumptionStacked"></canvas>
+                        <canvas id="chartConsumptionStacked"></canvas>
                     </div>
                 </div>
             }

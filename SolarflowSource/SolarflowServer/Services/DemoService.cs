@@ -8,10 +8,9 @@ namespace SolarflowServer.Services;
 [ApiExplorerSettings(IgnoreApi = true)]
 public class DemoService(ApplicationDbContext context, IEnergyRecordService energyRecordService)
 {
-
     /// <summary>
-    /// Simulates energy generation and consumption for all hubs in the system.
-    /// It retrieves all hubs and triggers energy iteration for each hub.
+    ///     Simulates energy generation and records for all hubs in the system.
+    ///     It retrieves all hubs and triggers energy iteration for each hub.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task DemoEnergy(int minutes = 60)
@@ -22,21 +21,22 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
     }
 
     /// <summary>
-    /// Simulates energy generation and consumption for a specific hub.
-    /// This method calculates consumption from house, solar, battery, and grid sources.
-    /// It also updates the battery charge level and records energy data.
+    ///     Simulates energy generation and records for a specific hub.
+    ///     This method calculates records from house, solar, battery, and grid sources.
+    ///     It also updates the battery charge level and records energy data.
     /// </summary>
     /// <param name="userId">The identifier of the hub for which energy data should be simulated.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task DemoEnergyIteration(int userId, int minutes = 60)
+    public async Task DemoEnergyIteration(int userId, int minutes = 60, DateTime? date = null)
     {
         // Hub
-        var user = await context.Users.Where(u => u.Id == userId).Include(applicationUser => applicationUser.Battery).FirstOrDefaultAsync();
+        var user = await context.Users.Where(u => u.Id == userId).Include(applicationUser => applicationUser.Battery)
+            .FirstOrDefaultAsync();
         if (user == null)
             throw new InvalidOperationException($"Hub with Id {userId} not found.");
 
         // Timestamp
-        var now = DateTime.UtcNow;
+        var now = date ?? DateTime.UtcNow;
 
         // House
         var house = DemoConsumption(user.GridKWh, now.Hour);
@@ -79,6 +79,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         // House Consumption from battery
         if (quotaConsumption > 0.0 && quotaBatteryDischarge > 0.0)
         {
+            quotaBatteryDischarge = (quotaBatteryDischarge * minutes) / 60;
             var usedBattery = Math.Min(quotaConsumption, quotaBatteryDischarge);
             quotaConsumption -= usedBattery;
             dto.Battery += usedBattery;
@@ -93,7 +94,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
             dto.Grid += usedGrid;
         }
 
-        // "Trip breaker" if consumption > 0
+        // "Trip breaker" if records > 0
         if (quotaConsumption > 0.0) throw new Exception();
 
         // Battery ----------------------------------------------------------------------------------------
@@ -101,6 +102,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         // Charge battery from solar
         if (quotaBatteryCharge > 0.0 && quotaSolar > 0.0)
         {
+            quotaBatteryCharge = (quotaBatteryCharge * minutes) / 60;
             var usedSolar = Math.Min(quotaBatteryCharge, quotaSolar);
             quotaSolar -= usedSolar;
             quotaBatteryCharge -= usedSolar;
@@ -110,6 +112,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         // Charge battery from grid if isForced
         if (quotaBatteryCharge > 0.0 && isBatteryChargeForced && quotaGrid > 0.0)
         {
+
             var usedGrid = Math.Min(quotaBatteryCharge, quotaGrid);
             dto.Grid += usedGrid;
             dto.Battery -= usedGrid;
@@ -137,13 +140,13 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
     }
 
     /// <summary>
-    /// Simulates the total consumption of energy in the house based on the base consumption,
-    /// the number of people, and the time of day.
+    ///     Simulates the total records of energy in the house based on the base records,
+    ///     the number of people, and the time of day.
     /// </summary>
-    /// <param name="baseConsumptionKWh">The base energy consumption in kWh.</param>
-    /// <param name="numberOfPeople">The number of people in the house, used to adjust consumption.</param>
-    /// <param name="hour">The current hour of the day used to adjust consumption based on time of day.</param>
-    /// <returns>The simulated total energy consumption in kWh.</returns>
+    /// <param name="baseConsumptionKWh">The base energy records in kWh.</param>
+    /// <param name="numberOfPeople">The number of people in the house, used to adjust records.</param>
+    /// <param name="hour">The current hour of the day used to adjust records based on time of day.</param>
+    /// <returns>The simulated total energy records in kWh.</returns>
     public double DemoConsumption(double gridKWh, int hour, int numberOfPeople = 0)
     {
         // Time Factor
@@ -176,7 +179,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
             _ => 0.4
         };
 
-        // People Factor (Low, Medium and High consumption)
+        // People Factor (Low, Medium and High records)
         var peopleFactor = numberOfPeople switch
         {
             0 => 1.0,
@@ -188,7 +191,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         var random = new Random();
         var randomFactor = 0.95 + random.NextDouble() * 0.05;
 
-        // Calculate total consumption
+        // Calculate total records
         var totalConsumptionKWh = gridKWh * timeFactor * peopleFactor * randomFactor;
 
         return Math.Round(totalConsumptionKWh, 2);
@@ -196,8 +199,8 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
 
 
     /// <summary>
-    /// Simulates solar energy production based on the maximum solar capacity, time of day,
-    /// and cloud cover factor.
+    ///     Simulates solar energy production based on the maximum solar capacity, time of day,
+    ///     and cloud cover factor.
     /// </summary>
     /// <param name="maxCapacityKWh">The maximum solar energy production capacity in kWh.</param>
     /// <param name="hour">The current hour of the day used to calculate solar energy generation.</param>

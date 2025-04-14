@@ -41,4 +41,9 @@ public class EnergyRecord
     /// Gets or sets the amount of energy stored in or drawn from the battery in kilowatt-hours.
     /// </summary>
     [JsonPropertyName("battery")] public double Battery { get; set; }
+
+    public static implicit operator EnergyRecord(Task<EnergyRecord?> v)
+    {
+        throw new NotImplementedException();
+    }
 }
