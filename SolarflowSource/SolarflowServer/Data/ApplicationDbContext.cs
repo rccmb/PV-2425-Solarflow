@@ -33,8 +33,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(u => u.Fullname).HasMaxLength(255).IsRequired();
             entity.Property(u => u.Photo).HasMaxLength(255).IsRequired(false);
             entity.Property(u => u.ConfirmedEmail).HasDefaultValue(false);
-            entity.Property(u => u.GridKWh).HasDefaultValue(false);
-
             entity.Property(u => u.CreatedAt).HasDefaultValueSql("GETDATE()");
 
             entity.HasOne(u => u.Battery)
