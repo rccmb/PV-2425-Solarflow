@@ -68,9 +68,9 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
                                       (battery?.ChargeMode == BatteryMode.Personalized &&
                                        battery.ChargeSource != BatterySource.Grid);
 
-        var quotaBatteryCharge = (battery?.QuotaCharge ?? 0.0) * minutes / 60;
+        var quotaBatteryCharge = battery?.QuotaCharge ?? 0.0;
 
-        var quotaBatteryDischarge = (battery?.QuotaDischarge ?? 0.0) * minutes / 60;
+        var quotaBatteryDischarge = battery?.QuotaDischarge ?? 0.0;
 
 
         // House ------------------------------------------------------------------------------------
@@ -138,7 +138,7 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         // Update database
         if (battery != null && dto.Battery != 0.0)
         {
-            battery.Capacity -= dto.Battery;
+            battery.Capacity -= dto.Battery * minutes / 60;
             await context.SaveChangesAsync();
         }
 

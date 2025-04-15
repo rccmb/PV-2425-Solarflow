@@ -7,7 +7,7 @@ namespace SolarflowServer.Models;
 /// <summary>
 ///     Represents a battery with its properties and configuration details.
 /// </summary>
-public class Battery: IValidatableObject
+public class Battery : IValidatableObject
 {
     /// <summary>
     ///     Gets or sets the unique identifier for the battery.
@@ -31,36 +31,24 @@ public class Battery: IValidatableObject
     ///     Gets or sets the maximum capacity of the battery in kilowatts.
     /// </summary>
     [Required]
-    public double CapacityMax { get; set; }
+    public double CapacityMax { get; set; } = 14.40;
 
 
     /// <summary>
     ///     Gets the capacity level as a percentage of CapacityMax.
     ///     The setter adjusts Capacity according to the percentage.
     /// </summary>
-    [NotMapped]
-    public int CapacityLevel
-    {
-        get => CapacityMax == 0 ? 0 : (int)(Capacity / CapacityMax * 100);
-        set
-        {
-            var percentage = value < 0 ? 0 : value > 100 ? 100 : value;
-            Capacity = percentage / 100.0 * CapacityMax;
-        }
-    }
-
-
     /// <summary>
     ///     Gets or sets the charge rate in kilowatts per hour.
     /// </summary>
     [Required]
-    public double ChargeRate { get; set; } = 5.0;
+    public double ChargeRate { get; set; } = 4.5;
 
     /// <summary>
     ///     Gets or sets the discharge rate in kilowatts per hour.
     /// </summary>
     [Required]
-    public double DischargeRate { get; set; } = 7.0;
+    public double DischargeRate { get; set; } = 6.5;
 
 
     /// <summary>
@@ -106,6 +94,17 @@ public class Battery: IValidatableObject
     public TimeSpan ChargeGridEndTime { get; set; }
 
 
+    [NotMapped]
+    public int CapacityLevel
+    {
+        get => CapacityMax == 0 ? 0 : (int)(Capacity / CapacityMax * 100);
+        set
+        {
+            var percentage = value < 0 ? 0 : value > 100 ? 100 : value;
+            Capacity = percentage / 100.0 * CapacityMax;
+        }
+    }
+
     /// <summary>
     ///     Gets the available quota for charging at this instant.
     ///     Computed as the lesser of the remaining capacity (based on ThresholdMax) and the ChargeRate.
@@ -116,11 +115,15 @@ public class Battery: IValidatableObject
     {
         get
         {
-            var allowedCapacity = ThresholdMax / 100.0 * CapacityMax;
-            var remainingCapacity = allowedCapacity - Capacity;
-            if (remainingCapacity <= 0)
-                return 0;
-            return remainingCapacity < ChargeRate ? remainingCapacity : ChargeRate;
+            var charge = new List<double>
+                { ChargeRate, CapacityMax - Capacity };
+
+            if (ChargeMode == BatteryMode.Personalized && CapacityLevel >= ThresholdMax) return 0;
+
+            if (ChargeMode == BatteryMode.Personalized && CapacityLevel < ThresholdMax)
+                charge.Add(Math.Max(0.0, CapacityMax / 100 * ThresholdMax - Capacity));
+
+            return charge.Min();
         }
     }
 
@@ -136,11 +139,15 @@ public class Battery: IValidatableObject
     {
         get
         {
-            var allowedMinimum = ThresholdMin / 100.0 * CapacityMax;
-            var dischargeable = Capacity - allowedMinimum;
-            if (dischargeable <= 0)
-                return 0;
-            return dischargeable < DischargeRate ? dischargeable : DischargeRate;
+            var discharge = new List<double>
+                { DischargeRate, Capacity };
+
+            if (ChargeMode == BatteryMode.Personalized && CapacityLevel <= ThresholdMin) return 0;
+
+            if (ChargeMode == BatteryMode.Personalized && CapacityLevel > ThresholdMin)
+                discharge.Add(Math.Max(0.0, Capacity - CapacityMax / 100 * ThresholdMin));
+
+            return discharge.Min();
         }
     }
 
