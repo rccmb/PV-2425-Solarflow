@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Services;
-using System.Security.Claims;
+
 
 
 /// <summary>
@@ -26,13 +25,7 @@ public class ForecastController : ControllerBase
         _context = context;
     }
 
-    /// <summary>
-    /// Updates the forecast data for a specific battery based on geographic coordinates and the number of days.
-    /// </summary>
-    /// <param name="lat">Latitude for the location.</param>
-    /// <param name="lon">Longitude for the location.</param>
-    /// <param name="days">Number of days for the forecast.</param>
-    /// <returns>A result indicating the success or failure of the forecast update.</returns>
+  
     [HttpPost("update")]
     public async Task<IActionResult> UpdateForecast([FromQuery] double lat, [FromQuery] double lon, [FromQuery] int days)
     {
@@ -76,12 +69,6 @@ public class ForecastController : ControllerBase
         return Ok(forecasts);
     }
 
-    /// <summary>
-    /// Retrieves the current forecast data based on geographic coordinates.
-    /// </summary>
-    /// <param name="lat">Latitude for the location.</param>
-    /// <param name="lon">Longitude for the location.</param>
-    /// <returns>The current forecast data for the specified location, or an error if no data is found.</returns>
     [HttpGet("current")]
     public async Task<IActionResult> GetCurrentForecast([FromQuery] double lat, [FromQuery] double lon)
     {

@@ -120,27 +120,6 @@ namespace SolarflowServer.Controllers
         }
 
         /// <summary>
-        /// Generates test notifications for testing purposes.
-        /// </summary>
-        /// <returns>A success message indicating test notifications were created.</returns>
-        [HttpPost("generate-test")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GenerateTestNotifications()
-        {
-            var testNotifications = new List<Notification>
-            {
-                new Notification { Title = "New Feature!", Description = "Check out the new notification module.", TimeSent = DateTime.UtcNow, UserId = 1 },
-                new Notification { Title = "Reminder", Description = "Battery needs calibration.", TimeSent = DateTime.UtcNow.AddHours(-1), UserId = 1 },
-                new Notification { Title = "Success", Description = "Your profile was updated.", TimeSent = DateTime.UtcNow.AddDays(-1), UserId = 1, Status = NotificationStatus.Read, TimeRead = DateTime.UtcNow.AddDays(-1).AddMinutes(5) }
-            };
-
-            _context.Notifications.AddRange(testNotifications);
-            await _context.SaveChangesAsync();
-
-            return Ok("Test notifications created.");
-        }
-
-        /// <summary>
         /// Helper method to retrieve the authenticated user's ID from the JWT.
         /// </summary>
         /// <returns>The user ID of the authenticated user.</returns>
