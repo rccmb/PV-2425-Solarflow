@@ -97,8 +97,8 @@ public class AuthenticationController : ControllerBase
 
         const int daysAgo = 3;
         const int minutes = 15;
-        var start = DateTime.Now.AddDays(-daysAgo);
-        var now = DateTime.Now;
+        var start = DateTime.UtcNow.AddDays(-daysAgo);
+        var now = DateTime.UtcNow;
         while (start <= now)
         {
             await _demoService.DemoEnergyIteration(user.Id, minutes, start);

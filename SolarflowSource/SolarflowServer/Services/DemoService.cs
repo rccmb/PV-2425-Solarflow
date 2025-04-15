@@ -127,10 +127,9 @@ public class DemoService(ApplicationDbContext context, IEnergyRecordService ener
         // Grid -------------------------------------------------------------------------------------------
 
         // Sell remaining solar energy
-        if (quotaSolar > 0)
+        if (quotaSolar > 0.0)
         {
-            var usedSolar = quotaSolar;
-            dto.Grid -= usedSolar;
+            dto.Grid -= quotaSolar;
         }
 
         // Update -----------------------------------------------------------------------------------------
