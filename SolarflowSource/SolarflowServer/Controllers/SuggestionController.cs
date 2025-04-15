@@ -100,44 +100,5 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Old suggestions cleaned successfully." });
         }
 
-        /// <summary>
-        /// Adds test suggestions for testing or demo purposes.
-        /// </summary>
-        /// <returns>A response indicating the success of the operation.</returns>
-        [HttpPost("add-test-suggestions")]
-        public async Task<IActionResult> AddTestSuggestions()
-        {
-            var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == 1);
-            if (battery == null)
-            {
-                return NotFound(new { message = "Battery not found for this user." });
-            }
-
-            var suggestion1 = new Suggestion
-            {
-                BatteryId = 1,
-                Title = "Test Suggestion 1",
-                Description = "This is the first test suggestion.",
-                Status = SuggestionStatus.Pending,
-                Type = SuggestionType.ChargeAtNight,
-                TimeSent = DateTime.UtcNow
-            };
-
-            var suggestion2 = new Suggestion
-            {
-                BatteryId = 1,
-                Title = "Test Suggestion 2",
-                Description = "This is the second test suggestion.",
-                Status = SuggestionStatus.Pending,
-                Type = SuggestionType.RaiseBatteryThreshold,
-                TimeSent = DateTime.UtcNow
-            };
-
-            _context.Suggestions.Add(suggestion1);
-            _context.Suggestions.Add(suggestion2);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Test suggestions added successfully." });
-        }
     }
 }
