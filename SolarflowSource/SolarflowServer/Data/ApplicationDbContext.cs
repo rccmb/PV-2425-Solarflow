@@ -66,6 +66,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(a => a.Brief).HasMaxLength(255).IsRequired();
             entity.Property(a => a.IPAddress).HasMaxLength(50);
             entity.Property(a => a.Timestamp).HasDefaultValueSql("GETDATE()");
+
         });
 
         // MAPPING THE BATTERY.
