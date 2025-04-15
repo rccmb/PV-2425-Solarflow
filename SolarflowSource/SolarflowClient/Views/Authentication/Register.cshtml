@@ -5,9 +5,9 @@
 
 @model SolarflowClient.Models.ViewModels.Authentication.RegisterViewModel
 
-<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-<link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+<link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true"/>
+<link href="~/css/background.css" rel="stylesheet" type="text/css" asp-append-version="true"/>
+<link href="~/css/authentication/authentication-global.css" rel="stylesheet" type="text/css" asp-append-version="true"/>
 
 <script>
     function togglePassword1() {
@@ -22,64 +22,102 @@
 </script>
 
 <body class="authentication-body">
-    <div style="margin-top: 30px">
-        <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
-        <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
-        <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
+<div style="margin-top: 30px">
+    <img class="authentication-solarflow-logo" src="~/images/logo_cropped.png" alt="image">
+    <h1 class="authentication-solarflow-title">SOLARFLOW</h1>
+    <h2 class="authentication-solarflow-slogan">Energy Management Dashboard</h2>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="authentication-error-container">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p class="authentication-error-message">@error.ErrorMessage</p>
+        }
+    </div>
+}
+
+<h1 class="authentication-form-title">Register</h1>
+
+<form class="authentication-form" asp-action="Register" method="post">
+    <div class="authentication-input-div">
+        <label class="authentication-form-label">Full Name</label>
+        <input asp-for="Fullname" class="authentication-form-text-input"/>
     </div>
 
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="authentication-error-container">
-            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-            {
-                <p class="authentication-error-message">@error.ErrorMessage</p>
-            }
-        </div>
-    }
-
-    <h1 class="authentication-form-title">Register</h1>
-
-    <form class="authentication-form" asp-action="Register" method="post">
-        <div class="authentication-input-div">
-            <label class="authentication-form-label">Full Name</label>
-            <input asp-for="Fullname" class="authentication-form-text-input" />
-        </div>
-
-        <div class="authentication-input-div">
-            <label class="authentication-form-label">Email</label>
-            <input asp-for="Email" class="authentication-form-text-input" />
-        </div>
-
-        <div class="authentication-input-div">
-            <label class="authentication-form-label">Password</label>
-            <div class="input-wrapper">
-                <input id="passwordInput1" asp-for="Password" type="password" class="authentication-form-text-input" />
-                <button type="button" onclick="togglePassword1()" class="toggle-password">
-                    👁️
-                </button>
-            </div>
-            
-        </div>
-
-        <div class="authentication-input-div">
-            <label class="authentication-form-label">Confirm Password</label>
-            <div class="input-wrapper">
-                <input id="passwordInput2" asp-for="ConfirmPassword" type="password" class="authentication-form-text-input" />
-                <button type="button" onclick="togglePassword2()" class="toggle-password">
-                    👁️
-                </button>
-            </div>
-        </div>
-
-        <button type="submit" class="authentication-form-button background-blue">Register</button>
-    </form>
-
-    <div class="authentication-form-footer">
-        <a asp-action="Login" class="authentication-form-link" style="color: white;">Back to Login</a>
+    <div class="authentication-input-div">
+        <label class="authentication-form-label">Email</label>
+        <input asp-for="Email" class="authentication-form-text-input"/>
     </div>
+
+    <div class="authentication-input-div">
+        <label class="authentication-form-label">Password</label>
+        <div class="input-wrapper">
+            <input id="passwordInput1" asp-for="Password" type="password" class="authentication-form-text-input"/>
+            <button type="button" onclick="togglePassword1()" class="toggle-password">
+                👁️
+            </button>
+        </div>
+
+    </div>
+
+    <div class="authentication-input-div">
+        <label class="authentication-form-label">Confirm Password</label>
+        <div class="input-wrapper">
+            <input id="passwordInput2" asp-for="ConfirmPassword" type="password" class="authentication-form-text-input"/>
+            <button type="button" onclick="togglePassword2()" class="toggle-password">
+                👁️
+            </button>
+        </div>
+    </div>
+
+    <input type="hidden" id="Latitude" name="Latitude"/>
+    <input type="hidden" id="Longitude" name="Longitude"/>
+
+    <button type="submit" class="authentication-form-button background-blue">Register</button>
+</form>
+
+<div class="authentication-form-footer">
+    <a asp-action="Login" class="authentication-form-link" style="color: white;">Back to Login</a>
+</div>
 </body>
 
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+        } else {
+            console.log("Geolocation is not supported by this browser.");
+        }
 
+        function successCallback(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            console.log("Latitude: " + latitude + ", Longitude: " + longitude);
 
+            // Set the hidden fields with the obtained coordinates
+            document.getElementById("Latitude").value = latitude;
+            document.getElementById("Longitude").value = longitude;
+        }
+
+        function errorCallback(error) {
+            console.error("Error retrieving location: ", error);
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    console.log("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    console.log("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    console.log("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    console.log("An unknown error occurred.");
+                    break;
+            }
+        }
+    });
+</script>
