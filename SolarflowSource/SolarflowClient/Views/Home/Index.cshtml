@@ -4,63 +4,111 @@
 @{
     ViewData["Title"] = "Dashboard";
 
+    // NOW -----------------------------------------------------------------------------------------------------------------------
 
-    // Chart House Consumption 
-    var chartHouseConsumption = (Model.LastEnergyRecord?.House ?? 0) * -1;
-
-    // Chart Solar Production vs. House Consumption 
-    var chartSolarHouseDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("dd-MM-yyyy HH:mm")).ToList() ?? [];
-    var chartSolarHouseProduction = Model.EnergyRecords?.Select(record => record.Solar > 0 ? record.Solar : 0).ToList() ?? [];
-    var chartSolarHouseConsumption = Model.EnergyRecords?.Select(record =>
-            (record.Battery < 0 ? record.Battery : 0) +
-            (record.Grid < 0 ? record.Grid : 0) +
-            record.House)
-        .ToList() ?? [];
+    // NOW Consumption 
+    var nowConsumption = Math.Abs(
+        (Model.LastEnergyRecord?.House ?? 0.0) +
+        ((Model.LastEnergyRecord?.Battery ?? 0.0) < 0.0 ? Model.LastEnergyRecord?.Battery ?? 0.0 : 0.0));
 
 
-    var chartConsumptionBattery = Model.EnergyRecords?
-        .Select(record => record.Battery > 0.0
-            ? record.Battery
-            : 0.0
-        ).ToList() ?? [];
+    // NOW Forecast Icon
+    var mostCommonWeatherCondition = Model.Forecast?
+        .GroupBy(forecast => forecast.WeatherCondition)
+        .OrderByDescending(group => group.Count())
+        .Select(group => group.Key)
+        .FirstOrDefault() ?? "";
 
-    var chartConsumptionGrid = Model.EnergyRecords?
-        .Select(record => record.Grid > 0.0
-            ? record.Grid
-            : 0.0
-        ).ToList() ?? [];
-
-    var chartConsumptionSolar = Model.EnergyRecords?
-        .Select(record =>
-        {
-            var sum = Math.Min(Math.Abs(record.House), record.Solar);
-            return sum > 0 ? Math.Abs(sum) : 0.0;
-        }).ToList() ?? [];
-
-    // Chart Battery Level
-    var chartBatteryLevel = Model.Battery?.CapacityLevel ?? 0;
-    var (chartBatteryBackgroundColor, chartBatteryBorderColor) = chartBatteryLevel switch
-    {
-        >= 60 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
-        >= 40 => ("rgba(243, 146, 55, 0.6)", "rgba(243, 146, 55, 1)"),
-        _ => ("rgba(219, 83, 117, 0.6)", "rgba(219, 83, 117, 1)")
-    };
-
-    // Chart Forecast
-    var chartForecastDate = Model.Forecast?.Select(forecast => forecast.ForecastDate.ToString("yy-MM-dd")).ToList() ?? [];
-    var chartForecastData = Model.Forecast?.Select(forecast => (int)forecast.SolarHoursExpected).ToList() ?? [];
-
-    // --- Weather Icon Based On First Forecast ---
-    var firstForecastDay = Model.Forecast?.FirstOrDefault();
-    var firstForecastDayWeather = firstForecastDay?.WeatherCondition ?? "";
-
-    var urlForecastIcon = firstForecastDayWeather switch
+    var urlForecastIcon = mostCommonWeatherCondition switch
     {
         "Partly Cloudy" => "/images/weather/partly_cloudy.png",
         "Cloudy" => "/images/weather/cloudy.png",
         "Very Cloudy" => "/images/weather/very_cloudy.png",
         _ => "/images/weather/clear.png"
     };
+
+
+    // NOW Forecast
+    var nowForecastDate = Model.Forecast?.Select(forecast => forecast.ForecastDate.ToString("d")).ToList() ?? [];
+    var nowForecastData = Model.Forecast?.Select(forecast => forecast.SolarHoursExpected).ToList() ?? [];
+
+
+    // NOW Battery Capacity Level
+    var nowBatteryCapacityLevel = Model.Battery?.CapacityLevel ?? 0;
+    var (nowBatteryCapacityLevelBackgroundColor, nowBatteryCapacityLevelBorderColor) = nowBatteryCapacityLevel switch
+    {
+        >= 60 => ("rgba(68, 187, 164, 0.6)", "rgba(68, 187, 164, 1)"),
+        >= 40 => ("rgba(243, 146, 55, 0.6)", "rgba(243, 146, 55, 1)"),
+        _ => ("rgba(219, 83, 117, 0.6)", "rgba(219, 83, 117, 1)")
+    };
+
+
+    // CHARTS --------------------------------------------------------------------------------------------------------------------
+
+    var chartDates = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("g")).ToList() ?? [];
+
+
+    // CHART Balance (Production vs. Consumption)
+
+    var chartBalanceProduction = Model.EnergyRecords?.Select(record =>
+            record.Solar > 0.0 ? record.Solar : 0.0)
+        .ToList() ?? [];
+
+    var chartBalanceConsumption = Model.EnergyRecords?.Select(record =>
+            record.House +
+            (record.Battery < 0.0 ? record.Battery : 0.0))
+        .ToList() ?? [];
+
+
+    // CHART Consumption Source
+
+    var chartConsumptionSolar = Model.EnergyRecords?.Select(record =>
+        {
+            var houseConsumptionSolar = Math.Min(Math.Abs(record.House), record.Solar);
+            var quotaSolar = record.Solar - houseConsumptionSolar;
+            var batteryCandidate = record.Battery < 0.0 ? Math.Abs(record.Battery) : 0.0;
+            var batteryConsumptionSolar = Math.Min(batteryCandidate, quotaSolar);
+            return houseConsumptionSolar + batteryConsumptionSolar;
+        })
+        .ToList() ?? [];
+
+    var chartConsumptionBattery = Model.EnergyRecords?.Select(record =>
+            record.Battery > 0.0 ? record.Battery : 0.0)
+        .ToList() ?? [];
+
+    var chartConsumptionGrid = Model.EnergyRecords?.Select(record =>
+            record.Grid > 0.0 ? record.Grid : 0.0)
+        .ToList() ?? [];
+
+    // CHART Battery Source
+
+    var chartBatterySolar = Model.EnergyRecords?.Select(record =>
+        {
+            var houseConsumptionSolar = Math.Min(Math.Abs(record.House), record.Solar);
+            var quotaSolar = record.Solar - houseConsumptionSolar;
+            var batteryCandidate = record.Battery < 0.0 ? Math.Abs(record.Battery) : 0.0;
+            return Math.Min(batteryCandidate, quotaSolar);
+        })
+        .ToList() ?? [];
+
+    var chartBatteryGrid = Model.EnergyRecords?
+        .Zip(chartBatterySolar, (record, batterySolar) =>
+        {
+            var total = record.Solar + record.House + record.Grid;
+            var gridValue = total > 0.0 ? total : 0.0;
+            return gridValue - batterySolar;
+        })
+        .ToList() ?? new List<double>();
+
+    var chartBatteryDischarge = Model.EnergyRecords?.Select(record =>
+            record.Battery > 0.0 ? -record.Battery : 0.0)
+        .ToList() ?? [];
+
+
+    // CHART Grid Sell
+    var chartGridSell = Model.EnergyRecords?.Select(record =>
+            record.Grid < 0.0 ? -record.Grid : 0.0)
+        .ToList() ?? [];
 }
 
 <!DOCTYPE html>
@@ -102,7 +150,7 @@
             {
                 <div class="chart-item">
                     <h2>Energy Usage</h2>
-                    <p>@chartHouseConsumption kWh</p>
+                    <p>@nowConsumption kWh</p>
                 </div>
             }
 
@@ -112,7 +160,7 @@
             {
                 <div class="chart-item">
                     <h2>Weather Prevision</h2>
-                        <img src="@urlForecastIcon" alt="@firstForecastDayWeather" width="100" height="100"/>
+                    <img src="@urlForecastIcon" alt="@mostCommonWeatherCondition" width="100" height="100"/>
                 </div>
             }
 
@@ -180,6 +228,28 @@
                 </div>
             }
 
+            <!-- Energy Consumption -->
+            @if (Model.EnergyRecords != null)
+            {
+                <div class="chart-item">
+                    <h2>Battery</h2>
+                    <div>
+                        <canvas id="chartBatteryCharged"></canvas>
+                    </div>
+                </div>
+            }
+            
+            
+            <!-- Energy Consumption -->
+            @if (Model.EnergyRecords != null)
+            {
+                <div class="chart-item">
+                    <h2>Battery Charge</h2>
+                    <div>
+                            <canvas id="chartGridSell"></canvas>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -203,9 +273,9 @@
                             labels: ['Battery'],
                             datasets: [{
                                 label: 'Battery Level',
-                                data: [@Html.Raw(Json.Serialize(chartBatteryLevel))],
-                                backgroundColor: @Html.Raw(Json.Serialize(chartBatteryBackgroundColor)),
-                                borderColor: @Html.Raw(Json.Serialize(chartBatteryBorderColor)),
+                                data: [@Html.Raw(Json.Serialize(nowBatteryCapacityLevel))],
+                                backgroundColor: @Html.Raw(Json.Serialize(nowBatteryCapacityLevelBackgroundColor)),
+                                borderColor: @Html.Raw(Json.Serialize(nowBatteryCapacityLevelBorderColor)),
                                 borderWidth: 1
                             }]
                         },
@@ -230,17 +300,17 @@
                 new Chart(document.getElementById('chartConsumptionProduction').getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: @Html.Raw(Json.Serialize(chartSolarHouseDate)),
+                    labels: @Html.Raw(Json.Serialize(chartDates)),
                     datasets: [{
-                        label: 'Gains',
-                        data: @Html.Raw(Json.Serialize(chartSolarHouseProduction)),
+                        label: 'Production',
+                        data: @Html.Raw(Json.Serialize(chartBalanceProduction)),
                         fill: true,
                         backgroundColor: "rgba(231,187,65, 0.6)",
                         borderColor: "rgba(231,187,65, 1)",
                         borderWidth: 1
                     }, {
                         label: 'Consumption',
-                        data: @Html.Raw(Json.Serialize(chartSolarHouseConsumption)),
+                        data: @Html.Raw(Json.Serialize(chartBalanceConsumption)),
                         fill: true,
                         backgroundColor: "rgba(57,62,65, 0.6)",
                         borderColor: "rgba(57,62,65, 1)",
@@ -254,7 +324,12 @@
                         legend: {
                             display: false
                         }
-                    }
+                    },
+                                            plugins: {
+                                legend: {
+                                    display: true // or false if you don't want to show dataset labels
+                                }
+                            }
                 }
             });
         </text>
@@ -267,7 +342,7 @@
             new Chart(document.getElementById('chartConsumptionStacked').getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: @Html.Raw(Json.Serialize(chartSolarHouseDate)), // e.g., timestamps or other x-axis labels
+                    labels: @Html.Raw(Json.Serialize(chartDates)), // e.g., timestamps or other x-axis labels
                     datasets: [
                         {
                             label: 'Grid',
@@ -316,14 +391,115 @@
             </text>
         }
 
+        @if (Model.EnergyRecords != null)
+        {
+            <text>
+                    // Example: stacked line chart
+                    new Chart(document.getElementById('chartBatteryCharged').getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: @Html.Raw(Json.Serialize(chartDates)), // e.g., timestamps or other x-axis labels
+                            datasets: [
+                                {
+                                    label: 'Charge Grid',
+                                    data: @Html.Raw(Json.Serialize(chartBatteryGrid)),
+                                    fill: true,
+                                    backgroundColor: "rgba(0, 0, 255, 0.4)",
+                                    borderColor: "rgba(0, 0, 255, 1)",
+                                    borderWidth: 1,
+                                    // Group this dataset with the other charging values.
+                                    stack: "charges"
+                                },
+                                {
+                                    label: 'Charge Solar',
+                                    data: @Html.Raw(Json.Serialize(chartBatterySolar)),
+                                    fill: true,
+                                    backgroundColor: "rgba(255, 165, 0, 0.4)",
+                                    borderColor: "rgba(255, 165, 0, 1)",
+                                    borderWidth: 1,
+                                    // Same stack group so these values are stacked together.
+                                    stack: "charges"
+                                },
+                                {
+                                    label: 'Discharge',
+                                    // Multiply each value by -1 so they are rendered as negative.
+                                    data: @Html.Raw(Json.Serialize(chartBatteryDischarge)),
+                                    fill: true,
+                                    backgroundColor: "rgba(57,62,65, 0.6)",
+                                    borderColor: "rgba(57,62,65, 1)",
+                                    borderWidth: 1,
+                                    // Place in a separate stack group to prevent stacking with the charge datasets.
+                                    stack: "discharge"
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    stacked: true  // Enable stacking on the y-axis.
+                                },
+                                x: {
+                                    // optional x-axis config
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true // Show dataset labels.
+                                }
+                            }
+                        }
+                    });
+            </text>
+        }
+
+        @if (Model.EnergyRecords != null)
+        {
+            <text>
+        new Chart(document.getElementById('chartGridSell').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(chartDates)), // e.g., timestamps or labels for the x-axis
+                datasets: [
+                    {
+                        label: 'Grid Sell',
+                        data: @Html.Raw(Json.Serialize(chartGridSell)),
+                        backgroundColor: "rgba(75, 192, 192, 0.6)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    },
+                    x: {
+                        // optional x-axis configuration
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                }
+            }
+        });
+    </text>
+        }
+
         // Chart Solar Prevision
         new Chart(document.getElementById('chartSolarPrevision').getContext('2d'), {
             type: 'line',
             data: {
-                labels: @Html.Raw(Json.Serialize(chartForecastDate)),
+                labels: @Html.Raw(Json.Serialize(nowForecastDate)),
                 datasets: [{
                     label: 'Gains',
-                    data: @Html.Raw(Json.Serialize(chartForecastData)),
+                    data: @Html.Raw(Json.Serialize(nowForecastData)),
                     fill: true,
                     backgroundColor: "rgba(231,187,65, 0.6)",
                     borderColor: "rgba(231,187,65, 1)",

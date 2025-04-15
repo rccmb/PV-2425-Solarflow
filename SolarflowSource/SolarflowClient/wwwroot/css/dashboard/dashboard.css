@@ -77,7 +77,7 @@
 /* Select children 5 to 7 */
 
 
-#dashboard-charts-energy > div:nth-child(n + 5):nth-child(-n + 7) { flex-basis: 100%; }
+#dashboard-charts-energy > div:nth-child(n + 5):nth-child(-n + 9) { flex-basis: 100%; }
 
 #dashboard-charts-battery {
     align-content: stretch;
