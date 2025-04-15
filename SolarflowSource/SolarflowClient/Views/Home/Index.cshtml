@@ -212,7 +212,7 @@
             @if (Model.EnergyRecords != null)
             {
                 <div class="chart-item">
-                    <h2>Solar Production / House Consumption</h2>
+                    <h2>Production vs. Consumption </h2>
                     <div>
                         <canvas id="chartConsumptionProduction"></canvas>
                     </div>
@@ -312,8 +312,7 @@
         // Chart Solar Production vs. House Consumption
         @if (Model.EnergyRecords != null)
         {
-            <text>
-            // Chart Consumption vs. Production
+        <text>
                 new Chart(document.getElementById('chartConsumptionProduction').getContext('2d'), {
                 type: 'line',
                 data: {
@@ -339,7 +338,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: false
+                            display: true
                         }
                     }
                 }
@@ -511,7 +510,7 @@
                 labels: @Html.Raw(Json.Serialize(chartDates)), // e.g., timestamps or labels for the x-axis
                 datasets: [
                     {
-                        label: 'Grid Sell',
+                        label: 'Solar Energy',
                         data: @Html.Raw(Json.Serialize(chartGridSell)),
                         backgroundColor: "rgba(75, 192, 192, 0.6)",
                         borderColor: "rgba(75, 192, 192, 1)",
