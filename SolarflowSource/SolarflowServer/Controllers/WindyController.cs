@@ -31,9 +31,19 @@ namespace SolarflowClient.Controllers
             var config = new WindyConfig
             {
                 ApiKey = _configuration["WindyMapAPI:Key"],
+               
                 Lat = user.Latitude,
                 Lon = user.Longitude
             };
+            Console.WriteLine("000000000000000000");
+            Console.WriteLine(config);
+            Console.WriteLine("aaaaaaaaaaaaaaaaaaa");
+            Console.WriteLine(userId);
+            Console.WriteLine("bbbbbbbbbbbbbbbbbb");
+            Console.WriteLine(user.Longitude);
+            Console.WriteLine("ccccccccccccccccccc");
+            Console.WriteLine(user.Latitude);
+            Console.WriteLine("ddddddddddddddddddddd");
 
             return Ok(config);
         }

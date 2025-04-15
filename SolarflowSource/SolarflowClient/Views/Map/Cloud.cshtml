@@ -1,29 +1,48 @@
 ﻿@{
-    ViewBag.Title = "Mapa de Nuvens";
+    ViewBag.Title = "Weather Map";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<link href="~/css/Map/Map.css" rel="stylesheet" asp-append-version="true" />
 
+<div class="weather-container">
+    <h2 class="title">Windy Weather Map</h2>
 
-<div id="windy" style="width: 100%; height: 600px;"></div>
+    <div id="windy"></div>
+</div>
 
-<!-- Leaflet 1.4.0 -->
 <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
-
-<!-- Windy API -->
 <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
 
 <script>
-    const options = {
-        key: '8JWdiwhrEfTaNvrmvB4zwkWzfwSTikO3', 
-        verbose: true,
-        lat: 38.6433,   
-        lon: -9.0326,
-        zoom: 35,
-        overlay: 'clouds',
-    };
+    let windyAPIRef = null;
 
-    windyInit(options, windyAPI => {
-        const { map } = windyAPI;
-    });
+    function initWindy(config) {
+        const options = {
+            key: config.apiKey,
+            verbose: true,
+            lat: config.lat,
+            lon: config.lon,
+            zoom: 15,
+            overlay: 'clouds',
+        };
+
+        windyInit(options, windyAPI => {
+            windyAPIRef = windyAPI;
+        
+        });
+    }
+
+
+    fetch('/Map/GetConfig')
+        .then(response => {
+            if (!response.ok) throw new Error("Error getting Windy config.");
+            return response.json();
+        })
+        .then(config => {
+            initWindy(config);
+        })
+        .catch(error => {
+            console.error("Failed to load Windy map:", error);
+        });
 </script>
