@@ -34,10 +34,29 @@
         <div class="notification-content">
             <div class="notification-text">
                 <p class="battery-form-title">Battery Capacity: @Model.ChargeLevel%</p>
-
+                <p >Last Update: @Model.LastUpdate</p>
                 <form method="post" action="/Battery/UpdateBattery">
                     <div>
                         <div class="battery-form-group">
+
+
+                            <div class="battery-input-group">
+                                <label class="battery-input-label">Capacity</label>
+                                <input class="battery-input" type="number" step="0.01" name="CapacityMax" value="@Model.CapacityMax"/>
+                                <span asp-validation-for="CapacityMax" class="text-danger"></span>
+                            </div>
+                            <div class="battery-input-group">
+                                <label class="battery-input-label">Charge Rate</label>
+                                <input class="battery-input" type="number" step="0.01" name="ChargeRate" value="@Model.ChargeRate"/>
+                                <span asp-validation-for="ChargeRate" class="text-danger"></span>
+                            </div>
+                            <div class="battery-input-group">
+                                <label class="battery-input-label">Discharge Rate</label>
+                                <input class="battery-input" type="number" step="0.01" name="DischargeRate" value="@Model.DischargeRate"/>
+                                <span asp-validation-for="DischargeRate" class="text-danger"></span>
+                            </div>
+
+
                             <div class="battery-input-group">
                                 <label class="battery-input-label">Battery Mode</label>
                                 <select class="battery-input" name="ChargeMode">
@@ -55,6 +74,7 @@
                                 </select>
                                 <span asp-validation-for="ChargeMode" class="text-danger"></span>
                             </div>
+
 
                             @if (Model.ChargeMode == BatteryMode.Personalized)
                             {
@@ -78,20 +98,19 @@
                                 </div>
 
                                 <div class="battery-input-group">
-                                    <label class="battery-input-label">Minimal Threshold</label>
+                                    <label>Minimal Threshold</label>
                                     <input class="battery-input" type="number" name="ThresholdMin" min="0" max="100" value="@Model.ThresholdMin"/>
                                     <span asp-validation-for="ThresholdMin" class="text-danger"></span>
                                 </div>
 
                                 <div class="battery-input-group">
-                                    <label class="battery-input-label">Maximal Threshold</label>
+                                    <label>Maximal Threshold</label>
                                     <input class="battery-input" type="number" name="ThresholdMax" min="0" max="100" value="@Model.ThresholdMax"/>
                                     <span asp-validation-for="ThresholdMax" class="text-danger"></span>
                                 </div>
 
                                 @if (Model.ChargeSource != BatterySource.Solar)
                                 {
-
                                     <div class="battery-input-group">
                                         <label class="battery-input-label">Charging Schedules</label>
                                         <div class="battery-time-group">

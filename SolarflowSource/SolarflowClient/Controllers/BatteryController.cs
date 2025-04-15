@@ -120,6 +120,8 @@ namespace SolarflowClient.Controllers
                 return RedirectToAction("Login", "Authentication");
             }
 
+            Console.WriteLine(model.CapacityMax);
+
             if (!ModelState.IsValid)
             {
                 return View("Index", model);

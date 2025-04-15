@@ -10,18 +10,21 @@
 
     // Chart Solar Production vs. House Consumption 
     var chartSolarHouseDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("dd-MM-yyyy HH:mm")).ToList() ?? [];
-    var chartSolarHouseProduction = Model.EnergyRecords?.Select(record => record.Solar).ToList() ?? [];
-    var chartSolarHouseConsumption = Model.EnergyRecords?.Select(record => record.House).ToList() ?? [];
+    var chartSolarHouseProduction = Model.EnergyRecords?.Select(record => record.Solar < 0 ? record.Solar : 0).ToList() ?? [];
+    var chartSolarHouseConsumption = Model.EnergyRecords?.Select(record =>
+            (record.Battery > 0 ? record.Battery : 0) +
+            (record.Grid > 0 ? record.Grid : 0))
+        .ToList() ?? [];
 
 
     var chartConsumptionBattery = Model.EnergyRecords?
-        .Select(record => record.Battery > 0
+        .Select(record => record.Battery > 0.0
             ? record.Battery
             : 0.0
         ).ToList() ?? [];
 
     var chartConsumptionGrid = Model.EnergyRecords?
-        .Select(record => record.Grid > 0
+        .Select(record => record.Grid > 0.0
             ? record.Grid
             : 0.0
         ).ToList() ?? [];
@@ -134,7 +137,7 @@
             @if (Model.Battery != null)
             {
                 <div class="chart-item">
-                    <h2>@Model.Battery.CapacityLevel @Model.Battery.CapacityMax Battery @chartBatteryLevel Status</h2>
+                    <h2>@Model.Battery.Capacity @Model.Battery.CapacityLevel @Model.Battery.CapacityMax Battery @chartBatteryLevel Status</h2>
                     <canvas id="chartBattery"></canvas>
                 </div>
             }
