@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Models.Enums;
 using SolarflowServer.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SolarflowServer.Controllers
 {
@@ -14,6 +15,7 @@ namespace SolarflowServer.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SuggestionController : ControllerBase
     {
         private readonly ISuggestionService _suggestionService;

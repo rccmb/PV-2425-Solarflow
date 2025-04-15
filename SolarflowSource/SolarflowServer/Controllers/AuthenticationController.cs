@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
+using SolarflowServer.DTOs.Notification;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
 using SolarflowServer.Services;
@@ -21,6 +22,7 @@ public class AuthenticationController : ControllerBase
 {
     private readonly IAuditService _auditService;
     private readonly IConfiguration _configuration;
+    private readonly INotificationService _notificationService;
     private readonly ApplicationDbContext _context;
     private readonly DemoService _demoService;
     private readonly EmailSender _emailSender;
@@ -49,7 +51,8 @@ public class AuthenticationController : ControllerBase
         IAuditService auditService,
         EmailSender emailSender,
         ApplicationDbContext context,
-        DemoService demoService
+        DemoService demoService,
+        INotificationService notificationService
     )
     {
         _userManager = userManager;
@@ -61,6 +64,7 @@ public class AuthenticationController : ControllerBase
         _context = context;
         _emailSender = emailSender;
         _demoService = demoService;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -190,6 +194,14 @@ public class AuthenticationController : ControllerBase
         if (!viewResult.Succeeded) return BadRequest(viewResult.Errors);
 
         user.ViewAccount = viewAccount;
+
+        await _notificationService.CreateNotificationAsync(
+            user.Id,
+            new NotificationCreateDto
+            {
+                Title = "View Account",
+                Description = $"Your View Account was created successfully."
+            });
 
         // await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered", GetClientIPAddress());
         return Ok(new { message = "ViewAccount registered successfully!" });
@@ -437,6 +449,14 @@ public class AuthenticationController : ControllerBase
 
         await _userManager.UpdateAsync(user);
 
+        await _notificationService.CreateNotificationAsync(
+            user.Id,
+            new NotificationCreateDto
+            {
+                Title = "Settings Account",
+                Description = $"Your settings edited successfully."
+            });
+
         // await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
         return Ok(new { message = "User updated successfully!" });
     }
@@ -470,6 +490,14 @@ public class AuthenticationController : ControllerBase
 
         if (!result.Succeeded)
             return BadRequest(new { error = "An error occurred while deleting the View Account." });
+
+        await _notificationService.CreateNotificationAsync(
+            user.Id,
+            new NotificationCreateDto
+            {
+                Title = "View Account",
+                Description = $"Your View Account was deleted successfully."
+            });
 
         // await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
         return Ok(new { message = "View Account deleted successfully!" });

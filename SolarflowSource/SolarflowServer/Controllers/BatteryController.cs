@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SolarflowServer.DTOs.Notification;
+using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
 
 /// <summary>
@@ -14,16 +16,18 @@ public class BatteryController : ControllerBase
 {
     private readonly IAuditService _auditService;
     private readonly ApplicationDbContext _context;
+    private readonly INotificationService _notificationService;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="BatteryController" /> class.
     /// </summary>
     /// <param name="context">The application database context used for battery operations.</param>
     /// <param name="auditService">The audit service used for logging actions.</param>
-    public BatteryController(ApplicationDbContext context, IAuditService auditService)
+    public BatteryController(ApplicationDbContext context, IAuditService auditService, INotificationService notificationService)
     {
         _context = context;
         _auditService = auditService;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -90,6 +94,14 @@ public class BatteryController : ControllerBase
 
         _context.Batteries.Update(battery);
         await _context.SaveChangesAsync();
+
+        await _notificationService.CreateNotificationAsync(
+            battery.Id,
+            new NotificationCreateDto
+            {
+                Title = "Battery update",
+                Description = $"Your battery settings have been updated successfully."
+            });
 
         // await _auditService.LogAsync(userId, "Battery Update", "Battery Successfully Updated", GetClientIPAddress());
         return Ok(new { message = "Battery settings updated successfully!" });
