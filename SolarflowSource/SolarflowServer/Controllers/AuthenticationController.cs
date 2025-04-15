@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
-using SolarflowServer.Models.Enums;
 using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
 
@@ -84,8 +83,8 @@ public class AuthenticationController : ControllerBase
             CreatedAt = DateTime.UtcNow,
             GridKWh = 10.35,
             SolarKWh = 3.5,
-            Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
-            Longitude = Math.Round(random.NextDouble() * (40 - -10) + -10, 5)
+            Latitude = Math.Round(model.Latitude ?? random.NextDouble() * (70 - 35) + 35, 4),
+            Longitude = Math.Round(model.Longitude ?? random.NextDouble() * (40 - -10) + -10, 4)
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -94,7 +93,7 @@ public class AuthenticationController : ControllerBase
 
         var battery = new Battery
         {
-            User = user,
+            User = user
         };
 
         _context.Batteries.Add(battery);

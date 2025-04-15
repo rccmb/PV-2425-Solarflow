@@ -19,5 +19,9 @@ namespace SolarflowClient.Models.ViewModels.Authentication
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; }
+
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
     }
 }
