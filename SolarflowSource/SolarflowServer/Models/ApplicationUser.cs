@@ -7,6 +7,10 @@ using SolarflowServer.Models;
 /// </summary>
 public class ApplicationUser : IdentityUser<int>
 {
+    private double _latitude;
+
+    private double _longitude;
+
     /// <summary>
     ///     Gets or sets the full name of the user.
     /// </summary>
@@ -41,13 +45,22 @@ public class ApplicationUser : IdentityUser<int>
     ///     Gets or sets the latitude of the user's location.
     /// </summary>
     [Required]
-    public double Latitude { get; set; }
+    public double Latitude
+    {
+        get => _latitude;
+        set => _latitude = Math.Round(value, 4);
+    }
+
 
     /// <summary>
     ///     Gets or sets the longitude of the user's location.
     /// </summary>
     [Required]
-    public double Longitude { get; set; }
+    public double Longitude
+    {
+        get => _longitude;
+        set => _longitude = Math.Round(value, 4);
+    }
 
 
     /// <summary>

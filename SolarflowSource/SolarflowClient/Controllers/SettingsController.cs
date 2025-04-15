@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SolarflowClient.Models.ViewModels.Authentication;
 using SolarflowClient.Models.ViewModels.Settings;
 
 namespace SolarflowClient.Controllers;
@@ -41,7 +40,6 @@ public class SettingsController : Controller
     /// <returns>The settings view with user data or an error message.</returns>
     public async Task<IActionResult> Index()
     {
-
         var token = Request.Cookies["AuthToken"];
         if (string.IsNullOrEmpty(token))
         {
@@ -65,9 +63,8 @@ public class SettingsController : Controller
         if (response.IsSuccessStatusCode)
         {
             var userData = await response.Content.ReadAsStringAsync();
-            Console.Write(userData);
-            var model = JsonConvert.DeserializeObject<GetUserViewModel>(userData);
- 
+            var model = JsonConvert.DeserializeObject<SettingsModelView>(userData);
+
 
             return View(model);
         }
@@ -101,7 +98,7 @@ public class SettingsController : Controller
     ///     re-renders the form with validation errors or an error message on failure.
     /// </returns>
     [HttpPost]
-    public async Task<IActionResult> UpdateUser(ChangeUserModelView model)
+    public async Task<IActionResult> UpdateUser(SettingsModelView model)
     {
         var token = Request.Cookies["AuthToken"];
         if (string.IsNullOrEmpty(token))
@@ -109,6 +106,8 @@ public class SettingsController : Controller
             TempData["ErrorMessage"] = "You must be logged in to update your account.";
             return RedirectToAction("Login", "Authentication");
         }
+
+        Console.WriteLine(model.GridKWh);
 
         if (!ModelState.IsValid) return View("Index", model);
 

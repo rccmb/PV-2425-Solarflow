@@ -1,4 +1,6 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 using SolarflowClient.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,14 @@ builder.Services.AddDistributedMemoryCache();
 
 var app = builder.Build();
 
+var supportedCultures = new[] { new CultureInfo("en-US") };
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en-US"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+app.UseRequestLocalization(localizationOptions);
 // HTTP PIPELINE
 if (!app.Environment.IsDevelopment())
 {
