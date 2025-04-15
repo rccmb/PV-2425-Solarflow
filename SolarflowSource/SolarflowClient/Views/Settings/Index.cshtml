@@ -1,4 +1,4 @@
-﻿@model SolarflowClient.Models.ViewModels.Authentication.GetUserViewModel
+﻿@model SolarflowClient.Models.ViewModels.Settings.SettingsModelView
 @{
     ViewData["Title"] = "Settings Page";
 }
@@ -36,24 +36,24 @@
 
                     <div class="settings-input-group">
                         <label>Full Name:</label>
-                        <input type="text" name="Fullname" value="@Model.Fullname" required/>
+                        <input type="text" name="Fullname" value="@Model.Fullname" required />
                     </div>
 
                     <div class="settings-input-group">
                         <label>GridKWh:</label>
-                        <input type="number" step="0.00001" name="GridKWh" value="@Model.GridKWh" required/>
+                        <input type="number" step="0.001" name="GridKWh" value="@Model.GridKWh" required/>
                     </div>
                     <div class="settings-input-group">
                         <label>SolarKWh:</label>
-                        <input type="number" step="0.00001" name="SolarKWh" value="@Model.SolarKWh" required/>
+                        <input type="number" step="0.001" name="SolarKWh" value="@Model.SolarKWh" required />
                     </div>
                     <div class="settings-input-group">
                         <label>Latitude:</label>
-                        <input type="number" step="0.00001" name="Latitude" value="@Model.Latitude" required/>
+                        <input type="number" step="0.001" name="Latitude" value="@Model.Latitude" required />
                     </div>
                     <div class="settings-input-group">
                         <label>Longitude:</label>
-                        <input type="number" step="0.00001" name="Longitude" value="@Model.Longitude" required/>
+                        <input type="number" step="0.001" name="Longitude" value="@Model.Longitude" required />
                     </div>
                     <div class="settings-buttons">
                         <button type="reset" class="btn btn-danger">❌ Cancel</button>

@@ -434,6 +434,7 @@ public class AuthenticationController : ControllerBase
 
         if (user == null)
             return NotFound(new { error = "User not found." });
+
         user.Fullname = model.Fullname;
         user.GridKWh = model.GridKWh;
         user.Latitude = model.Latitude;
