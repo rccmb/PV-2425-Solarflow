@@ -7,9 +7,9 @@ using SolarflowServer.Models;
 /// </summary>
 public class ApplicationUser : IdentityUser<int>
 {
-    private double _latitude;
+    private double _latitude = 38.722;
 
-    private double _longitude;
+    private double _longitude = -9.139;
 
     /// <summary>
     ///     Gets or sets the full name of the user.
@@ -19,7 +19,7 @@ public class ApplicationUser : IdentityUser<int>
     /// <summary>
     ///     Gets or sets the URL or path to the user's profile photo.
     /// </summary>
-    public string Photo { get; set; }
+    public string Photo { get; set; } = "";
 
     /// <summary>
     ///     Gets or sets a value indicating whether the user's email has been confirmed.
@@ -67,10 +67,10 @@ public class ApplicationUser : IdentityUser<int>
     ///     Gets or sets the amount of energy drawn from the grid in kilowatt-hours.
     /// </summary>
     [Required]
-    public double GridKWh { get; set; }
+    public double GridKWh { get; set; } = 10.40;
 
     // Demo Columns
-    [Required] public double SolarKWh { get; set; }
+    [Required] public double SolarKWh { get; set; } = 7.50;
 
 
     // Navigation property for EnergyRecords (one-to-many)

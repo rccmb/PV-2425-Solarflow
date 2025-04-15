@@ -10,18 +10,22 @@
 
     // Chart Solar Production vs. House Consumption 
     var chartSolarHouseDate = Model.EnergyRecords?.Select(record => record.Timestamp.ToString("dd-MM-yyyy HH:mm")).ToList() ?? [];
-    var chartSolarHouseProduction = Model.EnergyRecords?.Select(record => record.Solar).ToList() ?? [];
-    var chartSolarHouseConsumption = Model.EnergyRecords?.Select(record => record.House).ToList() ?? [];
+    var chartSolarHouseProduction = Model.EnergyRecords?.Select(record => record.Solar > 0 ? record.Solar : 0).ToList() ?? [];
+    var chartSolarHouseConsumption = Model.EnergyRecords?.Select(record =>
+            (record.Battery < 0 ? record.Battery : 0) +
+            (record.Grid < 0 ? record.Grid : 0) +
+            record.House)
+        .ToList() ?? [];
 
 
     var chartConsumptionBattery = Model.EnergyRecords?
-        .Select(record => record.Battery > 0
+        .Select(record => record.Battery > 0.0
             ? record.Battery
             : 0.0
         ).ToList() ?? [];
 
     var chartConsumptionGrid = Model.EnergyRecords?
-        .Select(record => record.Grid > 0
+        .Select(record => record.Grid > 0.0
             ? record.Grid
             : 0.0
         ).ToList() ?? [];
@@ -87,24 +91,6 @@
         </div>
     </div>
 
-    <form asp-action="Index" asp-controller="Home" method="get">
-        <div id="dashboard-filters">
-            <div class="dashboard-filter-item">
-                <label asp-for="Filter.StartDate"></label>
-                <!-- Using the asp-for helper here, although you might need to adjust the format -->
-                <input asp-for="Filter.StartDate" type="datetime-local" class="form-control"/>
-            </div>
-            <div class="dashboard-filter-item">
-                <label asp-for="Filter.EndDate"></label>
-                <input asp-for="Filter.EndDate" type="datetime-local" class="form-control"/>
-            </div>
-            <div class="dashboard-filter-item">
-                <label asp-for="Filter.TimeInterval"></label>
-                <select asp-for="Filter.TimeInterval" class="form-control" asp-items="Html.GetEnumSelectList<TimeInterval>()"></select>
-            </div>
-            <button type="submit" class="btn btn-primary">Apply Filters</button>
-        </div>
-    </form>
 
     <!-- Dashboard Charts -->
     <div id="dashboard-charts">
@@ -126,18 +112,10 @@
             {
                 <div class="chart-item">
                     <h2>Weather Prevision</h2>
-                    <img src="@urlForecastIcon" alt="@firstForecastDayWeather" width="200" height="200"/>
+                        <img src="@urlForecastIcon" alt="@firstForecastDayWeather" width="100" height="100"/>
                 </div>
             }
 
-            <!-- Battery Status (Percentage) -->
-            @if (Model.Battery != null)
-            {
-                <div class="chart-item">
-                    <h2>@Model.Battery.CapacityLevel @Model.Battery.CapacityMax Battery @chartBatteryLevel Status</h2>
-                    <canvas id="chartBattery"></canvas>
-                </div>
-            }
 
             <!-- Solar Prevision -->
             @if (Model.Forecast != null)
@@ -149,6 +127,36 @@
                     </div>
                 </div>
             }
+
+            <!-- Battery Status (Percentage) -->
+            @if (Model.Battery != null)
+            {
+                <div class="chart-item">
+                    <h2>Battery Status</h2>
+                    <canvas id="chartBattery"></canvas>
+                </div>
+            }
+
+            <div>
+                <form asp-action="Index" asp-controller="Home" method="get">
+                    <div id="dashboard-filters">
+                        <div class="dashboard-filter-item">
+                            <label asp-for="Filter.StartDate"></label>
+                            <!-- Using the asp-for helper here, although you might need to adjust the format -->
+                            <input asp-for="Filter.StartDate" type="datetime-local" class="form-control"/>
+                        </div>
+                        <div class="dashboard-filter-item">
+                            <label asp-for="Filter.EndDate"></label>
+                            <input asp-for="Filter.EndDate" type="datetime-local" class="form-control"/>
+                        </div>
+                        <div class="dashboard-filter-item">
+                            <label asp-for="Filter.TimeInterval"></label>
+                            <select asp-for="Filter.TimeInterval" class="form-control" asp-items="Html.GetEnumSelectList<TimeInterval>()"></select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
 
             <!-- Energy Consumption -->
             @if (Model.EnergyRecords != null)

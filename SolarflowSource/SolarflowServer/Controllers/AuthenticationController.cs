@@ -78,13 +78,8 @@ public class AuthenticationController : ControllerBase
             UserName = model.Email, // Do not remove.
             Email = model.Email, // Do not remove.
             Fullname = model.Fullname,
-            Photo = "",
-            ConfirmedEmail = false,
-            CreatedAt = DateTime.UtcNow,
-            GridKWh = 10.35,
-            SolarKWh = 3.5,
-            Latitude = Math.Round(model.Latitude ?? random.NextDouble() * (70 - 35) + 35, 4),
-            Longitude = Math.Round(model.Longitude ?? random.NextDouble() * (40 - -10) + -10, 4)
+            Latitude = Math.Round(model.Latitude ?? 38.7223, 4),
+            Longitude = Math.Round(model.Longitude ?? -9.1393, 4)
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -100,7 +95,7 @@ public class AuthenticationController : ControllerBase
         await _context.SaveChangesAsync();
 
 
-        const int daysAgo = 7;
+        const int daysAgo = 3;
         const int minutes = 15;
         var start = DateTime.Now.AddDays(-daysAgo);
         var now = DateTime.Now;

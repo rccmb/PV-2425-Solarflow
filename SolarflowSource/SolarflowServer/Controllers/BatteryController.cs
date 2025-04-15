@@ -83,6 +83,9 @@ public class BatteryController : ControllerBase
         battery.ThresholdMax = model.ThresholdMax;
         battery.ChargeGridStartTime = model.ChargeGridStartTime;
         battery.ChargeGridEndTime = model.ChargeGridEndTime;
+        battery.CapacityMax = model.CapacityMax;
+        battery.ChargeRate = model.ChargeRate;
+        battery.DischargeRate = model.DischargeRate;
         battery.LastUpdate = DateTime.UtcNow;
 
         _context.Batteries.Update(battery);
