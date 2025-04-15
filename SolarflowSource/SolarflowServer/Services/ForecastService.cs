@@ -27,7 +27,15 @@ public class ForecastService
         _context = context;
     }
 
-
+    /// <summary>
+    /// Retrieves forecast data from the external API, processes it,
+    /// calculates solar-related metrics, and saves the result to the database.
+    /// </summary>
+    /// <param name="batteryID">The ID of the battery associated with the forecast.</param>
+    /// <param name="latitude">The latitude of the user's location.</param>
+    /// <param name="longitude">The longitude of the user's location.</param>
+    /// <param name="daysAhead">The number of days ahead to retrieve forecasts for.</param>
+    /// <returns>A task that represents the asynchronous save operation.</returns>
     public async Task SaveForecastAsync(int batteryID, double latitude, double longitude, int daysAhead)
     {
         var forecastData = await _windyApiClient.GetWeatherForecastAsync(latitude, longitude);
@@ -60,7 +68,12 @@ public class ForecastService
         }
     }
 
-  
+    /// <summary>
+    /// Retrieves and processes the forecast for the next 7 days without saving it to the database.
+    /// </summary>
+    /// <param name="latitude">The latitude of the user's location.</param>
+    /// <param name="longitude">The longitude of the user's location.</param>
+    /// <returns>A list of processed forecasts containing solar metrics and weather conditions.</returns>
     public async Task<List<Forecast>> GetForecast(double latitude, double longitude)
     {
         var forecastData = await _windyApiClient.GetWeatherForecastAsync(latitude, longitude);
@@ -174,6 +187,7 @@ public class ForecastService
         };
     }
 }
+
 
 /// <summary>
 /// DTO representing the output of the current forecast calculation.

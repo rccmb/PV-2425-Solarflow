@@ -7,6 +7,8 @@ namespace SolarflowClient.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
+
     public class WindyController : ControllerBase
     {
         private readonly IConfiguration _configuration;
