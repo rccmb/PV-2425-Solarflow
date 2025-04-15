@@ -366,4 +366,6 @@ public class HomeController : Controller
         /// </summary>
         public int Gain { get; set; }
     }
+
+
 }
