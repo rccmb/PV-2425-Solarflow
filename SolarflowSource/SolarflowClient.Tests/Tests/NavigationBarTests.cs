@@ -28,7 +28,7 @@ public class NavigationTests
             Assert.Contains("/Home/Index", driver.Url);
 
             // Navigate through menu items
-            string[] menuItems = { "Home", "Battery", "Suggestions", "Notifications", "Settings" };
+            string[] menuItems = { "Home", "Battery",  "Notifications", "Settings" };
             foreach (string item in menuItems)
             {
                 IWebElement menuItem = driver.FindElement(By.XPath($"//a[contains(@href, '/{item}/Index')]"));
@@ -36,6 +36,16 @@ public class NavigationTests
                 wait.Until(d => d.Url.Contains($"/{item}/Index"));
                 Assert.Contains($"/{item}/Index", driver.Url);
             }
+
+            IWebElement mapButton = driver.FindElement(By.XPath($"//a[contains(@href, '/Map/Cloud')]"));
+            mapButton.Click();
+            wait.Until(d => d.Url.Contains($"/Map/Cloud"));
+            Assert.Contains($"/Map/Cloud", driver.Url);
+
+            IWebElement suggestionsButton = driver.FindElement(By.XPath($"//a[contains(@href, '/Suggestions/Index')]"));
+            suggestionsButton.Click();
+            wait.Until(d => d.Url.Contains($"/Suggestions/GetPendingSuggestions"));
+            Assert.Contains($"/Suggestions/GetPendingSuggestions", driver.Url);
 
             // Logout
             IWebElement logoutButton = driver.FindElement(By.CssSelector(".logout-section button"));
