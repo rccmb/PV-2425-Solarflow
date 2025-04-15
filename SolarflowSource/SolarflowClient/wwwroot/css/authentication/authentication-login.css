@@ -14,3 +14,64 @@
     font-weight: bolder;
     margin-top: 40px;
 }
+
+
+.login-divider-line {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #aaa; 
+    max-width: 160px; 
+}
+
+.login-divider-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 25px 0 20px; 
+    gap: 10px;
+    width: 100%;
+    max-width: 445px;
+}
+
+
+.login-divider-text {
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+
+@media (max-width: 600px) {
+    .authentication-form,
+    .authentication-form-text-input,
+    .login-form-forgot-password,
+    .authentication-form-button {
+        width: 90% !important;
+    }
+
+    .authentication-solarflow-logo {
+        width: 100px;
+    }
+
+    .authentication-solarflow-title {
+        font-size: 20px;
+    }
+
+    .authentication-solarflow-slogan {
+        font-size: 14px;
+    }
+
+    .login-divider-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .login-divider-line {
+        width: 60%;
+    }
+
+    .login-divider-text {
+        margin: 0;
+    }
+}

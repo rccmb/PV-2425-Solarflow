@@ -70,8 +70,13 @@
         <button type="submit" class="authentication-form-button background-blue">Login</button>
     </form>
 
-    <p class="login-or">OR</p>
+    <div class="login-divider-container">
+        <div class="login-divider-line"></div>
+        <span class="login-divider-text">OR</span>
+        <div class="login-divider-line"></div>
+    </div>
 
-    <a asp-action="Register" class="authentication-form-button background-orange">Create Account</a>
+    <a asp-action="Register" class="authentication-form-button-create background-orange">Create Account</a>
+
 </body>
 
