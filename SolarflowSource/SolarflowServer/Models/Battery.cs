@@ -9,6 +9,11 @@ namespace SolarflowServer.Models;
 /// </summary>
 public class Battery : IValidatableObject
 {
+    private double _capacity;
+
+
+    private double _capacityMax = 14.40;
+
     /// <summary>
     ///     Gets or sets the unique identifier for the battery.
     /// </summary>
@@ -16,22 +21,31 @@ public class Battery : IValidatableObject
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-
-    // TODO: set to allow only up-to CapacityMax
     /// <summary>
     ///     Gets or sets the current capacity of the battery in kilowatts.
     ///     Should be a value between 0.0 and CapacityMax.
     /// </summary>
     [Required]
-    public double Capacity { get; set; }
+    public double Capacity
+    {
+        get => _capacity;
+        set => _capacity = value > CapacityMax ? CapacityMax : value;
+    }
 
-
-    // TODO: Set current Capacity to CapacityMax if Capacity > CapacityMax
     /// <summary>
     ///     Gets or sets the maximum capacity of the battery in kilowatts.
     /// </summary>
     [Required]
-    public double CapacityMax { get; set; } = 14.40;
+    public double CapacityMax
+    {
+        get => _capacityMax;
+        set
+        {
+            _capacityMax = value;
+            // If the current capacity exceeds the new maximum, clamp it to the new maximum.
+            if (Capacity > _capacityMax) Capacity = _capacityMax;
+        }
+    }
 
 
     /// <summary>

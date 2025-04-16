@@ -1,4 +1,4 @@
-﻿body { background-color: #e7e5df; }
+﻿body { background-color: #f8f9fa; }
 
 #dashboard {
     align-content: stretch;
@@ -21,12 +21,125 @@
     justify-content: space-between;
 }
 
-#dashboard-filters {
+#dashboard-now {
+    display: grid;
+    gap: 20px; 
+    grid-template-columns: 200px 200px 1fr 1fr;
+    margin: 0 auto; 
+    width: 100%;
+}
+
+.now-item {
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 10px;
+    text-align: center;
+}
+
+
+.now-item h2 { margin: 0 0 0.5em; }
+
+    .now-item p {
+        margin: 0 0 0.5em;
+    }
+#consumptionvalue {
+    text-align: center; 
+    font-size: 30px; 
+    margin: 0 auto; 
+}
+.now-item img,
+.now-item canvas {
+    display: block;
+    height: auto;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+#dashboard-now {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 200px 200px 1fr 1fr;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.now-item {
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 10px;
+    text-align: center;
+}
+
+.now-item h2 {
+    margin: 0 0 0.5em;
+    size: 30px;
+}
+
+.now-item p { margin: 0 0 0.5em; }
+
+.now-item img,
+.now-item canvas {
+    display: block;
+    height: auto;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Option 1: Limit canvas height directly with max-height */
+
+.now-item canvas {
+    max-height: 150px; /* sets a limit to the height of the chart */
+}
+
+/* Option 2: Alternatively, wrap your canvas in a container with a limited height */
+
+.chart-container {
+    max-height: 150px; /* Limit the height */
+    overflow: hidden; /* Hide any overflowing content */
+    position: relative;
+    width: 100%;
+}
+
+.chart-container canvas {
+    height: auto;
+    width: 100%;
+}
+
+.page-title {
+    align-items: center;
+    display: flex;
+    font-size: 2rem;
+    font-weight: 700;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-left: 0.5rem;
+}
+
+#dashboard-historic {
+    align-content: stretch;
+    align-items: stretch;
+    background-color: #393e41;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+#download-link {
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#dashboard-historic-filters {
     align-content: stretch;
     align-items: center;
     background-color: #393e41;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-basis: 100%;
     flex-direction: row;
@@ -45,7 +158,6 @@
     justify-content: space-between;
 }
 
-
 #dashboard-charts {
     align-content: stretch;
     align-items: stretch;
@@ -55,52 +167,16 @@
     justify-content: space-around;
 }
 
-#dashboard-charts-energy {
-    align-content: stretch;
-    align-items: stretch;
-    display: flex;
-    flex: 3;
-    flex-direction: row;
-    flex-wrap: wrap;
-
-    justify-content: space-between;
-}
-
-
-/* Select children 1 to 4 */
-
-#dashboard-charts-energy > div:nth-child(-n + 4) {
-    flex: 4;
-    overflow: auto; /* in case content needs to scroll */
-}
-
-/* Select children 5 to 7 */
-
-
-#dashboard-charts-energy > div:nth-child(n + 5):nth-child(-n + 7) { flex-basis: 100%; }
-
-#dashboard-charts-battery {
-    align-content: stretch;
-    align-items: stretch;
-    display: flex;
-    flex: 2;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
-
 .chart-item {
     align-content: stretch;
     align-items: stretch;
-    background-color: #d3d0cb;
+    background-color: #ffffff;
     border: 1px solid #808080;
     border-radius: 10px;
     display: flex;
-    
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: flex-start;
-
     margin: 10px;
     padding: 20px;
 }
