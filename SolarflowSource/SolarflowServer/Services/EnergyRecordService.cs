@@ -156,7 +156,14 @@ public class EnergyRecordService(ApplicationDbContext context) : IEnergyRecordSe
         };
     }
 
-
+    /// <summary>
+    /// Retrieves the most recent energy record for the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose energy record is being retrieved.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the most recent 
+    /// <see cref="EnergyRecordDTO"/> for the specified user, or <c>null</c> if no record exists.
+    /// </returns>
     public async Task<EnergyRecordDTO?> GetLastEnergyRecord(int userId)
     {
         // Retrieve the most recent energy record for the specified user.

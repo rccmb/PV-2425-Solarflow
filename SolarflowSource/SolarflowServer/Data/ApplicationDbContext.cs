@@ -4,23 +4,63 @@ using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Models;
 using SolarflowServer.Models.Enums;
 
+/// <summary>
+/// Represents the database context for the Solarflow application, providing access to entities and managing database interactions.
+/// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ApplicationDbContext"/> class with the specified options.
+    /// </summary>
+    /// <param name="options">The options to configure the database context.</param>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
 
+    /// <summary>
+    /// Gets or sets the collection of application users.
+    /// </summary>
     public DbSet<ApplicationUser> Users { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of batteries.
+    /// </summary>
     public DbSet<Battery> Batteries { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of notifications.
+    /// </summary>
     public DbSet<Notification> Notifications { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of forecasts.
+    /// </summary>
     public DbSet<Forecast> Forecasts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of view accounts.
+    /// </summary>
     public DbSet<ViewAccount> ViewAccounts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of audit logs.
+    /// </summary>
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    /// <summary>
+    /// Gets or sets the collection of suggestions.
+    /// </summary>
     public DbSet<Suggestion> Suggestions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of energy records.
+    /// </summary>
     public DbSet<EnergyRecord> EnergyRecords { get; set; }
 
-
+    /// <summary>
+    /// Configures the entity mappings and relationships for the database context.
+    /// </summary>
+    /// <param name="builder">The <see cref="ModelBuilder"/> used to configure the entity mappings.</param>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

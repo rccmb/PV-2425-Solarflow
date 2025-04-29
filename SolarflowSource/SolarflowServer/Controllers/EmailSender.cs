@@ -6,11 +6,22 @@ using SolarflowServer.Models;
 
 namespace SolarflowServer.Controllers;
 
+/// <summary>
+/// Initializes a new instance of the <see cref="EmailSender"/> class.
+/// </summary>
+/// <param name="emailConfig">The email configuration settings.</param>
 public class EmailSender(IOptions<EmailConfiguration> emailConfig)
 {
     private readonly EmailConfiguration _emailConfig = emailConfig.Value;
 
-
+    /// <summary>
+    /// Creates an email message with the specified recipients, subject, and body.
+    /// </summary>
+    /// <param name="recipientEmails">A list of recipient email addresses.</param>
+    /// <param name="subject">The subject of the email.</param>
+    /// <param name="body">The body content of the email.</param>
+    /// <param name="isHtml">Indicates whether the body content is in HTML format. Defaults to <c>false</c>.</param>
+    /// <returns>A <see cref="MimeMessage"/> object representing the email message.</returns>
     public MimeMessage CreateMessage(List<string> recipientEmails, string subject, string body,
         bool isHtml = false)
     {
@@ -36,7 +47,11 @@ public class EmailSender(IOptions<EmailConfiguration> emailConfig)
         return message;
     }
 
-
+    /// <summary>
+    /// Sends an email message using the configured SMTP server.
+    /// </summary>
+    /// <param name="mailMessage">The <see cref="MimeMessage"/> object representing the email to be sent.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task SendMessage(MimeMessage mailMessage)
     {
         using var client = new SmtpClient();

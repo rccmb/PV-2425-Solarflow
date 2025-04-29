@@ -47,6 +47,10 @@ public class HomeController(
         return Json(data);
     }
 
+    /// <summary>
+    /// Retrieves the most recent energy record for the user's hubs.
+    /// </summary>
+    /// <returns>A JSON response with the latest energy record data.</returns>
     [HttpGet("last")]
     public async Task<IActionResult> GetLastRecord()
     {

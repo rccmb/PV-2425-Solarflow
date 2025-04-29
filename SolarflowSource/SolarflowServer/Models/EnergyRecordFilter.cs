@@ -3,17 +3,38 @@ using SolarflowClient.Models.Enums;
 
 namespace SolarflowClient.Models;
 
+/// <summary>
+/// Represents a filter for querying energy records based on a date range and time interval.
+/// </summary>
 public class EnergyRecordFilter
 {
+    /// <summary>
+    /// Gets or sets the start date for the energy record query.
+    /// </summary>
+    /// <remarks>
+    /// This property is optional and can be null. If null, the query will not filter by start date.
+    /// </remarks>
     [Display(Name = "Start Date")]
     [DataType(DataType.DateTime)]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
     public DateTime? StartDate { get; set; }
 
+    /// <summary>
+    /// Gets or sets the end date for the energy record query.
+    /// </summary>
+    /// <remarks>
+    /// This property is optional and can be null. If null, the query will not filter by end date.
+    /// </remarks>
     [Display(Name = "End Date")]
     [DataType(DataType.DateTime)]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
     public DateTime? EndDate { get; set; }
 
+    /// <summary>
+    /// Gets or sets the time interval for grouping energy records.
+    /// </summary>
+    /// <remarks>
+    /// This property is optional and can be null. If null, the default grouping interval will be used.
+    /// </remarks>
     public TimeInterval? TimeInterval { get; set; }
 }

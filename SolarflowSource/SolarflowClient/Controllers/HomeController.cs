@@ -80,6 +80,10 @@ public class HomeController : Controller
         return View(viewModel);
     }
 
+    /// <summary>
+    /// Retrieves the most recent energy record from the API.
+    /// </summary>
+    /// <returns>The latest <see cref="EnergyRecord"/> or a default instance if the request fails.</returns>
     private async Task<EnergyRecord?> GetEnergyRecordLast()
     {
         const string urlLast = "home/last";
@@ -94,6 +98,13 @@ public class HomeController : Controller
         return energyRecordLast;
     }
 
+    /// <summary>
+    /// Retrieves energy records for a specified date range and time interval.
+    /// </summary>
+    /// <param name="startDate">The start date of the range.</param>
+    /// <param name="endDate">The end date of the range.</param>
+    /// <param name="timeInterval">The time interval for grouping records.</param>
+    /// <returns>A list of <see cref="EnergyRecord"/> objects or an empty list if the request fails.</returns>
     private async Task<List<EnergyRecord>> GetEnergyRecords(DateTime? startDate, DateTime? endDate,
         TimeInterval? timeInterval)
     {
@@ -111,6 +122,10 @@ public class HomeController : Controller
         return energyRecords;
     }
 
+    /// <summary>
+    /// Retrieves weather forecasts from the API.
+    /// </summary>
+    /// <returns>A list of <see cref="Forecast"/> objects or an empty list if the request fails.</returns>
     private async Task<List<Forecast>?> GetForecasts()
     {
         // Forecast
@@ -127,6 +142,10 @@ public class HomeController : Controller
         return forecast;
     }
 
+    /// <summary>
+    /// Retrieves battery data from the API.
+    /// </summary>
+    /// <returns>The <see cref="Battery"/> object or null if the request fails.</returns>
     private async Task<Battery?> GetBattery()
     {
         // Battery
@@ -176,7 +195,11 @@ public class HomeController : Controller
         return File(fileBytes, "text/csv", "data.csv");
     }
 
-
+    /// <summary>
+    /// Exports energy records based on the specified filter in CSV format.
+    /// </summary>
+    /// <param name="filter">The filter parameters for the energy records.</param>
+    /// <returns>A downloadable CSV file containing filtered energy record data.</returns>
     public async Task<IActionResult> Export([FromQuery] EnergyRecordFilter filter)
     {
         var startDate = filter.StartDate;
