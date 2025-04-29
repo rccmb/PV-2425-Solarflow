@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using SolarflowServer.Models;
 using SolarflowServer.Models.Enums;
+using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Tests;
@@ -14,6 +15,7 @@ public class BatteryControllerTests
     private readonly ApplicationDbContext _context;
     private readonly BatteryController _controller;
     private readonly Mock<IAuditService> _mockAuditService;
+    private readonly Mock<INotificationService> _mockNotificationService;
 
     public BatteryControllerTests()
     {
@@ -23,7 +25,8 @@ public class BatteryControllerTests
 
         _context = new ApplicationDbContext(options);
         _mockAuditService = new Mock<IAuditService>();
-        _controller = new BatteryController(_context, _mockAuditService.Object);
+        _mockNotificationService = new Mock<INotificationService>();
+        _controller = new BatteryController(_context, _mockAuditService.Object, _mockNotificationService.Object);
     }
 
     [Fact]
