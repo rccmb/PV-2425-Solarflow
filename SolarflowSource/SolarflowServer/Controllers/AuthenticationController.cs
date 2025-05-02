@@ -99,7 +99,7 @@ public class AuthenticationController : ControllerBase
         await _context.SaveChangesAsync();
 
 
-        const int daysAgo = 3;
+        const int daysAgo = 1;
         const int minutes = 15;
         var start = DateTime.UtcNow.AddDays(-daysAgo);
         var now = DateTime.UtcNow;
