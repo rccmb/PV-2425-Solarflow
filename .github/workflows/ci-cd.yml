@@ -74,9 +74,9 @@ jobs:
 
       # Remove previous migrations
       - name: Remove Previous Migrations
-       run: dotnet ef migrations remove --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
-       env:
-         ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+        run: dotnet ef migrations remove --project SolarflowSource/SolarflowServer/SolarflowServer.csproj
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
 
       # Create a new migration
       - name: Create New Migration
