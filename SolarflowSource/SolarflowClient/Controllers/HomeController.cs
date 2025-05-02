@@ -164,36 +164,6 @@ public class HomeController : Controller
     }
 
 
-    /// <summary>
-    ///     Aggregates a collection of energy records based on the specified time interval.
-    ///     Uses averages for minute and hour intervals, and sums for other intervals.
-    /// </summary>
-    /// <param name="records">List of EnergyRecord objects.</param>
-    /// <param name="interval">Grouping time interval.</param>
-    /// <returns>Aggregated collection of EnergyRecord objects.</returns>
-    /// <summary>
-    ///     Exports all energy records in CSV format.
-    /// </summary>
-    /// <returns>A downloadable CSV file containing energy record data.</returns>
-    public async Task<ActionResult> ssExport()
-    {
-        // Fetch energy records
-        var energyRequest = CreateAuthorizedRequest(HttpMethod.Get, "home/records");
-        var energyResponse = await _httpClient.SendAsync(energyRequest);
-        if (!energyResponse.IsSuccessStatusCode) return BadRequest("Failed to fetch energy records from the server.");
-        var energyJson = await energyResponse.Content.ReadAsStringAsync();
-        var energyRecords = JsonSerializer.Deserialize<List<EnergyRecord>>(energyJson);
-
-        // Prepare CSV
-        var csvData = new StringBuilder();
-        csvData.AppendLine("ID,HUB_ID,HOUSE,GRID,SOLAR,BATTERY"); // Header
-        foreach (var record in energyRecords)
-            csvData.AppendLine(
-                $"{record.Id},{record.HubId},{record.House}, {record.Grid}, {record.Solar}, {record.Battery}");
-        var fileBytes = Encoding.UTF8.GetBytes(csvData.ToString());
-
-        return File(fileBytes, "text/csv", "data.csv");
-    }
 
     /// <summary>
     /// Exports energy records based on the specified filter in CSV format.
