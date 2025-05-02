@@ -1,115 +1,116 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using SolarflowServer.DTOs.SolarflowServer.DTOs;
 using SolarflowServer.Models;
+using SolarflowServer.Models.Enums;
+using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
-using System.Security.Claims;
 
-namespace SolarflowServer.Tests
+namespace SolarflowServer.Tests;
 
+public class BatteryControllerTests
 {
-    public class BatteryControllerTests
+    private readonly ApplicationDbContext _context;
+    private readonly BatteryController _controller;
+    private readonly Mock<IAuditService> _mockAuditService;
+    private readonly Mock<INotificationService> _mockNotificationService;
+
+    public BatteryControllerTests()
     {
-        private readonly ApplicationDbContext _context;
-        private readonly Mock<IAuditService> _mockAuditService;
-        private readonly BatteryController _controller;
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase("TestDatabase")
+            .Options;
 
-        public BatteryControllerTests()
+        _context = new ApplicationDbContext(options);
+        _mockAuditService = new Mock<IAuditService>();
+        _mockNotificationService = new Mock<INotificationService>();
+        _controller = new BatteryController(_context, _mockAuditService.Object, _mockNotificationService.Object);
+    }
+
+    [Fact]
+    public async Task GetBattery_ReturnsOkResult_WhenBatteryExists()
+    {
+        var battery = new Battery
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
+            UserId = 1,
+            ChargeSource = BatterySource.Solar,
+            ChargeMode = BatteryMode.Normal,
+            LastUpdate = DateTime.UtcNow,
+            ChargeGridStartTime = new TimeSpan(0, 8, 0, 0),
+            ChargeGridEndTime = new TimeSpan(0, 18, 0, 0),
+            ThresholdMin = 20,
+            ThresholdMax = 80,
+            CapacityLevel = 50
+        };
+        _context.Batteries.Add(battery);
+        await _context.SaveChangesAsync();
 
-            _context = new ApplicationDbContext(options);
-            _mockAuditService = new Mock<IAuditService>();
-            _controller = new BatteryController(_context, _mockAuditService.Object);
-        }
+        var userClaims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, "1") }));
+        _controller.ControllerContext = new ControllerContext
+            { HttpContext = new DefaultHttpContext { User = userClaims } };
 
-        [Fact]
-        public async Task GetBattery_ReturnsOkResult_WhenBatteryExists()
+        var result = await _controller.GetBattery();
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult.Value);
+    }
+
+    [Fact]
+    public async Task UpdateBattery_SuccessfulUpdate_ReturnsOk()
+    {
+        // Arrange: Criar uma bateria existente no banco de dados
+        var battery = new Battery
         {
-            var battery = new Battery
-            {
-                UserId = 1,
-                ChargingSource = "Solar",
-                BatteryMode = "Default",
-                LastUpdate = DateTime.UtcNow.ToString(),
-                SpendingStartTime = "08:00",
-                SpendingEndTime = "18:00",
-                MinimalTreshold = 20,
-                MaximumTreshold = 80,
-                ChargeLevel = 50
-            };
-            _context.Batteries.Add(battery);
-            await _context.SaveChangesAsync();
+            UserId = 1,
+            ChargeSource = BatterySource.Solar,
+            ChargeMode = BatteryMode.Normal,
+            LastUpdate = DateTime.UtcNow,
+            ChargeGridStartTime = new TimeSpan(0, 8, 0, 0),
+            ChargeGridEndTime = new TimeSpan(0, 18, 0, 0),
+            ThresholdMin = 20,
+            ThresholdMax = 80,
+            CapacityLevel = 50
+        };
 
-            var userClaims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.NameIdentifier, "1") }));
-            _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = userClaims } };
+        _context.Batteries.Add(battery);
+        await _context.SaveChangesAsync();
 
-            var result = await _controller.GetBattery();
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.NotNull(okResult.Value);
-        }
-
-        [Fact]
-        public async Task UpdateBattery_SuccessfulUpdate_ReturnsOk()
+        // Simular o usuário autenticado com Id 1
+        var userClaims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
-            // Arrange: Criar uma bateria existente no banco de dados
-            var battery = new Battery
-            {
-                UserId = 1,
-                ChargingSource = "Solar",
-                BatteryMode = "Default",
-                LastUpdate = DateTime.UtcNow.ToString(),
-                SpendingStartTime = "08:00",
-                SpendingEndTime = "18:00",
-                MinimalTreshold = 20,
-                MaximumTreshold = 80,
-                ChargeLevel = 50
-            };
+            new(ClaimTypes.NameIdentifier, "1")
+        }));
+        _controller.ControllerContext = new ControllerContext
+            { HttpContext = new DefaultHttpContext { User = userClaims } };
 
-            _context.Batteries.Add(battery);
-            await _context.SaveChangesAsync();
+        // Criar o DTO com novos valores para a bateria
+        var updateModel = new BatteryDTO
+        {
+            ChargeMode = BatteryMode.Personalized,
+            ChargeSource = BatterySource.Grid,
+            ChargeGridStartTime = new TimeSpan(0, 6, 0, 0),
+            ChargeGridEndTime = new TimeSpan(0, 20, 0, 0),
+            ThresholdMin = 10,
+            ThresholdMax = 90
+        };
 
-            // Simular o usuário autenticado com Id 1
-            var userClaims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-            {
-        new Claim(ClaimTypes.NameIdentifier, "1")
-            }));
-            _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = userClaims } };
+        // Act: Chamar o método UpdateBattery
+        var result = await _controller.UpdateBattery(updateModel);
 
-            // Criar o DTO com novos valores para a bateria
-            var updateModel = new BatteryDTO
-            {
-                ChargingSource = "Grid",
-                BatteryMode = "Eco",
-                SpendingStartTime = "06:00",
-                SpendingEndTime = "20:00",
-                MinimalTreshold = 10,
-                MaximumTreshold = 90
-            };
+        // Assert: Verificar se o retorno foi um OkObjectResult (HTTP 200)
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult.Value);
 
-            // Act: Chamar o método UpdateBattery
-            var result = await _controller.UpdateBattery(updateModel);
-
-            // Assert: Verificar se o retorno foi um OkObjectResult (HTTP 200)
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.NotNull(okResult.Value);
-
-            // Verificar se a bateria foi atualizada corretamente no banco de dados
-            var updatedBattery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == 1);
-            Assert.NotNull(updatedBattery);
-            Assert.Equal("Grid", updatedBattery.ChargingSource);
-            Assert.Equal("Eco", updatedBattery.BatteryMode);
-            Assert.Equal("06:00", updatedBattery.SpendingStartTime);
-            Assert.Equal("20:00", updatedBattery.SpendingEndTime);
-            Assert.Equal(10, updatedBattery.MinimalTreshold);
-            Assert.Equal(90, updatedBattery.MaximumTreshold);
-        }
-
-
+        // Verificar se a bateria foi atualizada corretamente no banco de dados
+        var updatedBattery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == 1);
+        Assert.NotNull(updatedBattery);
+        Assert.Equal(BatterySource.Grid, updatedBattery.ChargeSource);
+        Assert.Equal(BatteryMode.Personalized, updatedBattery.ChargeMode);
+        Assert.Equal(new TimeSpan(0, 6, 0, 0), updatedBattery.ChargeGridStartTime);
+        Assert.Equal(new TimeSpan(0, 20, 0, 0), updatedBattery.ChargeGridEndTime);
+        Assert.Equal(10, updatedBattery.ThresholdMin);
+        Assert.Equal(90, updatedBattery.ThresholdMax);
     }
 }

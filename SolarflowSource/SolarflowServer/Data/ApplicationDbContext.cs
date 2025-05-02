@@ -2,27 +2,65 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Models;
+using SolarflowServer.Models.Enums;
 
+/// <summary>
+/// Represents the database context for the Solarflow application, providing access to entities and managing database interactions.
+/// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ApplicationDbContext"/> class with the specified options.
+    /// </summary>
+    /// <param name="options">The options to configure the database context.</param>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
 
+    /// <summary>
+    /// Gets or sets the collection of application users.
+    /// </summary>
     public DbSet<ApplicationUser> Users { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of batteries.
+    /// </summary>
     public DbSet<Battery> Batteries { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of notifications.
+    /// </summary>
     public DbSet<Notification> Notifications { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of forecasts.
+    /// </summary>
     public DbSet<Forecast> Forecasts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of view accounts.
+    /// </summary>
     public DbSet<ViewAccount> ViewAccounts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of audit logs.
+    /// </summary>
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    /// <summary>
+    /// Gets or sets the collection of suggestions.
+    /// </summary>
     public DbSet<Suggestion> Suggestions { get; set; }
 
-    public DbSet<Hub> Hubs { get; set; }
+    /// <summary>
+    /// Gets or sets the collection of energy records.
+    /// </summary>
     public DbSet<EnergyRecord> EnergyRecords { get; set; }
 
-
-
+    /// <summary>
+    /// Configures the entity mappings and relationships for the database context.
+    /// </summary>
+    /// <param name="builder">The <see cref="ModelBuilder"/> used to configure the entity mappings.</param>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -68,6 +106,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(a => a.Brief).HasMaxLength(255).IsRequired();
             entity.Property(a => a.IPAddress).HasMaxLength(50);
             entity.Property(a => a.Timestamp).HasDefaultValueSql("GETDATE()");
+
         });
 
         // MAPPING THE BATTERY.
@@ -77,14 +116,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
             entity.HasKey(b => b.Id);
 
-            entity.Property(b => b.ChargeLevel).HasDefaultValue(0);
-            entity.Property(b => b.ChargingSource).HasDefaultValue("");
-            entity.Property(b => b.BatteryMode).HasDefaultValue("");
-            entity.Property(b => b.MinimalTreshold).HasDefaultValue(0);
-            entity.Property(b => b.MaximumTreshold).HasDefaultValue(100);
-            entity.Property(b => b.SpendingStartTime).HasDefaultValue("00:00");
-            entity.Property(b => b.SpendingEndTime).HasDefaultValue("09:00");
-            entity.Property(b => b.LastUpdate).HasDefaultValue("");
+            // Basic properties with default values
+            entity.Property(b => b.Capacity).HasDefaultValue(0.0);
+            entity.Property(b => b.CapacityMax).HasDefaultValue(10.0);
+            entity.Property(b => b.ChargeRate).HasDefaultValue(5.0);
+            entity.Property(b => b.DischargeRate).HasDefaultValue(7.0);
+
+            entity.Property(b => b.ChargeMode).HasDefaultValue(BatteryMode.Normal);
+            entity.Property(b => b.ChargeSource).HasDefaultValue(BatterySource.All);
+            entity.Property(b => b.ThresholdMin).HasDefaultValue(0);
+            entity.Property(b => b.ThresholdMax).HasDefaultValue(100);
+            entity.Property(b => b.ChargeGridStartTime).HasColumnType("time")
+                .HasDefaultValue(new TimeSpan(0, 0, 0)); // default: 00:00
+            entity.Property(b => b.ChargeGridEndTime).HasColumnType("time")
+                .HasDefaultValue(new TimeSpan(9, 0, 0)); // default: 09:00
+
+            entity.Property(b => b.LastUpdate).HasDefaultValueSql("getutcdate()");
 
             entity.HasOne(b => b.User)
                 .WithOne(u => u.Battery)
@@ -134,22 +181,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         });
 
 
-        // MAPPING THE HUB.
-        builder.Entity<Hub>(entity =>
-        {
-            entity.HasKey(h => h.Id);
-
-            entity.HasOne(h => h.User)
-                .WithMany(u => u.Hubs)
-                .HasForeignKey(h => h.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // okay
-
-            entity.HasOne(h => h.Battery)
-                .WithOne()
-                .HasForeignKey<Hub>(h => h.BatteryId)
-                .OnDelete(DeleteBehavior.Restrict); // to prevent multiple cascade paths
-        });
-
         // MAPPING THE ENERGY RECORD.
         builder.Entity<EnergyRecord>(entity =>
         {
@@ -163,9 +194,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.Solar).IsRequired();
             entity.Property(e => e.Battery).IsRequired();
 
-            entity.HasOne(e => e.Hub)
-                .WithMany(h => h.EnergyRecords)
-                .HasForeignKey(e => e.HubId)
+            entity.HasOne(er => er.ApplicationUser)
+                .WithMany(au => au.EnergyRecords)
+                .HasForeignKey(er => er.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

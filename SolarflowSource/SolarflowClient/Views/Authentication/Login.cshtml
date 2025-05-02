@@ -11,6 +11,13 @@
 <link href="~/css/authentication/authentication-login.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 <link href="~/css/global/alert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
+<script>
+    function togglePassword() {
+        const input = document.getElementById('passwordInput1');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+</script>
+
 <body class="authentication-body">
     @if (TempData["SuccessMessage"] != null)
     {
@@ -45,7 +52,12 @@
 
         <div class="authentication-input-div">
             <label class="authentication-form-label">Password</label>
-            <input asp-for="Password" type="password" class="authentication-form-text-input" />
+            <div class="input-wrapper">
+                <input id="passwordInput1" asp-for="Password" type="password" class="authentication-form-text-input" />
+                <button type="button" onclick="togglePassword()" class="toggle-password">
+                    👁️
+                </button>
+            </div>
         </div>
 
         <a class="login-form-forgot-password" asp-action="AccountRecovery">Forgot Password?</a>
@@ -58,8 +70,13 @@
         <button type="submit" class="authentication-form-button background-blue">Login</button>
     </form>
 
-    <p class="login-or">OR</p>
+    <div class="login-divider-container">
+        <div class="login-divider-line"></div>
+        <span class="login-divider-text">OR</span>
+        <div class="login-divider-line"></div>
+    </div>
 
-    <a asp-action="Register" class="authentication-form-button background-orange">Create Account</a>
+    <a asp-action="Register" class="authentication-form-button-create background-orange">Create Account</a>
+
 </body>
 

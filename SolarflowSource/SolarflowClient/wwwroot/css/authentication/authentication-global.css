@@ -49,11 +49,12 @@
     border: solid 2px #ffffff;
     border-radius: 10px;
     padding-block: 10px;
-    padding-inline: 10px;
+    padding-left: 10px;
     background-color: #393E41;
     width: 445px;
     color: white;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    padding-right: 40px; 
 }
 
 /* Style for the login text. */
@@ -100,6 +101,22 @@
     cursor: pointer;
 }
 
+/* Style for the buttons in authentication. */
+.authentication-form-button-create {
+    display: inline-block;
+    width: 445px;
+    border: none;
+    font-weight: bolder;
+    border-radius: 10px;
+    padding: 10px 0px;
+    font-size: 12px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    cursor: pointer;
+}
+
 /* Style for the authentication error contaainer. */
 .authentication-error-container {
     background-color: darkred;
@@ -121,4 +138,44 @@
     font-size: 12px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+/* Style for the authentication form link. */
+.authentication-form-footer {
+    margin-top: 30px;
+    width: 445px;
+    text-align: center;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+
+@media (max-width: 600px) {
+    .authentication-form-text-input,
+    .authentication-form-button,
+    .authentication-form-button-create,
+    .authentication-form-label,
+    .authentication-form-title,
+    .authentication-error-container,
+    .login-form-forgot-password,
+    .login-divider-container {
+        width: 90% !important;
+    }
+
+    .authentication-solarflow-logo {
+        width: 100px;
+        height: 100px;
+    }
+
+    .authentication-solarflow-title {
+        font-size: 24px;
+    }
+
+    .authentication-solarflow-slogan {
+        font-size: 14px;
+    }
+
+    .login-divider-line {
+        max-width: 100px;
+    }
 }

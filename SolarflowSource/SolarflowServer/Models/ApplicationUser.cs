@@ -1,19 +1,78 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 using SolarflowServer.Models;
 
+/// <summary>
+///     Represents an application user with additional properties beyond the default IdentityUser.
+/// </summary>
 public class ApplicationUser : IdentityUser<int>
 {
+    private double _latitude = 38.722;
+
+    private double _longitude = -9.139;
+
+    /// <summary>
+    ///     Gets or sets the full name of the user.
+    /// </summary>
     public string Fullname { get; set; }
 
-    public string Photo { get; set; }
+    /// <summary>
+    ///     Gets or sets the URL or path to the user's profile photo.
+    /// </summary>
+    public string Photo { get; set; } = "";
 
+    /// <summary>
+    ///     Gets or sets a value indicating whether the user's email has been confirmed.
+    /// </summary>
     public bool ConfirmedEmail { get; set; } = false;
 
+    /// <summary>
+    ///     Gets or sets the date and time when the user account was created.
+    /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    ///     Gets or sets the battery associated with the user.
+    /// </summary>
     public Battery Battery { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the view account associated with the user.
+    /// </summary>
     public ViewAccount ViewAccount { get; set; }
 
-    public virtual ICollection<Hub> Hubs { get; set; }
+    /// <summary>
+    ///     Gets or sets the latitude of the user's location.
+    /// </summary>
+    [Required]
+    public double Latitude
+    {
+        get => _latitude;
+        set => _latitude = Math.Round(value, 4);
+    }
+
+
+    /// <summary>
+    ///     Gets or sets the longitude of the user's location.
+    /// </summary>
+    [Required]
+    public double Longitude
+    {
+        get => _longitude;
+        set => _longitude = Math.Round(value, 4);
+    }
+
+
+    /// <summary>
+    ///     Gets or sets the amount of energy drawn from the grid in kilowatt-hours.
+    /// </summary>
+    [Required]
+    public double GridKWh { get; set; } = 10.40;
+
+    // Demo Columns
+    [Required] public double SolarKWh { get; set; } = 7.50;
+
+
+    // Navigation property for EnergyRecords (one-to-many)
+    public ICollection<EnergyRecord> EnergyRecords { get; set; } = new List<EnergyRecord>();
 }

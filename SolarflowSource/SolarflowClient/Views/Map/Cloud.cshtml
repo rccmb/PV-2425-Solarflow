@@ -1,0 +1,48 @@
+﻿@{
+    ViewBag.Title = "Weather Map";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/css/Map/Map.css" rel="stylesheet" asp-append-version="true" />
+
+<div class="weather-container">
+    <h2 class="title">Windy Weather Map</h2>
+
+    <div id="windy"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+<script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+
+<script>
+    let windyAPIRef = null;
+
+    function initWindy(config) {
+        const options = {
+            key: config.apiKey,
+            verbose: true,
+            lat: config.lat,
+            lon: config.lon,
+            zoom: 15,
+            overlay: 'clouds',
+        };
+
+        windyInit(options, windyAPI => {
+            windyAPIRef = windyAPI;
+        
+        });
+    }
+
+
+    fetch('/Map/GetConfig')
+        .then(response => {
+            if (!response.ok) throw new Error("Error getting Windy config.");
+            return response.json();
+        })
+        .then(config => {
+            initWindy(config);
+        })
+        .catch(error => {
+            console.error("Failed to load Windy map:", error);
+        });
+</script>

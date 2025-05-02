@@ -6,24 +6,37 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using SolarflowServer.Models.Enums;
 using SolarflowServer.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SolarflowServer.Controllers
 {
+    /// <summary>
+    /// Controller for managing suggestions related to the battery of the authenticated user.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SuggestionController : ControllerBase
     {
         private readonly ISuggestionService _suggestionService;
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SuggestionController"/> class.
+        /// </summary>
+        /// <param name="suggestionService">The service for managing suggestions.</param>
+        /// <param name="context">The database context.</param>
         public SuggestionController(ISuggestionService suggestionService, ApplicationDbContext context)
         {
             _suggestionService = suggestionService;
             _context = context;
         }
 
-        // POST: api/suggestion/create/{userId}
-        // Generates suggestions for the battery associated with the given user
+        /// <summary>
+        /// Generates suggestions for the battery associated with the given user.
+        /// </summary>
+        /// <param name="userId">The user ID for whom the suggestions are being generated.</param>
+        /// <returns>A response indicating success or failure.</returns>
         [HttpPost("create/{userId}")]
         public async Task<IActionResult> CreateSuggestions(int userId)
         {
@@ -37,8 +50,11 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestions processed successfully" });
         }
 
-        // GET: api/suggestion/get/{userId}
-        // Returns all pending suggestions for the user's battery
+        /// <summary>
+        /// Returns all pending suggestions for the user's battery.
+        /// </summary>
+        /// <param name="userId">The user ID for whom the suggestions are being fetched.</param>
+        /// <returns>A list of pending suggestions or a not found response.</returns>
         [HttpGet("get/{userId}")]
         public async Task<IActionResult> GetSuggestions(int userId)
         {
@@ -51,8 +67,11 @@ namespace SolarflowServer.Controllers
             return Ok(suggestions);
         }
 
-        // POST: api/suggestion/apply/{id}
-        // Applies the logic of a suggestion and updates the battery
+        /// <summary>
+        /// Applies the logic of a suggestion and updates the battery accordingly.
+        /// </summary>
+        /// <param name="id">The ID of the suggestion to apply.</param>
+        /// <returns>A response indicating the success of the operation.</returns>
         [HttpPost("apply/{id}")]
         public async Task<IActionResult> ApplySuggestion(int id)
         {
@@ -60,8 +79,11 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion applied successfully." });
         }
 
-        // POST: api/suggestion/ignore/{id}
-        // Marks a suggestion as ignored (won't be applied)
+        /// <summary>
+        /// Marks a suggestion as ignored, preventing it from being applied.
+        /// </summary>
+        /// <param name="id">The ID of the suggestion to ignore.</param>
+        /// <returns>A response indicating the success of the operation.</returns>
         [HttpPost("ignore/{id}")]
         public async Task<IActionResult> IgnoreSuggestion(int id)
         {
@@ -69,8 +91,10 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Suggestion ignored successfully." });
         }
 
-        // POST: api/suggestion/clean
-        // Removes all suggestions older than today
+        /// <summary>
+        /// Removes all suggestions older than the current date.
+        /// </summary>
+        /// <returns>A response indicating the success of the operation.</returns>
         [HttpPost("clean")]
         public async Task<IActionResult> CleanOldSuggestions()
         {
@@ -78,42 +102,5 @@ namespace SolarflowServer.Controllers
             return Ok(new { message = "Old suggestions cleaned successfully." });
         }
 
-        // POST: api/suggestion/add-test-suggestions
-        // Creates two sample suggestions for testing/demo purposes
-        [HttpPost("add-test-suggestions")]
-        public async Task<IActionResult> AddTestSuggestions()
-        {
-            var battery = await _context.Batteries.FirstOrDefaultAsync(b => b.UserId == 1);
-            if (battery == null)
-            {
-                return NotFound(new { message = "Battery not found for this user." });
-            }
-
-            var suggestion1 = new Suggestion
-            {
-                BatteryId = 1,
-                Title = "Test Suggestion 1",
-                Description = "This is the first test suggestion.",
-                Status = SuggestionStatus.Pending,
-                Type = SuggestionType.ChargeAtNight,
-                TimeSent = DateTime.UtcNow
-            };
-
-            var suggestion2 = new Suggestion
-            {
-                BatteryId = 1,
-                Title = "Test Suggestion 2",
-                Description = "This is the second test suggestion.",
-                Status = SuggestionStatus.Pending,
-                Type = SuggestionType.RaiseBatteryThreshold,
-                TimeSent = DateTime.UtcNow
-            };
-
-            _context.Suggestions.Add(suggestion1);
-            _context.Suggestions.Add(suggestion2);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Test suggestions added successfully." });
-        }
     }
 }

@@ -3,9 +3,17 @@
 // Service responsible for interpreting and calculating solar forecast metrics from raw weather data
 namespace SolarflowServer.Services
 {
+    /// <summary>
+    /// Service responsible for interpreting and calculating solar forecast metrics from raw weather data.
+    /// </summary>
     public class WeatherProcessingService
     {
-        // Calculates total solar exposure hours from a list of forecasts, based on cloud cover
+        /// <summary>
+        /// Calculates the total solar exposure hours from a list of forecasts based on cloud cover.
+        /// Only considers daylight hours (06:00 - 18:00).
+        /// </summary>
+        /// <param name="forecasts">A list of forecast data containing cloud coverage and other weather information.</param>
+        /// <returns>The total number of solar exposure hours based on the forecast data.</returns>
         public double CalculateSolarExposure(List<FormattedForecast> forecasts)
         {
             double totalSolarHours = 0;
@@ -26,19 +34,32 @@ namespace SolarflowServer.Services
             return totalSolarHours;
         }
 
-        // Returns the average of high, mid and low cloud cover for a forecast
+        /// <summary>
+        /// Returns the average of high, mid, and low cloud cover for a given forecast.
+        /// </summary>
+        /// <param name="forecast">A forecast object containing cloud coverage information.</param>
+        /// <returns>The average cloud cover percentage.</returns>
         public double GetAverageCloudCover(FormattedForecast forecast)
         {
             return (forecast.HighClouds + forecast.MidClouds + forecast.LowClouds) / 3.0;
         }
 
-        // Returns a solar efficiency coefficient based on cloud cover
+        /// <summary>
+        /// Returns a solar efficiency coefficient based on cloud cover.
+        /// The efficiency is a factor that reduces the total energy generation based on cloud cover.
+        /// </summary>
+        /// <param name="cloudCover">The average cloud cover percentage.</param>
+        /// <returns>A solar efficiency coefficient between 0.1 and 1.0, where lower cloud cover results in higher efficiency.</returns>
         public double EvaluateEfficiency(double cloudCover)
         {
             return cloudCover < 20 ? 1.0 : cloudCover < 80 ? 0.5 : 0.1;
         }
 
-        // Converts cloud cover into a human-readable weather condition string
+        /// <summary>
+        /// Converts cloud cover into a human-readable weather condition string.
+        /// </summary>
+        /// <param name="forecast">A forecast object containing cloud coverage information.</param>
+        /// <returns>A string representing the weather condition (e.g., "Clear", "Partly Cloudy", "Cloudy", "Very Cloudy").</returns>
         public string GetWeatherCondition(FormattedForecast forecast)
         {
             double cloudCoverage = GetAverageCloudCover(forecast);
@@ -52,7 +73,12 @@ namespace SolarflowServer.Services
             };
         }
 
-        // Calculates total expected energy production from all forecasts for a day
+        /// <summary>
+        /// Calculates the total expected energy production from all forecasts for a day, based on cloud cover.
+        /// The energy generated is calculated considering the solar panel wattage and efficiency based on cloud cover.
+        /// </summary>
+        /// <param name="forecasts">A list of forecast data containing cloud coverage and other weather information.</param>
+        /// <returns>The total energy generated (in kWh) based on the forecast data.</returns>
         public double CalculateEnergyGenerated(List<FormattedForecast> forecasts)
         {
             double totalEnergyGenerated = 0;
@@ -76,7 +102,11 @@ namespace SolarflowServer.Services
             return totalEnergyGenerated;
         }
 
-        // Returns the most frequent weather condition for a given day of forecasts
+        /// <summary>
+        /// Returns the most frequent weather condition for a given day of forecasts.
+        /// </summary>
+        /// <param name="forecasts">A list of forecast data for a specific day.</param>
+        /// <returns>The most common weather condition for the day (e.g., "Clear", "Partly Cloudy", "Cloudy", "Very Cloudy").</returns>
         public string GetMostCommonWeatherCondition(List<FormattedForecast> forecasts)
         {
             return forecasts

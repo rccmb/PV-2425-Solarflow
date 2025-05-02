@@ -5,25 +5,43 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SolarflowServer.DTOs.Authentication;
+using SolarflowServer.DTOs.Notification;
 using SolarflowServer.DTOs.Settings;
 using SolarflowServer.Models;
+using SolarflowServer.Services;
 using SolarflowServer.Services.Interfaces;
 
 namespace SolarflowServer.Controllers;
 
+/// <summary>
+///     Controller responsible for user authentication, registration, login, and account management operations.
+/// </summary>
 [Route("api/auth")]
 [ApiController]
 public class AuthenticationController : ControllerBase
 {
     private readonly IAuditService _auditService;
     private readonly IConfiguration _configuration;
+    private readonly INotificationService _notificationService;
     private readonly ApplicationDbContext _context;
+    private readonly DemoService _demoService;
     private readonly EmailSender _emailSender;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ViewAccount> _viewSignInManager;
     private readonly UserManager<ViewAccount> _viewUserManager;
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="AuthenticationController" /> class.
+    /// </summary>
+    /// <param name="userManager">The user manager.</param>
+    /// <param name="signInManager">The sign-in manager.</param>
+    /// <param name="viewUserManager">The view account user manager.</param>
+    /// <param name="viewSignInManager">The view account sign-in manager.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="auditService">The audit service.</param>
+    /// <param name="emailSender">The email sender service.</param>
+    /// <param name="context">The database context.</param>
     public AuthenticationController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
@@ -32,7 +50,9 @@ public class AuthenticationController : ControllerBase
         IConfiguration configuration,
         IAuditService auditService,
         EmailSender emailSender,
-        ApplicationDbContext context
+        ApplicationDbContext context,
+        DemoService demoService,
+        INotificationService notificationService
     )
     {
         _userManager = userManager;
@@ -43,19 +63,27 @@ public class AuthenticationController : ControllerBase
         _auditService = auditService;
         _context = context;
         _emailSender = emailSender;
+        _demoService = demoService;
+        _notificationService = notificationService;
     }
 
+    /// <summary>
+    ///     Registers a new user in the system.
+    /// </summary>
+    /// <param name="model">The registration model containing user details.</param>
+    /// <returns>A result indicating the success or failure of the registration.</returns>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDTO model)
     {
+        var random = new Random();
+
         var user = new ApplicationUser
         {
             UserName = model.Email, // Do not remove.
             Email = model.Email, // Do not remove.
             Fullname = model.Fullname,
-            Photo = "",
-            ConfirmedEmail = false,
-            CreatedAt = DateTime.UtcNow
+            Latitude = Math.Round(model.Latitude ?? 38.7223, 4),
+            Longitude = Math.Round(model.Longitude ?? -9.1393, 4)
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -64,41 +92,23 @@ public class AuthenticationController : ControllerBase
 
         var battery = new Battery
         {
-            User = user,
-            ChargeLevel = 40,
-            MaxKW = 180,
-            ChargingSource = "Solar",
-            BatteryMode = "Personalized",
-            MinimalTreshold = 0,
-            MaximumTreshold = 100,
-            SpendingStartTime = "00:00",
-            SpendingEndTime = "09:00",
-            LastUpdate = DateTime.UtcNow.ToString()
+            User = user
         };
 
         _context.Batteries.Add(battery);
         await _context.SaveChangesAsync();
 
-        var random = new Random();
-        var hub = new Hub()
-        {
-            UserId = user.Id,
-            // Latitude: 35 to 70 (Europe)
-            Latitude = Math.Round(random.NextDouble() * (70 - 35) + 35, 5),
-            // Longitude: -10 to 40 (Europe)
-            Longitude = Math.Round(random.NextDouble() * (40 - (-10)) + (-10), 5),
-            GridKWh = 10.35,
-            BatteryId = battery.Id,
-            // DemoSolar: random value between 5 kWh and 100 kWh
-            DemoSolar =  Math.Round(random.NextDouble() * (100 - 5) + 5,2),
-            // DemoConsumption: random value between 5 and 15 kWh
-            DemoConsumption =  Math.Round(random.NextDouble() * 10 + 5,2),
-            // DemoPeople: random integer from 1 to 5
-            DemoPeople = random.Next(1, 6)
-        };
 
-        _context.Hubs.Add(hub);
-        await _context.SaveChangesAsync();
+        const int daysAgo = 3;
+        const int minutes = 15;
+        var start = DateTime.UtcNow.AddDays(-daysAgo);
+        var now = DateTime.UtcNow;
+        while (start <= now)
+        {
+            await _demoService.DemoEnergyIteration(user.Id, minutes, start);
+            start = start.AddMinutes(minutes);
+        }
+
 
         // Confirmation Link
         var baseUrlClient = _configuration["BaseUrlClient"];
@@ -115,11 +125,17 @@ public class AuthenticationController : ControllerBase
 
 
         // Add Log Entry
-        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered", GetClientIPAddress());
+        await _auditService.LogAsync(user.Id.ToString(), "Account Creation", "New User Registered",
+            GetClientIPAddress());
 
         return Ok(new { message = "User registered successfully!" });
     }
 
+    /// <summary>
+    ///     Resends the email confirmation link to the user.
+    /// </summary>
+    /// <param name="model">The model containing user information for email confirmation.</param>
+    /// <returns>A result indicating the success or failure of resending the confirmation email.</returns>
     [HttpPost("resend-email-confirmation")]
     public async Task<IActionResult> ResendEmailConfirmation([FromBody] ConfirmEmailDTO model)
     {
@@ -146,6 +162,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "Email confirmation link sent successfully!" });
     }
 
+    /// <summary>
+    ///     Registers a view account for an existing user.
+    /// </summary>
+    /// <param name="model">The view account registration model.</param>
+    /// <returns>A result indicating the success or failure of the view account registration.</returns>
     [HttpPost("register-view")]
     public async Task<IActionResult> RegisterViewAccount([FromBody] RegisterViewDTO model)
     {
@@ -174,10 +195,23 @@ public class AuthenticationController : ControllerBase
 
         user.ViewAccount = viewAccount;
 
+        await _notificationService.CreateNotificationAsync(
+            user.Id,
+            new NotificationCreateDto
+            {
+                Title = "View Account",
+                Description = $"Your View Account was created successfully."
+            });
+
         // await _auditService.LogAsync(viewAccount.Id.ToString(), "View Account", "View Account Registered", GetClientIPAddress());
         return Ok(new { message = "ViewAccount registered successfully!" });
     }
 
+    /// <summary>
+    ///     Logs in a user by generating a JWT token.
+    /// </summary>
+    /// <param name="model">The login model containing user credentials.</param>
+    /// <returns>A result containing the JWT token if login is successful.</returns>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO model)
     {
@@ -220,13 +254,18 @@ public class AuthenticationController : ControllerBase
             };
             Response.Cookies.Append("AuthToken", viewToken, viewCookieOptions);
 
-            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In", GetClientIPAddress());
+            await _auditService.LogAsync(viewUser.Id.ToString(), viewUser.Email, "View user Logged In",
+                GetClientIPAddress());
             return Ok(new { token = viewToken });
         }
 
         return Unauthorized("Confirm Email.");
     }
 
+    /// <summary>
+    ///     Logs out the currently authenticated user.
+    /// </summary>
+    /// <returns>A result indicating the success or failure of the logout operation.</returns>
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -240,6 +279,12 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "User logged out successfully!" });
     }
 
+    /// <summary>
+    ///     Generates a JWT token for the specified user and role.
+    /// </summary>
+    /// <param name="user">The user for whom the token will be generated.</param>
+    /// <param name="role">The role of the user (e.g., "Admin" or "View").</param>
+    /// <returns>The generated JWT token as a string.</returns>
     private string GenerateJWTToken(IdentityUser<int> user, string role)
     {
         var claims = new[]
@@ -266,7 +311,11 @@ public class AuthenticationController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-
+    /// <summary>
+    ///     Confirms the email of the user by verifying the provided token.
+    /// </summary>
+    /// <param name="model">The model containing the user id and confirmation token.</param>
+    /// <returns>A result indicating the success or failure of the email confirmation.</returns>
     [HttpPost("confirm-email")]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO model)
     {
@@ -282,6 +331,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "Email confirmed successfully!" });
     }
 
+    /// <summary>
+    ///     Initiates the password recovery process by sending a reset link to the provided email.
+    /// </summary>
+    /// <param name="model">The account recovery model containing the email address.</param>
+    /// <returns>A result indicating whether a reset link was sent or not.</returns>
     [HttpPost("forgotpassword")]
     public async Task<IActionResult> ForgotPassword([FromBody] AccountRecoveryViewModel model)
     {
@@ -309,6 +363,11 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "If the email exists, a reset link has been sent." });
     }
 
+    /// <summary>
+    ///     Resets the user's password using the provided reset token and new password.
+    /// </summary>
+    /// <param name="model">The model containing the email, token, and new password.</param>
+    /// <returns>A result indicating whether the password was successfully reset or not.</returns>
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
     {
@@ -324,6 +383,10 @@ public class AuthenticationController : ControllerBase
         return Ok(new { message = "Password reset successfully!" });
     }
 
+    /// <summary>
+    ///     Retrieves the current authenticated user's details.
+    /// </summary>
+    /// <returns>A result containing the user details.</returns>
     [HttpGet("get-user")]
     public async Task<IActionResult> GetUser()
     {
@@ -348,12 +411,21 @@ public class AuthenticationController : ControllerBase
             Email = user.Email,
             Photo = user.Photo,
             CreatedAt = user.CreatedAt,
-            HasViewAccount = viewAccount != null
+            HasViewAccount = viewAccount != null,
+            GridKWh = user.GridKWh,
+            SolarKWh = user.SolarKWh,
+            Latitude = user.Latitude,
+            Longitude = user.Longitude
         };
 
         return Ok(userDTO);
     }
 
+    /// <summary>
+    ///     Updates the details of the current authenticated user.
+    /// </summary>
+    /// <param name="model">The model containing the updated user data.</param>
+    /// <returns>A result indicating the success or failure of the user update.</returns>
     [HttpPost("update-user")]
     public async Task<IActionResult> UpdateUser([FromBody] ChangeUserDTO model)
     {
@@ -370,13 +442,29 @@ public class AuthenticationController : ControllerBase
             return NotFound(new { error = "User not found." });
 
         user.Fullname = model.Fullname;
+        user.GridKWh = model.GridKWh;
+        user.Latitude = model.Latitude;
+        user.Longitude = model.Longitude;
+        user.SolarKWh = model.SolarKWh;
 
         await _userManager.UpdateAsync(user);
+
+        await _notificationService.CreateNotificationAsync(
+            user.Id,
+            new NotificationCreateDto
+            {
+                Title = "Settings Account",
+                Description = $"Your settings edited successfully."
+            });
 
         // await _auditService.LogAsync(user.Id.ToString(), "User Access", "User Data Updated", GetClientIPAddress());
         return Ok(new { message = "User updated successfully!" });
     }
 
+    /// <summary>
+    ///     Deletes the View Account associated with the currently authenticated user.
+    /// </summary>
+    /// <returns>A result indicating the success or failure of the View Account deletion process.</returns>
     [HttpPost("delete-user-view-model")]
     public async Task<IActionResult> DeleteUserViewModel()
     {
@@ -402,6 +490,14 @@ public class AuthenticationController : ControllerBase
 
         if (!result.Succeeded)
             return BadRequest(new { error = "An error occurred while deleting the View Account." });
+
+        await _notificationService.CreateNotificationAsync(
+            user.Id,
+            new NotificationCreateDto
+            {
+                Title = "View Account",
+                Description = $"Your View Account was deleted successfully."
+            });
 
         // await _auditService.LogAsync(user.Id.ToString(), "View Account", "View Account Deleted", GetClientIPAddress());
         return Ok(new { message = "View Account deleted successfully!" });
